@@ -799,8 +799,8 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
             </button>
             <div onClick={() => setShowEditProfile(true)} className="cursor-pointer">
               <h2 className="text-sm font-medium">{name}</h2>
-              <div className="flex items-center gap-1 text-xs text-[#001F3F]/80">
-                <Star size={10} className="fill-white text-white" />
+              <div className="flex items-center gap-1 text-[11px] text-white/90 font-bold uppercase tracking-widest mt-1">
+                <Star size={10} fill="white" className="text-white" />
                 <span>4.98 Rating</span>
               </div>
             </div>
@@ -812,7 +812,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
 
         <div className="flex justify-between items-end">
           <div>
-            <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1">Today's Earnings</div>
+            <div className="text-[11px] text-white/90 uppercase tracking-[0.2em] font-bold mb-1">Today's Earnings</div>
             <div className="text-3xl font-light">$245.50</div>
           </div>
           <div className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest ${isOnline ? 'bg-white text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
@@ -842,12 +842,12 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
           <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm">
             <div className="opacity-80 mb-2"><Clock size={20} /></div>
             <div className="text-2xl font-light mb-1">6.5h</div>
-            <div className="text-[10px] text-[#001F3F]/80 uppercase tracking-widest">Online Hours</div>
+            <div className="text-[11px] text-[#001F3F] uppercase tracking-widest font-bold">Online Hours</div>
           </div>
           <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm">
             <div className="opacity-80 mb-2"><Navigation size={20} /></div>
             <div className="text-2xl font-light mb-1">12</div>
-            <div className="text-[10px] text-[#001F3F]/80 uppercase tracking-widest">Trips</div>
+            <div className="text-[11px] text-[#001F3F] uppercase tracking-widest font-bold">Trips</div>
           </div>
         </div>
 
@@ -934,7 +934,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
                   <span className="text-xs text-[#001F3F]/80 uppercase tracking-widest">Change Photo</span>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">Full Name</label>
+                  <label className="text-[12px] uppercase tracking-[0.2em] text-[#001F3F] font-bold">Full Name</label>
                   <input
                     type="text"
                     value={name}

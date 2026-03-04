@@ -1248,7 +1248,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-white overflow-hidden"
+      className="h-full w-full flex flex-col bg-white overflow-y-auto scrollbar-hide"
     >
       {/* Custom Styles for Map & Autocomplete */}
       <style>{`
@@ -1258,7 +1258,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       `}</style>
 
       {/* Header */}
-      <div className="relative flex items-center justify-between px-4 py-4 bg-white z-20">
+      <div className="relative flex items-center justify-between px-4 py-4 bg-white z-20 shrink-0">
         <button onClick={onOpenMenu} className="flex flex-col gap-1.5 p-2 -ml-2">
           <div className="w-6 h-[1.5px] bg-black" />
           <div className="w-6 h-[1.5px] bg-black" />
@@ -1266,7 +1266,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
         <img
           src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_"
           alt="URBONT"
-          className="h-24 object-contain"
+          className="h-20 object-contain"
           referrerPolicy="no-referrer"
         />
         <button onClick={onNotifications} className="p-2 -mr-2 relative group flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors">
@@ -1303,7 +1303,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
+              className="bg-white rounded-t-[32px] p-6 pb-12 space-y-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-light text-[#1A1A1A]">Schedule Journey</h3>
@@ -1354,7 +1354,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
+              className="bg-white rounded-t-[32px] p-6 pb-12 space-y-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-light text-[#1A1A1A]">Hourly Booking</h3>
@@ -1396,7 +1396,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
+              className="bg-white rounded-t-[32px] p-6 pb-12 space-y-6 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-light text-[#1A1A1A]">Add Comment</h3>
@@ -1404,7 +1404,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                   <X size={20} />
                 </button>
               </div>
-              <p className="text-sm text-[#1A1A1A]/80">Leave a note for your chauffeur (e.g., flight number, gate, special requests).</p>
+              <p className="text-sm text-[#1A1A1A]/80">Leave a note for your chauffeur.</p>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
@@ -1420,7 +1420,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       </AnimatePresence>
 
       {/* Map Area */}
-      <div className="absolute inset-0 bg-[#FFFFFF] overflow-hidden">
+      <div className="flex-1 min-h-[300px] bg-[#FFFFFF] overflow-hidden relative">
         {isLoaded ? (
           <GoogleMap
             mapContainerStyle={{ width: '100%', height: '100%' }}
@@ -1476,7 +1476,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       </div>
 
       {/* Floating Bottom Content */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[32px] z-20 transition-all duration-500 overflow-y-auto ${destination ? 'h-[75%] sm:h-[60%]' : 'h-auto p-6 pb-10'}`}>
+      <div className={`shrink-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[32px] z-20 transition-all duration-500 overflow-y-auto ${destination ? 'max-h-[70vh]' : 'p-4 pb-12'}`}>
         {!destination ? (
           <div className="space-y-6">
             <div className="space-y-1">

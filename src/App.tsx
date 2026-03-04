@@ -2104,7 +2104,6 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
 
   const handlePay = () => {
     setIsProcessing(true);
-    // Simulate Stripe Payment Intent creation
     setTimeout(() => {
       setPaymentSuccess(true);
       setTimeout(() => {
@@ -2121,133 +2120,108 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', background: '#FFFFFF', fontFamily: "'Barlow Condensed', sans-serif" }}
+      className="h-full w-full bg-white flex flex-col font-sans overflow-hidden"
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '32px 20px 16px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
-        <button onClick={onBack} style={{ padding: 8, marginLeft: -8, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%', color: '#1A1A1A' }}>
+      <div className="flex items-center gap-4 px-4 pt-6 pb-4 border-b border-black/[0.03] shrink-0">
+        <button onClick={onBack} className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors text-[#1A1A1A]">
           <ArrowLeft size={24} />
         </button>
-        <h2 style={{ fontSize: 18, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#1A1A1A', margin: 0 }}>Confirm Payment</h2>
+        <h2 className="text-sm font-medium uppercase tracking-[0.2em] text-[#1A1A1A]">Confirm Payment</h2>
       </div>
 
-      <div style={{ flex: 1, padding: '24px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto px-4 py-8 space-y-8 scrollbar-hide">
         {/* Vehicle Summary Card */}
-        <div style={{ background: '#FAFAFA', borderRadius: 16, padding: 20, border: '1px solid rgba(0,0,0,0.04)' }}>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ width: 72, height: 48, borderRadius: 8, overflow: 'hidden', background: '#F0F0F0', flexShrink: 0 }}>
-              <img src={vehicle.image} alt={vehicle.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
+        <div className="bg-[#FAFAFA] rounded-2xl p-6 border border-black/[0.04] space-y-6">
+          <div className="flex gap-4 items-center">
+            <div className="w-20 h-14 rounded-xl overflow-hidden bg-white border border-black/[0.05] shrink-0">
+              <img src={vehicle.image} alt={vehicle.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
             </div>
-            <div style={{ flex: 1 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: '#1A1A1A', margin: 0, lineHeight: 1.5 }}>{vehicle.name}</h3>
-              <p style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.6, margin: 0, lineHeight: 1.5 }}>One-way trip</p>
+            <div className="flex-1">
+              <h3 className="text-xl font-medium text-[#1A1A1A] leading-tight">{vehicle.name}</h3>
+              <p className="text-sm text-[#1A1A1A]/50 font-light">One-way service</p>
             </div>
           </div>
 
-          {/* Price Breakdown */}
-          <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 16, color: '#1A1A1A', opacity: 0.7, lineHeight: 1.5 }}>Base Fare</span>
-              <span style={{ fontSize: 16, fontWeight: 500, color: '#1A1A1A', lineHeight: 1.5 }}>{vehicle.price}.00</span>
+          <div className="border-t border-black/[0.05] pt-6 space-y-3">
+            <div className="flex justify-between items-center text-sm font-light text-[#1A1A1A]/70 uppercase tracking-widest">
+              <span>Base Fare</span>
+              <span className="font-medium text-[#1A1A1A]">{vehicle.price}.00</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 16, color: '#1A1A1A', opacity: 0.7, lineHeight: 1.5 }}>Taxes & Fees</span>
-              <span style={{ fontSize: 16, fontWeight: 500, color: '#1A1A1A', lineHeight: 1.5 }}>${taxesFees.toFixed(2)}</span>
+            <div className="flex justify-between items-center text-sm font-light text-[#1A1A1A]/70 uppercase tracking-widest">
+              <span>Taxes & Fees</span>
+              <span className="font-medium text-[#1A1A1A]">${taxesFees.toFixed(2)}</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 12 }}>
-              <span style={{ fontSize: 18, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.5 }}>Total</span>
-              <span style={{ fontSize: 20, fontWeight: 700, color: '#0A2540', lineHeight: 1.5 }}>${total.toFixed(2)} USD</span>
+            <div className="flex justify-between items-center pt-4 border-t border-black/[0.05]">
+              <span className="text-lg font-medium text-[#1A1A1A] uppercase tracking-widest">Total</span>
+              <span className="text-2xl font-medium text-[#001F3F]">${total.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
         {/* Payment Method Section */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#1A1A1A', opacity: 0.8, margin: 0, lineHeight: 1.5 }}>Payment Method</h3>
+        <div className="space-y-4">
+          <h3 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A1A1A]/60">Payment Method</h3>
 
-          {/* Selected Card */}
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: 16, borderRadius: 12, border: '2px solid #0A2540', background: 'rgba(10,37,64,0.03)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{
-                width: 48, height: 30, background: '#0A2540', borderRadius: 6,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#FFFFFF', fontSize: 9, fontWeight: 700, letterSpacing: '0.15em'
-              }}>
+          <div className="flex items-center justify-between p-5 rounded-xl border-2 border-[#001F3F] bg-[#001F3F]/[0.02]">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-8 bg-[#001F3F] rounded-lg flex items-center justify-center text-white text-[10px] font-medium tracking-widest">
                 VISA
               </div>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 500, color: '#1A1A1A', lineHeight: 1.5 }}>•••• 4242</div>
-                <div style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.5, lineHeight: 1.5 }}>Expires 12/28</div>
+              <div className="space-y-0.5">
+                <div className="text-base font-medium text-[#1A1A1A]">•••• 4242</div>
+                <div className="text-xs text-[#1A1A1A]/40 font-light uppercase tracking-widest">Expires 12/28</div>
               </div>
             </div>
-            <CheckCircle2 size={22} color="#0A2540" />
+            <CheckCircle2 size={22} className="text-[#001F3F]" />
           </div>
 
-          {/* Add New Card */}
-          <button style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            width: '100%', padding: 14, borderRadius: 12, border: '1px solid rgba(0,0,0,0.1)',
-            background: 'transparent', cursor: 'pointer', fontSize: 14, fontWeight: 500,
-            color: '#0066CC', fontFamily: "'Barlow Condensed', sans-serif", lineHeight: 1.5
-          }}>
+          <button className="w-full py-4 rounded-xl border border-black/[0.1] bg-white text-sm font-medium text-[#001F3F] flex items-center justify-center gap-2 hover:bg-black/[0.02] transition-colors uppercase tracking-[0.1em]">
             <Plus size={16} />
             Add New Card
           </button>
         </div>
 
         {/* Security Info */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12, padding: 16,
-          background: 'rgba(10,37,64,0.03)', borderRadius: 12
-        }}>
-          <ShieldCheck size={20} color="#0A2540" style={{ flexShrink: 0 }} />
-          <p style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.8, margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
-            Your payment is processed securely by Stripe. Card data is encrypted end-to-end.
+        <div className="flex items-start gap-4 p-5 bg-[#001F3F]/[0.02] rounded-xl border border-black/[0.03]">
+          <ShieldCheck size={20} className="text-[#001F3F] mt-0.5 shrink-0" />
+          <p className="text-sm text-[#1A1A1A]/80 font-light leading-relaxed">
+            Your payment is processed securely by <span className="font-medium">Stripe</span>. End-to-end encryption active.
           </p>
         </div>
       </div>
 
       {/* Pay Button Footer */}
-      <div style={{ padding: '16px 20px 40px', borderTop: '1px solid rgba(0,0,0,0.04)', background: '#FFFFFF' }}>
+      <div className="px-4 pb-10 pt-4 border-t border-black/[0.03] bg-white shrink-0">
         <button
           onClick={handlePay}
           disabled={isProcessing}
-          style={{
-            width: '100%', padding: 18, borderRadius: 14, border: 'none',
-            background: paymentSuccess ? '#28A745' : '#0A2540',
-            color: '#FFFFFF', fontSize: 16, fontWeight: 600,
-            letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-            cursor: isProcessing ? 'wait' : 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            opacity: isProcessing && !paymentSuccess ? 0.8 : 1,
-            transition: 'all 0.3s ease',
-            fontFamily: "'Barlow Condensed', sans-serif",
-            boxShadow: '0 4px 24px rgba(10,37,64,0.2)'
-          }}
+          className={`
+            w-full py-5 rounded-xl text-white font-medium uppercase tracking-[0.2em] text-sm
+            flex items-center justify-center gap-3 transition-all duration-300 shadow-xl
+            ${paymentSuccess ? 'bg-green-600' : 'bg-[#001F3F] active:scale-[0.98] shadow-[#001F3F]/20'}
+            ${isProcessing && !paymentSuccess ? 'opacity-80' : ''}
+          `}
         >
           {paymentSuccess ? (
             <>
               <CheckCircle2 size={20} />
-              Payment Successful
+              Confirmed
             </>
           ) : isProcessing ? (
             <>
-              <div style={{ width: 18, height: 18, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#FFFFFF', animation: 'spin 0.8s linear infinite' }} />
-              Processing...
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Allocating Chauffeur...
             </>
           ) : (
             <>
               <ShieldCheck size={18} />
-              Pay ${total.toFixed(2)} USD
+              Confirm ${total.toFixed(2)}
             </>
           )}
         </button>
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </motion.div>
   );
 }

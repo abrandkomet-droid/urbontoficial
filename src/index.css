@@ -84,16 +84,16 @@
   min-height: -webkit-fill-available;
 }
 
-.navy-gradient-bg {
+@utility navy-gradient-bg {
   background: linear-gradient(-45deg, #050505, #001F3F, #0A2140, #050505);
   background-size: 400% 400%;
-  animation: gradient-xy 15s ease infinite;
+  animation: var(--animate-gradient-xy);
 }
 
-.white-gradient-bg {
+@utility white-gradient-bg {
   background: linear-gradient(-45deg, #FFFFFF, #F8F9FA, #F0F2F5, #FFFFFF);
   background-size: 400% 400%;
-  animation: gradient-xy 15s ease infinite;
+  animation: var(--animate-gradient-xy);
 }
 
 .light-mode {

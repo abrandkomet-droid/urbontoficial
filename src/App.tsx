@@ -2091,8 +2091,6 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
     </motion.div>
   );
 }
-  );
-}
 
 function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Vehicle, onBack: () => void, onConfirm: () => void, key?: string }) {
   const [isProcessing, setIsProcessing] = useState(false);

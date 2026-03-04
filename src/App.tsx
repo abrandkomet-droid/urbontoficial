@@ -11,6 +11,7 @@ import {
   Info, Layers, Compass, Loader2, Briefcase, Camera, Plus, Music,
   Sun, DoorOpen, Plane, History, Navigation, Users
 } from 'lucide-react';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 // --- Animated Premium Icon Component ---
 const AnimatedIcon = ({ icon: Icon, size = 20, color = 'currentColor', animation = 'pulse' as 'pulse' | 'spin' | 'float' | 'ping' }) => {
@@ -41,6 +42,11 @@ import DriverDashboardMobile from './components/DriverDashboardMobile';
 import ChatRoom from './components/ChatRoom';
 
 export default function App() {
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries: ['places'] as any[]
+  });
   const [currentScreen, setCurrentScreen] = useState<Screen>('welcome');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -116,9 +122,9 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 1 }}
-              className="absolute inset-y-0 left-0 w-full bg-[#FFFFFF] z-50 flex flex-col text-[#001F3F] shadow-2xl overflow-hidden"
+              className="absolute inset-y-0 left-0 w-full bg-[#FFFFFF] z-50 flex flex-col text-[#1A1A1A] shadow-2xl overflow-hidden"
             >
-              <div className="flex flex-col h-full overflow-y-auto px-6 py-10 scrollbar-hide">
+              <div className="flex flex-col h-full overflow-y-auto px-4 py-10 scrollbar-hide">
                 {/* Header with Close Button and Large Logo */}
                 <div className="flex justify-between items-center mb-10 shrink-0 relative">
                   <button onClick={() => setIsMenuOpen(false)} className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors z-10">
@@ -135,7 +141,7 @@ export default function App() {
                 </div>
 
                 {/* Greeting */}
-                <div className="mb-12 px-2">
+                <div className="mb-8 px-2">
                   <div className="flex items-center gap-3 mb-2">
                     {userProfile.accountType === 'business' && (
                       <span className="px-2 py-1 bg-[#001F3F] text-white text-[10px] font-medium uppercase tracking-widest rounded-md flex items-center gap-1">
@@ -144,7 +150,7 @@ export default function App() {
                       </span>
                     )}
                   </div>
-                  <h2 className="font-sans text-3xl font-light text-[#001F3F] leading-tight">
+                  <h2 className="font-sans text-3xl font-light text-[#1A1A1A] leading-tight">
                     {(() => {
                       const hour = new Date().getHours();
                       let greeting = 'Good Morning';
@@ -163,13 +169,13 @@ export default function App() {
                 {/* Main Navigation */}
                 <div className="flex-1 flex flex-col justify-center space-y-8 mb-20 px-2">
                   <button onClick={() => navigate('services', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">SIGNATURE</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#1A1A1A] group-hover:text-[#1A1A1A]/80 transition-colors">SIGNATURE</span>
                   </button>
                   <button onClick={() => navigate('membership', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">ACCESS</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#1A1A1A] group-hover:text-[#1A1A1A]/80 transition-colors">ACCESS</span>
                   </button>
                   <button onClick={() => navigate('customer-service', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">HELP CENTER</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#1A1A1A] group-hover:text-[#1A1A1A]/80 transition-colors">HELP CENTER</span>
                   </button>
                 </div>
 
@@ -177,48 +183,48 @@ export default function App() {
                 <div className="border-t border-[#001F3F]/20 pt-2 shrink-0">
                   <button onClick={() => navigate('profile', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <User size={18} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY INFO</span>
+                      <User size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">MY INFO</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-sans text-sm font-normal text-[#001F3F]/80">Angel Boyer</span>
-                      <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/80" />
+                      <span className="font-sans text-sm font-normal text-[#1A1A1A]/80">Angel Boyer</span>
+                      <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
                     </div>
                   </button>
                   <button onClick={() => navigate('preferences', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <Settings size={18} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY PREFERENCES</span>
+                      <Settings size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">MY PREFERENCES</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
                   </button>
                   <button onClick={() => navigate('ride-history', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <Clock size={18} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY JOURNEY HISTORY</span>
+                      <Clock size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">MY JOURNEY HISTORY</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
                   </button>
                   <button onClick={() => navigate('payment-methods', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <CreditCard size={18} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">PAYMENT</span>
+                      <CreditCard size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">PAYMENT</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
                   </button>
                   <button onClick={() => navigate('gift-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <Gift size={18} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">GIFT A RIDE</span>
+                      <Gift size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">GIFT A RIDE</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
                   </button>
                 </div>
 
                 {/* Footer */}
-                <div className="mt-12 flex justify-between items-center font-sans text-[10px] uppercase tracking-[0.1em] font-medium shrink-0 pb-4 text-[#001F3F]/80">
+                <div className="mt-12 flex justify-between items-center font-sans text-[10px] uppercase tracking-[0.1em] font-medium shrink-0 pb-4 text-[#1A1A1A]/80">
                   <span>© 2026 URBONT</span>
-                  <button onClick={() => navigate('booking')} className="flex items-center gap-1 hover:text-[#001F3F] transition-colors">
+                  <button onClick={() => navigate('booking')} className="flex items-center gap-1 hover:text-[#1A1A1A] transition-colors">
                     <span>TIME REDEFINED</span>
                     <ChevronRight size={10} />
                   </button>
@@ -291,6 +297,7 @@ export default function App() {
         {currentScreen === 'booking' && (
           <BookingScreen
             key="booking"
+            isLoaded={isLoaded}
             onOpenMenu={() => setIsMenuOpen(true)}
             onSelectVehicle={() => navigate('vehicle-selection')}
             onNotifications={() => navigate('notifications')}
@@ -343,6 +350,7 @@ export default function App() {
         {currentScreen === 'tracking' && (
           <TrackingScreen
             key="tracking"
+            isLoaded={isLoaded}
             vehicle={selectedVehicle || VEHICLES[1]}
             onBack={() => navigate('booking')}
           />
@@ -467,7 +475,7 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
       />
 
       {/* Content */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-12">
+      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-8">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -506,14 +514,14 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
       >
         <button
           onClick={onStart}
-          className="w-full py-5 bg-white text-[#001F3F] font-bold uppercase tracking-[0.1em] hover:bg-white/90 transition-all rounded-full flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-[0.98] text-[13px]"
+          className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.1em] hover:bg-white/90 transition-all rounded-full flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-[0.98] text-[13px]"
         >
           Get Started
         </button>
 
         <button
           onClick={onChauffeurStart}
-          className="w-full py-4 text-white/90 font-semibold uppercase tracking-[0.1em] text-[11px] hover:text-white transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 text-white/90 font-medium uppercase tracking-[0.1em] text-[11px] hover:text-white transition-all flex items-center justify-center gap-2"
         >
           Chauffeur Login <ArrowRight size={12} strokeWidth={1.5} />
         </button>
@@ -531,7 +539,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col p-6 pt-16 navy-gradient-bg text-white relative"
+      className="h-full w-full flex flex-col p-6 pt-8 navy-gradient-bg text-white relative"
     >
       <button onClick={onBack} className="absolute top-8 left-6 p-2 text-white hover:bg-white/10 rounded-full transition-colors">
         <ArrowLeft size={24} />
@@ -541,17 +549,17 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
         <img
           src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_"
           alt="URBONT Logo"
-          className="h-16 object-contain mb-12 brightness-0 invert"
+          className="h-16 object-contain mb-8 brightness-0 invert"
           referrerPolicy="no-referrer"
         />
 
-        <h1 className="font-sans text-3xl font-light uppercase tracking-widest mb-12 text-center text-white">
+        <h1 className="font-sans text-3xl font-light uppercase tracking-widest mb-8 text-center text-white">
           Chauffeur Portal
         </h1>
 
         <div className="w-full space-y-6">
           <div className="space-y-2">
-            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-bold">Email ID</label>
+            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-medium">Email ID</label>
             <input
               type="email"
               value={email}
@@ -562,7 +570,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
           </div>
 
           <div className="space-y-2">
-            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-bold">Password</label>
+            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-medium">Password</label>
             <input
               type="password"
               value={password}
@@ -581,7 +589,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
       <button
         disabled={!email || !password}
         onClick={onLogin}
-        className="w-full py-5 bg-white text-[#001F3F] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 text-xs"
+        className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 text-xs"
       >
         Login
       </button>
@@ -622,13 +630,13 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
 
   const InputField = ({ label, value, onChange, placeholder, type = "text" }: any) => (
     <div className="space-y-1">
-      <label className="text-[11px] uppercase tracking-widest text-[#001F3F]/80 font-bold">{label}</label>
+      <label className="text-[11px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full p-3 bg-white border border-black/10 rounded-lg text-base text-[#001F3F] placeholder:text-[#001F3F]/30 focus:outline-none focus:border-[#001F3F] transition-colors"
+        className="w-full p-3 bg-white border border-black/10 rounded-lg text-base text-[#1A1A1A] placeholder:text-[#1A1A1A]/30 focus:outline-none focus:border-[#001F3F] transition-colors"
       />
     </div>
   );
@@ -638,9 +646,9 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-[#F5F7FA] text-[#001F3F] relative"
+      className="h-full w-full flex flex-col bg-[#F5F7FA] text-[#1A1A1A] relative"
     >
-      <div className="bg-[#001F3F] text-white p-6 pt-12 pb-8 rounded-b-[2rem] shadow-xl z-10 shrink-0">
+      <div className="bg-[#001F3F] text-white p-6 pt-8 pb-8 rounded-b-[2rem] shadow-xl z-10 shrink-0">
         <div className="flex items-center gap-4">
           <button onClick={step === 1 ? onBack : () => setStep(step - 1)} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors">
             <ArrowLeft size={24} />
@@ -708,13 +716,13 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
 
         {step === 3 && (
           <div className="space-y-4">
-            <p className="text-sm text-[#001F3F] font-bold mb-4">
+            <p className="text-sm text-[#1A1A1A] font-medium mb-4">
               Please upload clear, legible copies of the following required documents.
             </p>
             {REQUIRED_DOCS.map(doc => (
               <div key={doc.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${documents[doc.id] ? 'bg-green-100 text-green-600' : 'bg-[#001F3F]/5 text-[#001F3F]/70'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${documents[doc.id] ? 'bg-green-100 text-green-600' : 'bg-[#001F3F]/5 text-[#1A1A1A]/70'}`}>
                     {documents[doc.id] ? <CheckCircle2 size={20} /> : (doc.isPhoto ? <Camera size={20} /> : <FileText size={20} />)}
                   </div>
                   <div className="flex-1">
@@ -731,7 +739,7 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
                     }}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
-                  <div className="px-4 py-2 bg-[#001F3F]/5 text-[#001F3F] text-[10px] font-bold uppercase tracking-widest rounded-lg">
+                  <div className="px-4 py-2 bg-[#001F3F]/5 text-[#1A1A1A] text-[10px] font-medium uppercase tracking-widest rounded-lg">
                     {documents[doc.id] ? 'Change' : 'Upload'}
                   </div>
                 </div>
@@ -748,7 +756,7 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
 
         {step === 4 && (
           <div className="space-y-6">
-            <p className="text-sm text-[#001F3F] font-bold mb-4">
+            <p className="text-sm text-[#1A1A1A] font-medium mb-4">
               Enter your banking information for weekly payouts.
             </p>
             <InputField label="Bank Name" value={formData.bankName} onChange={(v: string) => setFormData({ ...formData, bankName: v })} placeholder="Chase" />
@@ -782,7 +790,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
       className="h-full w-full flex flex-col bg-[#001F3F]"
     >
       {/* Header */}
-      <div className="bg-[#001F3F] text-white p-6 pb-12 rounded-b-[2rem] shadow-xl z-10">
+      <div className="bg-[#001F3F] text-white p-6 pb-8 rounded-b-[2rem] shadow-xl z-10">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <button
@@ -800,7 +808,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
             </button>
             <div onClick={() => setShowEditProfile(true)} className="cursor-pointer">
               <h2 className="text-sm font-medium">{name}</h2>
-              <div className="flex items-center gap-1 text-[11px] text-white/90 font-bold uppercase tracking-widest mt-1">
+              <div className="flex items-center gap-1 text-[11px] text-white/90 font-medium uppercase tracking-widest mt-1">
                 <Star size={10} fill="white" className="text-white" />
                 <span>4.98 Rating</span>
               </div>
@@ -813,10 +821,10 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
 
         <div className="flex justify-between items-end">
           <div>
-            <div className="text-[11px] text-white/90 uppercase tracking-[0.2em] font-bold mb-1">Today's Earnings</div>
+            <div className="text-[11px] text-white/90 uppercase tracking-[0.2em] font-medium mb-1">Today's Earnings</div>
             <div className="text-3xl font-light">$245.50</div>
           </div>
-          <div className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest ${isOnline ? 'bg-white text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
+          <div className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest ${isOnline ? 'bg-white text-[#1A1A1A]' : 'bg-[#001F3F] text-white'}`}>
             {isOnline ? 'Online' : 'Offline'}
           </div>
         </div>
@@ -828,7 +836,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
         <button
           onClick={() => setIsOnline(!isOnline)}
           className={`w-full py-6 rounded-xl shadow-sm border flex items-center justify-center gap-3 transition-all ${isOnline
-            ? 'bg-black\/10 border-black\/20 text-[#001F3F]'
+            ? 'bg-black\/10 border-black\/20 text-[#1A1A1A]'
             : 'bg-white\/10 border-white\/20 text-white'
             }`}
         >
@@ -843,12 +851,12 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
           <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm">
             <div className="opacity-80 mb-2"><Clock size={20} /></div>
             <div className="text-2xl font-light mb-1">6.5h</div>
-            <div className="text-[11px] text-[#001F3F] uppercase tracking-widest font-bold">Online Hours</div>
+            <div className="text-[11px] text-[#1A1A1A] uppercase tracking-widest font-medium">Online Hours</div>
           </div>
           <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm">
             <div className="opacity-80 mb-2"><Navigation size={20} /></div>
             <div className="text-2xl font-light mb-1">12</div>
-            <div className="text-[11px] text-[#001F3F] uppercase tracking-widest font-bold">Trips</div>
+            <div className="text-[11px] text-[#1A1A1A] uppercase tracking-widest font-medium">Trips</div>
           </div>
         </div>
 
@@ -861,7 +869,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
               <div className="text-sm font-medium">JFK Airport Transfer</div>
               <div className="text-sm font-medium text-white">$85.00</div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-[#001F3F]/80">
+            <div className="flex items-center gap-2 text-xs text-[#1A1A1A]/80">
               <Clock size={12} />
               <span>10:30 AM - 11:15 AM</span>
             </div>
@@ -876,7 +884,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
               <div className="text-sm font-medium">Downtown to Brooklyn</div>
               <div className="text-sm font-medium text-white">$45.00</div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-[#001F3F]/80">
+            <div className="flex items-center gap-2 text-xs text-[#1A1A1A]/80">
               <Clock size={12} />
               <span>08:45 AM - 09:15 AM</span>
             </div>
@@ -905,8 +913,8 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#001F3F]">Edit Profile</h3>
-                <button onClick={() => setShowEditProfile(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
+                <h3 className="text-2xl font-light text-[#1A1A1A]">Edit Profile</h3>
+                <button onClick={() => setShowEditProfile(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
                   <X size={20} />
                 </button>
               </div>
@@ -932,15 +940,15 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </div>
-                  <span className="text-xs text-[#001F3F]/80 uppercase tracking-widest">Change Photo</span>
+                  <span className="text-xs text-[#1A1A1A]/80 uppercase tracking-widest">Change Photo</span>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[12px] uppercase tracking-[0.2em] text-[#001F3F] font-bold">Full Name</label>
+                  <label className="text-[12px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium">Full Name</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none"
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
                   />
                 </div>
               </div>
@@ -968,7 +976,7 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
       className="h-full w-full flex flex-col p-8 pt-24 navy-gradient-bg text-white relative"
     >
       <div className="flex-1 flex flex-col items-center">
-        <h1 className="text-3xl font-medium text-center leading-tight mb-16 max-w-[280px] uppercase tracking-widest text-white">
+        <h1 className="text-3xl font-medium text-center leading-tight mb-8 max-w-[280px] uppercase tracking-widest text-white">
           SIGN IN OR CREATE YOUR ACCOUNT
         </h1>
 
@@ -1003,7 +1011,7 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
       <button
         disabled={value.length < 5}
         onClick={() => onContinue(value)}
-        className="w-full py-5 bg-white text-[#001F3F] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 mt-8 text-xs"
+        className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 mt-8 text-xs"
       >
         CONTINUE
       </button>
@@ -1039,15 +1047,15 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="h-full w-full flex flex-col p-6 pt-16 navy-gradient-bg text-white"
+      className="h-full w-full flex flex-col p-6 pt-8 navy-gradient-bg text-white"
     >
       <button onClick={onBack} className="p-2 -ml-2 mb-8 text-white hover:bg-white/10 rounded-full transition-colors w-fit">
         <ArrowLeft size={24} />
       </button>
 
-      <div className="space-y-12">
+      <div className="space-y-8">
         <div className="space-y-2">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-white/70 font-bold">Verification</span>
+          <span className="text-[11px] uppercase tracking-[0.2em] text-white/70 font-medium">Verification</span>
           <h2 className="font-sans text-4xl font-light uppercase tracking-tight text-white">Enter Code</h2>
           <p className="text-xs text-white/60 leading-relaxed font-medium">
             Sent to {phoneNumber}
@@ -1076,12 +1084,12 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
           {canResend ? (
             <button
               onClick={handleResend}
-              className="text-xs font-bold uppercase tracking-widest text-white border-b border-white pb-1"
+              className="text-xs font-medium uppercase tracking-widest text-white border-b border-white pb-1"
             >
               Resend Code
             </button>
           ) : (
-            <p className="text-xs text-white/70 font-semibold uppercase tracking-widest">
+            <p className="text-xs text-white/70 font-medium uppercase tracking-widest">
               Resend code in {timer}s
             </p>
           )}
@@ -1090,7 +1098,7 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
         <button
           onClick={onVerify}
           disabled={otp.length !== 6}
-          className="w-full py-5 bg-white text-[#001F3F] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 text-xs"
+          className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 text-xs"
         >
           Verify Code
         </button>
@@ -1109,20 +1117,20 @@ function AirportPickupScreen({ onBack, onFlightFound, onSkip }: { onBack: () => 
       exit={{ opacity: 0, y: '100%' }}
       className="fixed inset-0 bg-white z-[200] flex flex-col"
     >
-      <div className="px-6 py-4 flex items-center">
+      <div className="px-4 py-4 flex items-center">
         <button onClick={onBack} className="p-2 -ml-2">
-          <X size={24} className="text-[#001F3F]" />
+          <X size={24} className="text-[#1A1A1A]" />
         </button>
       </div>
 
-      <div className="flex-1 px-6 flex flex-col items-center justify-center -mt-20">
-        <h2 className="text-2xl font-sans font-light text-[#001F3F] mb-4">Enter Flight Number</h2>
-        <p className="text-sm text-[#001F3F]/60 text-center mb-8 leading-relaxed max-w-xs">
+      <div className="flex-1 px-4 flex flex-col items-center justify-center -mt-20">
+        <h2 className="text-2xl font-sans font-light text-[#1A1A1A] mb-4">Enter Flight Number</h2>
+        <p className="text-sm text-[#1A1A1A]/60 text-center mb-8 leading-relaxed max-w-xs">
           Your flight will be tracked automatically so the chauffeur will meet you at exactly the right time and place.
         </p>
 
         <div className="w-full max-w-xs relative mb-8">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/40">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1A1A1A]/40">
             <Plane size={20} className="rotate-45" />
           </div>
           <input
@@ -1130,13 +1138,13 @@ function AirportPickupScreen({ onBack, onFlightFound, onSkip }: { onBack: () => 
             value={flightNumber}
             onChange={(e) => setFlightNumber(e.target.value.toUpperCase())}
             placeholder="AA1234"
-            className="w-full h-14 pl-12 pr-4 border border-[#001F3F]/20 rounded-none text-xl font-light text-[#001F3F] placeholder:text-[#001F3F]/20 focus:outline-none focus:border-[#001F3F] transition-colors text-center uppercase tracking-widest"
+            className="w-full h-14 pl-12 pr-4 border border-[#001F3F]/20 rounded-none text-xl font-light text-[#1A1A1A] placeholder:text-[#1A1A1A]/20 focus:outline-none focus:border-[#001F3F] transition-colors text-center uppercase tracking-widest"
           />
           <div className="absolute left-10 top-1/2 -translate-y-1/2 w-[1px] h-6 bg-[#001F3F]/20" />
         </div>
       </div>
 
-      <div className="px-6 pb-8 space-y-4">
+      <div className="px-4 pb-8 space-y-4">
         <button
           onClick={() => onFlightFound(flightNumber)}
           disabled={!flightNumber}
@@ -1147,7 +1155,7 @@ function AirportPickupScreen({ onBack, onFlightFound, onSkip }: { onBack: () => 
 
         <button
           onClick={onSkip}
-          className="w-full py-4 text-[#001F3F]/60 text-xs uppercase tracking-widest hover:text-[#001F3F] transition-colors"
+          className="w-full py-4 text-[#1A1A1A]/60 text-xs uppercase tracking-widest hover:text-[#1A1A1A] transition-colors"
         >
           Book without Flight Number
         </button>
@@ -1156,7 +1164,7 @@ function AirportPickupScreen({ onBack, onFlightFound, onSkip }: { onBack: () => 
   );
 }
 
-function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, key?: string }) {
+function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, isLoaded }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, isLoaded: boolean, key?: string }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showAirportPickup, setShowAirportPickup] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -1198,7 +1206,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
 
   // if (loadError) {
   //   return (
-  //     <div className="h-full w-full flex flex-col items-center justify-center bg-white text-[#001F3F] p-8 text-center space-y-4">
+  //     <div className="h-full w-full flex flex-col items-center justify-center bg-white text-[#1A1A1A] p-8 text-center space-y-4">
   //       <div className="p-4 bg-red-50 rounded-full text-red-500">
   //         <MapPin size={32} />
   //       </div>
@@ -1233,98 +1241,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
     setExtraDestinations(newStops);
   };
 
-  const mapStyles = [
-    {
-      "featureType": "all",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#f5f5f5" }]
-    },
-    {
-      "featureType": "all",
-      "elementType": "labels.icon",
-      "stylers": [{ "visibility": "off" }]
-    },
-    {
-      "featureType": "all",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#616161" }]
-    },
-    {
-      "featureType": "all",
-      "elementType": "labels.text.stroke",
-      "stylers": [{ "color": "#f5f5f5" }]
-    },
-    {
-      "featureType": "administrative.land_parcel",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#bdbdbd" }]
-    },
-    {
-      "featureType": "poi",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#eeeeee" }]
-    },
-    {
-      "featureType": "poi",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#757575" }]
-    },
-    {
-      "featureType": "poi.park",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#e5e5e5" }]
-    },
-    {
-      "featureType": "poi.park",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#9e9e9e" }]
-    },
-    {
-      "featureType": "road",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#ffffff" }]
-    },
-    {
-      "featureType": "road.arterial",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#757575" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#dadada" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#616161" }]
-    },
-    {
-      "featureType": "road.local",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#9e9e9e" }]
-    },
-    {
-      "featureType": "transit.line",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#e5e5e5" }]
-    },
-    {
-      "featureType": "transit.station",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#eeeeee" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#c9c9c9" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#9e9e9e" }]
-    }
-  ];
+  const mapStyles = []; // Revert to real Google Map styles
 
   return (
     <motion.div
@@ -1341,7 +1258,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       `}</style>
 
       {/* Header */}
-      <div className="relative flex items-center justify-between px-6 py-4 bg-white z-20">
+      <div className="relative flex items-center justify-between px-4 py-4 bg-white z-20">
         <button onClick={onOpenMenu} className="flex flex-col gap-1.5 p-2 -ml-2">
           <div className="w-6 h-[1.5px] bg-black" />
           <div className="w-6 h-[1.5px] bg-black" />
@@ -1365,7 +1282,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
             }}
             style={{ originX: 0.5, originY: 0.2 }}
           >
-            <Bell size={22} strokeWidth={1.5} className="text-[#001F3F] transition-transform group-hover:scale-110" />
+            <Bell size={22} strokeWidth={1.5} className="text-[#1A1A1A] transition-transform group-hover:scale-110" />
           </motion.div>
           <div className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-[#001F3F] rounded-full border-[1.5px] border-white z-10 shadow-sm" />
           <div className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-[#001F3F] rounded-full animate-ping opacity-75" />
@@ -1389,25 +1306,25 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#001F3F]">Schedule Journey</h3>
-                <button onClick={() => setShowScheduleModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
+                <h3 className="text-2xl font-light text-[#1A1A1A]">Schedule Journey</h3>
+                <button onClick={() => setShowScheduleModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-[#001F3F]/80">Date</label>
+                  <label className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Date</label>
                   <input
                     type="date"
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none"
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
                     onChange={(e) => setScheduledTime(prev => ({ ...prev, date: e.target.value, time: prev?.time || '' }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-[#001F3F]/80">Time</label>
+                  <label className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Time</label>
                   <input
                     type="time"
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none"
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
                     onChange={(e) => setScheduledTime(prev => ({ ...prev, time: e.target.value, date: prev?.date || '' }))}
                   />
                 </div>
@@ -1440,16 +1357,16 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#001F3F]">Hourly Booking</h3>
-                <button onClick={() => setShowHourlyModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
+                <h3 className="text-2xl font-light text-[#1A1A1A]">Hourly Booking</h3>
+                <button onClick={() => setShowHourlyModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
                   <X size={20} />
                 </button>
               </div>
-              <p className="text-sm text-[#001F3F]/80">Keep a chauffeur at your disposal for multiple stops or errands.</p>
+              <p className="text-sm text-[#1A1A1A]/80">Keep a chauffeur at your disposal for multiple stops or errands.</p>
               <div className="space-y-2">
-                <label className="text-xs uppercase tracking-widest text-[#001F3F]/80">Duration (Hours)</label>
+                <label className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Duration (Hours)</label>
                 <select
-                  className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none"
+                  className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
                   onChange={(e) => setHourlyDuration(parseInt(e.target.value))}
                 >
                   {[2, 3, 4, 5, 6, 8, 12, 24].map(h => (
@@ -1482,17 +1399,17 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#001F3F]">Add Comment</h3>
-                <button onClick={() => setShowCommentModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
+                <h3 className="text-2xl font-light text-[#1A1A1A]">Add Comment</h3>
+                <button onClick={() => setShowCommentModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
                   <X size={20} />
                 </button>
               </div>
-              <p className="text-sm text-[#001F3F]/80">Leave a note for your chauffeur (e.g., flight number, gate, special requests).</p>
+              <p className="text-sm text-[#1A1A1A]/80">Leave a note for your chauffeur (e.g., flight number, gate, special requests).</p>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Type your message here..."
-                className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none min-h-[120px] resize-none"
+                className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none min-h-[120px] resize-none"
               />
               <button onClick={() => setShowCommentModal(false)} className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
                 Save Comment
@@ -1504,11 +1421,26 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
 
       {/* Map Area */}
       <div className="absolute inset-0 bg-[#FFFFFF] overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="w-full h-full bg-[#E5E3DF] flex items-center justify-center">
-            <MapPin size={48} className="text-[#001F3F]/20" />
+        {isLoaded ? (
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={center}
+            zoom={15}
+            onLoad={onLoad}
+            options={{
+              disableDefaultUI: true,
+              styles: mapStyles,
+            }}
+          >
+            <Marker position={center} />
+          </GoogleMap>
+        ) : (
+          <div className="absolute inset-0">
+            <div className="w-full h-full bg-[#E5E3DF] flex items-center justify-center">
+              <MapPin size={48} className="text-[#1A1A1A]/20" />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-white/80 via-white/20 to-transparent pointer-events-none z-10" />
 
@@ -1548,8 +1480,8 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
         {!destination ? (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-2xl font-light text-[#001F3F]">Where to next?</h2>
-              <p className="text-sm text-[#001F3F]/80 font-light">Enter your destination to see available rides</p>
+              <h2 className="text-2xl font-light text-[#1A1A1A]">Where to next?</h2>
+              <p className="text-sm text-[#1A1A1A]/80 font-light">Enter your destination to see available rides</p>
             </div>
 
             <div className="space-y-0 border-t border-black/[0.04] pt-2">
@@ -1557,23 +1489,23 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                 onClick={() => { setDestination('Heathrow Airport'); }}
                 className="flex items-center gap-4 w-full py-5 border-b border-black/[0.04] cursor-pointer hover:bg-black/[0.02] rounded-xl px-2 transition-colors -mx-2 group"
               >
-                <div className="w-8 h-8 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                <div className="w-8 h-8 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                   <Plane size={14} />
                 </div>
                 <div className="flex-1">
-                  <span className="text-base font-light text-[#001F3F]/80">Airport Pickup</span>
+                  <span className="text-base font-light text-[#1A1A1A]/80">Airport Pickup</span>
                 </div>
-                <ChevronRight size={16} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
+                <ChevronRight size={16} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
               </div>
 
               <div
                 onClick={() => setIsSearchOpen(true)}
                 className="flex items-center gap-4 w-full py-5 border-b border-black/[0.04] cursor-pointer hover:bg-black/[0.02] rounded-xl px-2 transition-colors -mx-2"
               >
-                <div className="w-8 h-8 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                <div className="w-8 h-8 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                   <Search size={14} />
                 </div>
-                <div className="flex items-center gap-1 text-base font-light text-[#001F3F]/80">
+                <div className="flex items-center gap-1 text-base font-light text-[#1A1A1A]/80">
                   <span>Search</span>
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -1582,7 +1514,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -5 }}
                       transition={{ duration: 0.5 }}
-                      className="text-[#001F3F]/80"
+                      className="text-[#1A1A1A]/80"
                     >
                       {places[placeholderIndex]}...
                     </motion.span>
@@ -1594,7 +1526,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
         ) : (
           <div className="h-full flex flex-col">
             {/* Address Section */}
-            <div className="px-6 pt-8 pb-6 border-b border-black/[0.03]">
+            <div className="px-4 pt-8 pb-6 border-b border-black/[0.03]">
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
                   <div className="mt-1.5">
@@ -1603,8 +1535,8 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-base font-medium text-[#001F3F]">{pickup}</p>
-                    <p className="text-xs text-[#001F3F]/80 mt-0.5">Current Location</p>
+                    <p className="text-base font-medium text-[#1A1A1A]">{pickup}</p>
+                    <p className="text-xs text-[#1A1A1A]/80 mt-0.5">Current Location</p>
                   </div>
                 </div>
 
@@ -1627,7 +1559,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                         value={stop}
                         onChange={(e) => handleUpdateStop(index, e.target.value)}
                         placeholder="Add stop..."
-                        className="text-base font-medium text-[#001F3F] bg-transparent outline-none w-full border-b border-black/5 pb-1"
+                        className="text-base font-medium text-[#1A1A1A] bg-transparent outline-none w-full border-b border-black/5 pb-1"
                       />
                     </div>
                     <button onClick={() => handleRemoveStop(index)} className="p-1 text-red-400">
@@ -1641,15 +1573,15 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                     <div className="w-2.5 h-2.5 rounded-full bg-black" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-base font-medium text-[#001F3F]">{destination}</p>
-                    <p className="text-xs text-[#001F3F]/80 mt-0.5">Destination Address</p>
+                    <p className="text-base font-medium text-[#1A1A1A]">{destination}</p>
+                    <p className="text-xs text-[#1A1A1A]/80 mt-0.5">Destination Address</p>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={handleAddStop} className="p-1 hover:bg-black/5 rounded-full transition-colors">
-                      <Plus size={20} className="text-[#001F3F]/80" />
+                      <Plus size={20} className="text-[#1A1A1A]/80" />
                     </button>
                     <button onClick={() => { setDestination(''); setExtraDestinations([]); }} className="p-1 hover:bg-black/5 rounded-full transition-colors">
-                      <X size={20} className="text-[#001F3F]/80" />
+                      <X size={20} className="text-[#1A1A1A]/80" />
                     </button>
                   </div>
                 </div>
@@ -1658,41 +1590,41 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
 
             {/* Options Section */}
             <div className="py-6 border-b border-black/[0.03]">
-              <div className="px-6 flex items-center justify-between mb-4">
-                <span className="text-[11px] uppercase tracking-[0.2em] text-[#001F3F] font-bold">Options</span>
-                <button className="text-[11px] uppercase tracking-[0.1em] text-[#001F3F] font-bold">See All</button>
+              <div className="px-4 flex items-center justify-between mb-4">
+                <span className="text-[11px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium">Options</span>
+                <button className="text-[11px] uppercase tracking-[0.1em] text-[#1A1A1A] font-medium">See All</button>
               </div>
-              <div className="flex gap-3 overflow-x-auto px-6 no-scrollbar">
-                <button onClick={() => setShowScheduleModal(true)} className="shrink-0 px-6 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#001F3F] hover:bg-black/10 transition-colors">
+              <div className="flex gap-3 overflow-x-auto px-4 no-scrollbar">
+                <button onClick={() => setShowScheduleModal(true)} className="shrink-0 px-4 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-black/10 transition-colors">
                   Schedule a Journey
                 </button>
-                <button onClick={() => setShowHourlyModal(true)} className="shrink-0 px-6 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#001F3F] hover:bg-black/10 transition-colors">
+                <button onClick={() => setShowHourlyModal(true)} className="shrink-0 px-4 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-black/10 transition-colors">
                   Hourly Booking
                 </button>
-                <button onClick={() => setShowCommentModal(true)} className="shrink-0 px-6 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#001F3F] hover:bg-black/10 transition-colors">
+                <button onClick={() => setShowCommentModal(true)} className="shrink-0 px-4 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-black/10 transition-colors">
                   Add a Comment
                 </button>
               </div>
             </div>
 
             {/* Class & Payment Section */}
-            <div className="px-6 py-6 space-y-6">
+            <div className="px-4 py-6 space-y-6">
               <button
                 onClick={onSelectVehicle}
                 className="w-full flex items-center justify-between group"
               >
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-bold uppercase tracking-widest text-[#001F3F]">Business Class</span>
-                    <ChevronRight size={14} className="text-[#001F3F]" />
+                    <span className="text-base font-medium uppercase tracking-widest text-[#1A1A1A]">Business Class</span>
+                    <ChevronRight size={14} className="text-[#1A1A1A]" />
                   </div>
-                  <span className="text-xs text-[#001F3F]/80 mt-1">$85–$120</span>
+                  <span className="text-xs text-[#1A1A1A]/80 mt-1">$85–$120</span>
                 </div>
                 <div className="flex items-center gap-3" onClick={(e) => { e.stopPropagation(); onPaymentMethods(); }}>
                   <div className="w-10 h-10 rounded-xl border border-dashed border-black/20 flex items-center justify-center">
-                    <Plus size={16} className="text-[#001F3F]/80" />
+                    <Plus size={16} className="text-[#1A1A1A]/80" />
                   </div>
-                  <span className="text-xs font-bold text-[#001F3F]">Add Card</span>
+                  <span className="text-xs font-medium text-[#1A1A1A]">Add Card</span>
                 </div>
               </button>
 
@@ -1737,7 +1669,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
             className="absolute inset-0 bg-white z-[100] flex flex-col"
           >
             {/* Modal Header */}
-            <div className="px-6 pt-12 pb-6 shrink-0 bg-white">
+            <div className="px-4 pt-8 pb-6 shrink-0 bg-white">
               <div className="flex items-center gap-4 mb-6">
                 <button onClick={() => setIsSearchOpen(false)} className="p-2 -ml-2">
                   <X size={24} />
@@ -1747,13 +1679,13 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               <div className="space-y-2">
                 {/* Pickup Input */}
                 <div className="flex items-center gap-4 bg-[#FFFFFF] p-4 rounded-xl border border-black/[0.03]">
-                  <MapPin size={20} className="text-[#001F3F]" />
+                  <MapPin size={20} className="text-[#1A1A1A]" />
                   <input
                     type="text"
                     value={pickup}
                     onChange={(e) => setPickup(e.target.value)}
                     placeholder="Pickup"
-                    className="flex-1 bg-transparent outline-none text-base font-light text-[#001F3F] placeholder:text-[#001F3F]/80"
+                    className="flex-1 bg-transparent outline-none text-base font-light text-[#1A1A1A] placeholder:text-[#1A1A1A]/80"
                   />
                 </div>
 
@@ -1767,7 +1699,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                       type="text"
                       autoFocus
                       placeholder="Where To"
-                      className="w-full bg-transparent outline-none text-base font-light text-[#001F3F] placeholder:text-[#001F3F]/80"
+                      className="w-full bg-transparent outline-none text-base font-light text-[#1A1A1A] placeholder:text-[#1A1A1A]/80"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           setIsSearchOpen(false);
@@ -1777,7 +1709,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                     />
                   </div>
                   <button onClick={handleAddStop} className="p-1 hover:bg-black/5 rounded-full transition-colors">
-                    <Plus size={20} className="text-[#001F3F]/80" />
+                    <Plus size={20} className="text-[#1A1A1A]/80" />
                   </button>
                 </div>
               </div>
@@ -1791,8 +1723,8 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                   }}
                   className="flex flex-col items-center gap-2 group"
                 >
-                  <Plane size={32} className="text-[#001F3F]" />
-                  <span className="text-[11px] font-medium text-center text-[#001F3F]">Airport<br />Pickup</span>
+                  <Plane size={32} className="text-[#1A1A1A]" />
+                  <span className="text-[11px] font-medium text-center text-[#1A1A1A]">Airport<br />Pickup</span>
                 </button>
 
                 <button
@@ -1802,15 +1734,15 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                   }}
                   className="flex flex-col items-center gap-2 group"
                 >
-                  <Train size={32} className="text-[#001F3F]" />
-                  <span className="text-[11px] font-medium text-center text-[#001F3F]">Railway<br />Stations</span>
+                  <Train size={32} className="text-[#1A1A1A]" />
+                  <span className="text-[11px] font-medium text-center text-[#1A1A1A]">Railway<br />Stations</span>
                 </button>
               </div>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 px-6 py-12 flex flex-col items-center justify-start">
-              <p className="text-sm text-[#001F3F]/80 font-light text-center max-w-[280px]">
+            <div className="flex-1 px-4 py-12 flex flex-col items-center justify-start">
+              <p className="text-sm text-[#1A1A1A]/80 font-light text-center max-w-[280px]">
                 Previous and favorite addresses will appear here.
               </p>
             </div>
@@ -1874,25 +1806,25 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full bg-white text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-white text-[#1A1A1A] flex flex-col"
     >
       {/* Header */}
-      <div className="px-6 pt-12 pb-6 z-10 bg-white">
+      <div className="px-4 pt-8 pb-6 z-10 bg-white">
         <div className="flex items-center justify-between mb-8">
           <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#001F3F]/5 rounded-full transition-colors">
-            <ArrowLeft size={24} className="text-[#001F3F]" />
+            <ArrowLeft size={24} className="text-[#1A1A1A]" />
           </button>
           <div className="flex items-center gap-2">
-            <button className="p-2 text-[#001F3F]/80 hover:text-[#001F3F] transition-colors">
+            <button className="p-2 text-[#1A1A1A]/80 hover:text-[#1A1A1A] transition-colors">
               <CheckCheck size={20} />
             </button>
-            <button className="p-2 text-[#001F3F]/80 hover:text-[#001F3F] transition-colors">
+            <button className="p-2 text-[#1A1A1A]/80 hover:text-[#1A1A1A] transition-colors">
               <Settings size={20} />
             </button>
           </div>
         </div>
 
-        <h2 className="font-sans text-3xl font-light uppercase tracking-widest text-[#001F3F] mb-8">Inbox</h2>
+        <h2 className="font-sans text-3xl font-light uppercase tracking-widest text-[#1A1A1A] mb-8">Inbox</h2>
 
         {/* Tabs */}
         <div className="flex gap-8 border-b border-[#001F3F]/10">
@@ -1900,7 +1832,7 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-4 text-xs font-medium uppercase tracking-widest transition-all relative ${activeTab === tab ? 'text-[#001F3F]' : 'text-[#001F3F]/70 hover:text-[#001F3F]/80'
+              className={`pb-4 text-xs font-medium uppercase tracking-widest transition-all relative ${activeTab === tab ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/70 hover:text-[#1A1A1A]/80'
                 }`}
             >
               {tab}
@@ -1916,9 +1848,9 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-6">
+      <div className="flex-1 overflow-y-auto px-4 pb-6">
         {filteredNotifications.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-[#001F3F]/70 space-y-4">
+          <div className="h-full flex flex-col items-center justify-center text-[#1A1A1A]/70 space-y-4">
             <BellOff size={48} strokeWidth={1} />
             <p className="text-sm font-medium uppercase tracking-widest">No notifications yet</p>
           </div>
@@ -1930,13 +1862,13 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`py-6 group flex gap-4 ${!item.read ? 'bg-[#001F3F]/[0.02] -mx-6 px-6' : ''}`}
+                className={`py-6 group flex gap-4 ${!item.read ? 'bg-[#001F3F]/[0.02] -mx-6 px-4' : ''}`}
               >
                 {/* Icon Column */}
                 <div className="pt-1">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${!item.read
                     ? 'bg-[#001F3F] border-[#001F3F] text-white'
-                    : 'bg-white border-[#001F3F]/20 text-[#001F3F]/80'
+                    : 'bg-white border-[#001F3F]/20 text-[#1A1A1A]/80'
                     }`}>
                     {React.cloneElement(item.icon as React.ReactElement, { size: 14 })}
                   </div>
@@ -1945,21 +1877,21 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
                 {/* Content Column */}
                 <div className="flex-1 space-y-1">
                   <div className="flex justify-between items-start">
-                    <h3 className={`text-sm uppercase tracking-wide ${!item.read ? 'font-medium text-[#001F3F]' : 'font-medium text-[#001F3F]/80'}`}>
+                    <h3 className={`text-sm uppercase tracking-wide ${!item.read ? 'font-medium text-[#1A1A1A]' : 'font-medium text-[#1A1A1A]/80'}`}>
                       {item.title}
                     </h3>
-                    <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/70 whitespace-nowrap ml-2 mt-0.5">
+                    <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 whitespace-nowrap ml-2 mt-0.5">
                       {item.time}
                     </span>
                   </div>
 
-                  <p className="text-sm text-[#001F3F]/80 font-light leading-relaxed max-w-[90%]">
+                  <p className="text-sm text-[#1A1A1A]/80 font-light leading-relaxed max-w-[90%]">
                     {item.description}
                   </p>
 
                   {item.type === 'promo' && (
                     <div className="pt-3">
-                      <button className="text-[10px] font-medium uppercase tracking-widest text-[#001F3F] border-b border-[#001F3F] pb-0.5 hover:opacity-70 transition-opacity">
+                      <button className="text-[10px] font-medium uppercase tracking-widest text-[#1A1A1A] border-b border-[#001F3F] pb-0.5 hover:opacity-70 transition-opacity">
                         View Offer
                       </button>
                     </div>
@@ -1977,8 +1909,8 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
           </div>
         )}
 
-        <div className="pt-12 pb-8 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-[#001F3F]/20">
+        <div className="pt-8 pb-8 text-center">
+          <p className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/20">
             End of list
           </p>
         </div>
@@ -2011,11 +1943,11 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
       className="h-full w-full bg-white flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-12 pb-4 shrink-0">
+      <div className="flex items-center justify-between px-4 pt-8 pb-4 shrink-0">
         <button onClick={onBack} className="p-2 -ml-2">
-          <X size={24} className="text-[#001F3F]" />
+          <X size={24} className="text-[#1A1A1A]" />
         </button>
-        <h2 className="text-sm font-medium uppercase tracking-[0.2em] text-[#001F3F]">
+        <h2 className="text-sm font-medium uppercase tracking-[0.2em] text-[#1A1A1A]">
           {vehicle.name.toUpperCase()}
         </h2>
         <div className="w-10" /> {/* Spacer */}
@@ -2038,15 +1970,15 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
           </div>
         </div>
 
-        <div className="px-6 py-8 space-y-8">
+        <div className="px-4 py-8 space-y-8">
           {/* Title & Description */}
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-light text-[#001F3F]">{vehicle.name}</h3>
-            <p className="text-sm text-[#001F3F]/80 font-light">{vehicle.description}</p>
+            <h3 className="text-2xl font-light text-[#1A1A1A]">{vehicle.name}</h3>
+            <p className="text-sm text-[#1A1A1A]/80 font-light">{vehicle.description}</p>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-6 text-sm font-medium text-[#001F3F]">
+          <div className="flex items-center justify-center gap-6 text-sm font-medium text-[#1A1A1A]">
             <span>From {vehicle.price}</span>
             <span className="w-1 h-1 rounded-full bg-black/20" />
             <span className="flex items-center gap-1.5"><Users size={16} /> 4</span>
@@ -2058,44 +1990,44 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
           {vehicle.competitorPrice && (
             <div className="bg-[#001F3F]/5 rounded-xl p-4 flex items-center justify-between border border-[#001F3F]/10">
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/80 font-medium">Urbont</span>
-                <span className="text-lg font-medium text-[#001F3F]">{vehicle.price}</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">Urbont</span>
+                <span className="text-lg font-medium text-[#1A1A1A]">{vehicle.price}</span>
               </div>
               <div className="h-8 w-px bg-[#001F3F]/10" />
               <div className="flex flex-col text-right">
-                <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/80 font-medium">Competitors</span>
-                <span className="text-lg font-light text-[#001F3F]/80 line-through decoration-red-500/50">{vehicle.competitorPrice}</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">Competitors</span>
+                <span className="text-lg font-light text-[#1A1A1A]/80 line-through decoration-red-500/50">{vehicle.competitorPrice}</span>
               </div>
             </div>
           )}
 
-          <p className="text-sm text-[#001F3F] font-light text-center leading-relaxed">
+          <p className="text-sm text-[#1A1A1A] font-light text-center leading-relaxed">
             An elevated, professional service for all your business needs. Finely crafted interiors and exquisite personal service.
           </p>
 
           {/* Details List */}
           <div className="space-y-0 border-t border-black/[0.03] pt-4">
             <div className="flex items-center justify-between py-4 border-b border-black/[0.03]">
-              <span className="text-sm font-normal text-[#001F3F]">Estimated Price</span>
+              <span className="text-sm font-normal text-[#1A1A1A]">Estimated Price</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#001F3F]/80">From {vehicle.price}</span>
-                <ChevronRight size={16} className="text-[#001F3F]/70" />
+                <span className="text-sm text-[#1A1A1A]/80">From {vehicle.price}</span>
+                <ChevronRight size={16} className="text-[#1A1A1A]/70" />
               </div>
             </div>
 
             {/* Ride Preferences Section */}
             <div className="py-6 space-y-6">
-              <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#001F3F] font-bold">Ride Preferences</h4>
+              <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium">Ride Preferences</h4>
 
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-3">
-                  <p className="text-xs font-medium text-[#001F3F]/80 uppercase tracking-widest">Climate Control</p>
+                  <p className="text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest">Climate Control</p>
                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {PREF_OPTIONS.climate.map(opt => (
                       <button
                         key={opt}
                         onClick={() => setPreferences({ ...preferences, climate: opt })}
-                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.climate === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#001F3F]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
+                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.climate === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
                       >
                         {opt}
                       </button>
@@ -2104,13 +2036,13 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-xs font-medium text-[#001F3F]/80 uppercase tracking-widest">Music Genre</p>
+                  <p className="text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest">Music Genre</p>
                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {PREF_OPTIONS.music.map(opt => (
                       <button
                         key={opt}
                         onClick={() => setPreferences({ ...preferences, music: opt })}
-                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.music === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#001F3F]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
+                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.music === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
                       >
                         {opt}
                       </button>
@@ -2119,13 +2051,13 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-xs font-medium text-[#001F3F]/80 uppercase tracking-widest">Conversation</p>
+                  <p className="text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest">Conversation</p>
                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {PREF_OPTIONS.conversation.map(opt => (
                       <button
                         key={opt}
                         onClick={() => setPreferences({ ...preferences, conversation: opt })}
-                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.conversation === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#001F3F]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
+                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.conversation === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
                       >
                         {opt}
                       </button>
@@ -2136,22 +2068,22 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
             </div>
 
             <div className="flex items-center justify-between py-4 border-b border-black/[0.03]">
-              <span className="text-sm font-normal text-[#001F3F]">Passengers</span>
+              <span className="text-sm font-normal text-[#1A1A1A]">Passengers</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#001F3F]/80">Up to 4 people</span>
-                <ChevronRight size={16} className="text-[#001F3F]/70" />
+                <span className="text-sm text-[#1A1A1A]/80">Up to 4 people</span>
+                <ChevronRight size={16} className="text-[#1A1A1A]/70" />
               </div>
             </div>
             <div className="flex items-center justify-between py-4 border-b border-black/[0.03]">
-              <span className="text-sm font-normal text-[#001F3F]">Luggage Capacity</span>
+              <span className="text-sm font-normal text-[#1A1A1A]">Luggage Capacity</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#001F3F]/80">1–3 suitcases</span>
-                <ChevronRight size={16} className="text-[#001F3F]/70" />
+                <span className="text-sm text-[#1A1A1A]/80">1–3 suitcases</span>
+                <ChevronRight size={16} className="text-[#1A1A1A]/70" />
               </div>
             </div>
             <div className="flex items-start justify-between py-4">
-              <span className="text-sm font-normal text-[#001F3F] shrink-0">Amenities</span>
-              <span className="text-sm text-[#001F3F]/80 text-right max-w-[200px]">
+              <span className="text-sm font-normal text-[#1A1A1A] shrink-0">Amenities</span>
+              <span className="text-sm text-[#1A1A1A]/80 text-right max-w-[200px]">
                 Water, phone charger, tissues, sanitising wipes
               </span>
             </div>
@@ -2161,43 +2093,43 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
 
       {/* Footer Selector */}
       <div className="shrink-0 bg-white border-t border-black/[0.03] pb-10">
-        <div className="flex gap-8 overflow-x-auto px-6 py-6 no-scrollbar justify-center">
+        <div className="flex gap-8 overflow-x-auto px-4 py-6 no-scrollbar justify-center">
           {VEHICLES.map((v, i) => (
             <button
               key={v.id}
               onClick={() => setSelectedIdx(i)}
               className="flex flex-col items-center gap-2 shrink-0"
             >
-              <span className={`text-[12px] font-bold uppercase tracking-[0.1em] transition-colors ${i === selectedIdx ? 'text-[#001F3F]' : 'text-[#001F3F]/60'}`}>
+              <span className={`text-[12px] font-medium uppercase tracking-[0.1em] transition-colors ${i === selectedIdx ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/60'}`}>
                 {v.id.toUpperCase()}
               </span>
               {i === selectedIdx && (
                 <div className="w-1 h-1 rounded-full bg-[#001F3F]" />
               )}
               {v.id === 'suv' || v.id === 'concierge' ? (
-                <span className="text-[10px] text-[#001F3F] font-bold">Members Only</span>
+                <span className="text-[10px] text-[#1A1A1A] font-medium">Members Only</span>
               ) : (
-                <span className="text-[10px] text-[#001F3F] font-bold">3 min</span>
+                <span className="text-[10px] text-[#1A1A1A] font-medium">3 min</span>
               )}
             </button>
           ))}
         </div>
 
-        <div className="px-6 space-y-4">
+        <div className="px-4 space-y-4">
           <button className="w-full flex items-center justify-between p-4 rounded-xl border border-black/[0.04] bg-white hover:bg-black/[0.02] transition-colors">
             <div className="flex items-center gap-3">
-              <CreditCard size={18} className="text-[#001F3F]" />
-              <span className="text-sm font-medium text-[#001F3F]">Personal • Visa 4242</span>
+              <CreditCard size={18} className="text-[#1A1A1A]" />
+              <span className="text-sm font-medium text-[#1A1A1A]">Personal • Visa 4242</span>
             </div>
-            <ChevronRight size={16} className="text-[#001F3F]/70" />
+            <ChevronRight size={16} className="text-[#1A1A1A]/70" />
           </button>
 
           <button
             onClick={() => onConfirm(vehicle)}
             className="w-full py-5 bg-[#001F3F] text-white rounded-xl flex flex-col items-center justify-center gap-0.5 active:scale-[0.98] transition-all"
           >
-            <span className="text-sm font-bold uppercase tracking-[0.2em]">Select {vehicle.id.toUpperCase()}</span>
-            <span className="text-[11px] text-white/90 font-bold uppercase tracking-widest">3 min away</span>
+            <span className="text-sm font-medium uppercase tracking-[0.2em]">Select {vehicle.id.toUpperCase()}</span>
+            <span className="text-[11px] text-white/90 font-medium uppercase tracking-widest">3 min away</span>
           </button>
         </div>
       </div>
@@ -2647,7 +2579,7 @@ function ConfirmedScreen({ onContinue }: { onContinue: () => void, key?: string 
   );
 }
 
-function TrackingScreen({ vehicle, onBack }: { vehicle: Vehicle, onBack: () => void, key?: string }) {
+function TrackingScreen({ vehicle, onBack, isLoaded }: { vehicle: Vehicle, onBack: () => void, isLoaded: boolean, key?: string }) {
   const [showChat, setShowChat] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showFullProfile, setShowFullProfile] = useState(false);
@@ -2719,44 +2651,45 @@ function TrackingScreen({ vehicle, onBack }: { vehicle: Vehicle, onBack: () => v
       </div>
 
       {/* Map Area (85% of remaining height) */}
-      <div style={{ flex: 1, position: 'relative', background: '#0A2540', overflow: 'hidden' }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'radial-gradient(circle at 60% 40%, rgba(26,58,92,0.6) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(26,58,92,0.4) 0%, transparent 40%), linear-gradient(170deg, #0A2540 0%, #0D1F3A 50%, #071B30 100%)'
-        }}>
-          {/* Simulated road lines */}
-          <div style={{ position: 'absolute', top: '30%', left: '10%', width: '80%', height: 2, background: 'rgba(192,192,192,0.15)', transform: 'rotate(-25deg)' }} />
-          <div style={{ position: 'absolute', top: '50%', left: '15%', width: '70%', height: 2, background: 'rgba(192,192,192,0.1)', transform: 'rotate(10deg)' }} />
-          <div style={{ position: 'absolute', top: '65%', left: '5%', width: '90%', height: 2, background: 'rgba(192,192,192,0.12)', transform: 'rotate(-5deg)' }} />
-          <div style={{ position: 'absolute', top: '20%', left: '40%', width: 1, height: '60%', background: 'rgba(192,192,192,0.08)' }} />
-          <div style={{ position: 'absolute', top: '10%', left: '70%', width: 1, height: '80%', background: 'rgba(192,192,192,0.1)' }} />
-
-          {/* Vehicle marker */}
-          <motion.div
-            animate={{ x: [0, -30, -15], y: [0, 40, 20] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-            style={{ position: 'absolute', top: '35%', left: '55%' }}
+      <div style={{ flex: 1, position: 'relative', background: '#F5F7FA', overflow: 'hidden' }}>
+        {isLoaded ? (
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={{ lat: 40.7128, lng: -74.0060 }}
+            zoom={15}
+            options={{
+              disableDefaultUI: true,
+              styles: [], // Real map
+            }}
           >
-            <div style={{
-              width: 44, height: 44, borderRadius: '50%', background: '#0A2540',
-              border: '3px solid #C0C0C0', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', boxShadow: '0 0 20px rgba(192,192,192,0.3)'
-            }}>
-              <Navigation size={20} color="#C0C0C0" style={{ transform: 'rotate(45deg)' }} />
-            </div>
-          </motion.div>
-
-          {/* Destination marker */}
-          <div style={{ position: 'absolute', top: '60%', left: '30%' }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%', background: '#FFFFFF',
-              border: '3px solid #0A2540', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
-            }}>
-              <MapPin size={16} color="#0A2540" />
+            {/* Vehicle marker */}
+            <Marker
+              position={{ lat: 40.7145, lng: -74.0030 }}
+              icon={{
+                url: "https://lh3.googleusercontent.com/d/1C4YlX4-q-p7mQJ9_Z2tW8-iL2-Y4A2W_", // Use a real car icon if available, or fallback
+                scaledSize: new google.maps.Size(40, 40)
+              }}
+            />
+            {/* Destination marker */}
+            <Marker position={{ lat: 40.7128, lng: -74.0060 }} />
+          </GoogleMap>
+        ) : (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'radial-gradient(circle at 60% 40%, rgba(26,58,92,0.6) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(26,58,92,0.4) 0%, transparent 40%), linear-gradient(170deg, #0A2540 0%, #0D1F3A 50%, #071B30 100%)'
+          }}>
+            {/* Simulated fallback */}
+            <div style={{ position: 'absolute', top: '35%', left: '55%' }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%', background: '#0A2540',
+                border: '3px solid #C0C0C0', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', boxShadow: '0 0 20px rgba(192,192,192,0.3)'
+              }}>
+                <Navigation size={20} color="#C0C0C0" style={{ transform: 'rotate(45deg)' }} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* ETA Overlay */}
         <div style={{
@@ -3025,20 +2958,20 @@ function ProfileScreen({
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center justify-between p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <button onClick={onEditProfile} className="text-sm font-medium text-[#001F3F] hover:text-[#001F3F] transition-colors">Edit</button>
+        <button onClick={onEditProfile} className="text-sm font-medium text-[#1A1A1A] hover:text-[#1A1A1A] transition-colors">Edit</button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-12">
+      <div className="flex-1 overflow-y-auto px-4 pb-8">
         <div className="flex flex-col items-center mb-6">
           <div className="relative">
             <div className="w-28 h-28 rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden border border-black/[0.02]">
-              <User size={48} className="text-[#001F3F]/20" />
+              <User size={48} className="text-[#1A1A1A]/20" />
             </div>
             <div className="absolute bottom-0 right-0 flex items-center justify-center">
               <div className="w-8 h-8 bg-[#001F3F] rounded-full flex items-center justify-center shadow-md border-2 border-[#FFFFFF]">
@@ -3061,17 +2994,17 @@ function ProfileScreen({
           <div className="flex bg-[#001F3F]/5 p-1 rounded-full w-fit border border-[#001F3F]/10">
             <button
               onClick={() => onUpdateProfile({ accountType: 'personal' })}
-              className={`px-6 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${userProfile.accountType === 'personal'
+              className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${userProfile.accountType === 'personal'
                 ? 'bg-[#001F3F] text-white shadow-md'
-                : 'text-[#001F3F]/80 hover:text-[#001F3F]'
+                : 'text-[#1A1A1A]/80 hover:text-[#1A1A1A]'
                 }`}>
               Personal
             </button>
             <button
               onClick={() => onUpdateProfile({ accountType: 'business' })}
-              className={`px-6 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${userProfile.accountType === 'business'
+              className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${userProfile.accountType === 'business'
                 ? 'bg-[#001F3F] text-white shadow-md'
-                : 'text-[#001F3F]/80 hover:text-[#001F3F]'
+                : 'text-[#1A1A1A]/80 hover:text-[#1A1A1A]'
                 }`}>
               Business
             </button>
@@ -3082,75 +3015,75 @@ function ProfileScreen({
           {/* User Info Card */}
           <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-[12px] text-[#001F3F] uppercase tracking-widest font-bold mb-1">Name</div>
-              <div className="text-base font-medium text-[#001F3F]">{userProfile.firstName} {userProfile.lastName}</div>
+              <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest font-medium mb-1">Name</div>
+              <div className="text-base font-medium text-[#1A1A1A]">{userProfile.firstName} {userProfile.lastName}</div>
             </div>
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-[12px] text-[#001F3F] uppercase tracking-widest font-bold mb-1">Phone</div>
-              <div className="text-base font-medium text-[#001F3F]">{userProfile.phone}</div>
+              <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest font-medium mb-1">Phone</div>
+              <div className="text-base font-medium text-[#1A1A1A]">{userProfile.phone}</div>
             </div>
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-[12px] text-[#001F3F] uppercase tracking-widest font-bold mb-1">Email</div>
-              <div className="text-base font-medium text-[#001F3F]">{userProfile.email}</div>
+              <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest font-medium mb-1">Email</div>
+              <div className="text-base font-medium text-[#1A1A1A]">{userProfile.email}</div>
             </div>
             {userProfile.accountType === 'business' && (
               <div className="py-4 px-5 bg-[#001F3F]/5">
-                <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1 flex items-center gap-2">
+                <div className="text-xs text-[#1A1A1A]/80 uppercase tracking-widest mb-1 flex items-center gap-2">
                   <Briefcase size={12} />
                   Company
                 </div>
-                <div className="text-base font-medium text-[#001F3F]">{userProfile.companyName || 'Add Company Details'}</div>
+                <div className="text-base font-medium text-[#1A1A1A]">{userProfile.companyName || 'Add Company Details'}</div>
               </div>
             )}
           </div>
 
           {/* Favorites Card */}
           <div className="space-y-3">
-            <div className="text-[12px] text-[#001F3F] uppercase tracking-widest px-2 font-bold transition-all">Favorites</div>
+            <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest px-2 font-medium transition-all">Favorites</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <button onClick={() => onEditAddress('home')} className="flex items-center gap-4 w-full p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                   <Home size={18} />
                 </div>
                 <div className="flex flex-col items-start flex-1">
-                  <span className="text-base font-medium text-[#001F3F]">
+                  <span className="text-base font-medium text-[#1A1A1A]">
                     {userProfile.homeAddress ? 'Home' : 'Add Home'}
                   </span>
                   {userProfile.homeAddress && (
-                    <span className="text-xs text-[#001F3F]/50 text-left line-clamp-1">{userProfile.homeAddress}</span>
+                    <span className="text-xs text-[#1A1A1A]/50 text-left line-clamp-1">{userProfile.homeAddress}</span>
                   )}
                 </div>
-                <ChevronRight size={16} className="text-[#001F3F]/30" />
+                <ChevronRight size={16} className="text-[#1A1A1A]/30" />
               </button>
               <button onClick={() => onEditAddress('work')} className="flex items-center gap-4 w-full p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                   <Briefcase size={18} />
                 </div>
                 <div className="flex flex-col items-start flex-1">
-                  <span className="text-base font-medium text-[#001F3F]">
+                  <span className="text-base font-medium text-[#1A1A1A]">
                     {userProfile.workAddress ? 'Work' : 'Add Work'}
                   </span>
                   {userProfile.workAddress && (
-                    <span className="text-xs text-[#001F3F]/50 text-left line-clamp-1">{userProfile.workAddress}</span>
+                    <span className="text-xs text-[#1A1A1A]/50 text-left line-clamp-1">{userProfile.workAddress}</span>
                   )}
                 </div>
-                <ChevronRight size={16} className="text-[#001F3F]/30" />
+                <ChevronRight size={16} className="text-[#1A1A1A]/30" />
               </button>
               <button onClick={() => onEditAddress('other')} className="flex items-center gap-4 w-full p-5 hover:bg-black/[0.02] transition-colors">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                   <Plus size={18} />
                 </div>
-                <span className="text-base font-medium text-[#001F3F] flex-1 text-left">Add Other Address</span>
-                <ChevronRight size={16} className="text-[#001F3F]/30" />
+                <span className="text-base font-medium text-[#1A1A1A] flex-1 text-left">Add Other Address</span>
+                <ChevronRight size={16} className="text-[#1A1A1A]/30" />
               </button>
               {userProfile.otherAddresses.map((addr) => (
                 <div key={addr.id} className="flex items-center gap-4 w-full p-5 border-t border-black/[0.04]">
-                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                     <MapPin size={18} />
                   </div>
                   <div className="flex flex-col items-start flex-1">
-                    <span className="text-base font-medium text-[#001F3F]">{addr.label}</span>
-                    <span className="text-xs text-[#001F3F]/50 text-left line-clamp-1">{addr.address}</span>
+                    <span className="text-base font-medium text-[#1A1A1A]">{addr.label}</span>
+                    <span className="text-xs text-[#1A1A1A]/50 text-left line-clamp-1">{addr.address}</span>
                   </div>
                 </div>
               ))}
@@ -3159,11 +3092,11 @@ function ProfileScreen({
 
           {/* Settings Card */}
           <div className="space-y-3">
-            <div className="text-[12px] text-[#001F3F] uppercase tracking-widest px-2 font-bold transition-all">Settings</div>
+            <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest px-2 font-medium transition-all">Settings</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <div className="p-5 border-b border-black/[0.04]">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-base font-medium text-[#001F3F]">Black Cars Only</span>
+                  <span className="text-base font-medium text-[#1A1A1A]">Black Cars Only</span>
                   <button
                     onClick={() => setBlackCarsOnly(!blackCarsOnly)}
                     className={`w-14 h-7 rounded-full relative transition-all duration-300 border-2 ${blackCarsOnly ? 'bg-[#001F3F] border-[#001F3F]' : 'bg-white border-[#001F3F]/20'}`}
@@ -3174,15 +3107,15 @@ function ProfileScreen({
                     />
                   </button>
                 </div>
-                <p className="text-xs text-[#001F3F]/50 leading-relaxed">
+                <p className="text-xs text-[#1A1A1A]/50 leading-relaxed">
                   Use this option to book only black cars. You might have to wait longer.
                 </p>
               </div>
               <button onClick={() => setShowLanguageMenu(true)} className="flex justify-between items-center w-full p-5 hover:bg-black/[0.02] transition-colors">
-                <span className="text-base font-medium text-[#001F3F]">Language</span>
+                <span className="text-base font-medium text-[#1A1A1A]">Language</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#001F3F]/50">{language}</span>
-                  <ChevronRight size={16} className="text-[#001F3F]/30" />
+                  <span className="text-sm text-[#1A1A1A]/50">{language}</span>
+                  <ChevronRight size={16} className="text-[#1A1A1A]/30" />
                 </div>
               </button>
             </div>
@@ -3190,11 +3123,11 @@ function ProfileScreen({
 
           <div className="pt-4 space-y-4">
             <button onClick={onLegal} className="flex justify-between items-center w-full p-5 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] hover:bg-black/[0.02] transition-colors">
-              <span className="text-base font-medium text-[#001F3F]">Terms & Privacy</span>
-              <ChevronRight size={16} className="text-[#001F3F]/30" />
+              <span className="text-base font-medium text-[#1A1A1A]">Terms & Privacy</span>
+              <ChevronRight size={16} className="text-[#1A1A1A]/30" />
             </button>
 
-            <button onClick={onSignOut} className="w-full py-4 text-[#001F3F] text-sm font-medium uppercase tracking-widest text-center hover:bg-black\/10 rounded-2xl transition-colors">
+            <button onClick={onSignOut} className="w-full py-4 text-[#1A1A1A] text-sm font-medium uppercase tracking-widest text-center hover:bg-black\/10 rounded-2xl transition-colors">
               Sign Out
             </button>
           </div>
@@ -3221,8 +3154,8 @@ function ProfileScreen({
             >
               <div className="space-y-6">
                 <div className="flex justify-between items-center px-2">
-                  <h3 className="font-sans text-2xl font-light text-[#001F3F]">Select Language</h3>
-                  <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-white rounded-full shadow-sm text-[#001F3F]/80 hover:bg-white\/10 transition-colors">
+                  <h3 className="font-sans text-2xl font-light text-[#1A1A1A]">Select Language</h3>
+                  <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-white rounded-full shadow-sm text-[#1A1A1A]/80 hover:bg-white\/10 transition-colors">
                     <X size={18} />
                   </button>
                 </div>
@@ -3237,15 +3170,15 @@ function ProfileScreen({
                           setLanguage(lang);
                           setTimeout(() => setShowLanguageMenu(false), 200);
                         }}
-                        className={`w-full py-4 px-6 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${isSelected
-                          ? 'bg-[#001F3F]/10 text-[#001F3F] border border-[#001F3F]/30 shadow-sm'
-                          : 'bg-white text-[#001F3F] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+                        className={`w-full py-4 px-4 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${isSelected
+                          ? 'bg-[#001F3F]/10 text-[#1A1A1A] border border-[#001F3F]/30 shadow-sm'
+                          : 'bg-white text-[#1A1A1A] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
                           }`}
                       >
                         {lang}
                         {isSelected && (
                           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                            <CheckCircle2 size={20} className="text-[#001F3F]" />
+                            <CheckCircle2 size={20} className="text-[#1A1A1A]" />
                           </motion.div>
                         )}
                       </button>
@@ -3275,18 +3208,18 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-12 space-y-8">
+      <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-8">
         <div className="text-center space-y-3 mt-2 mb-8">
-          <h2 className="font-sans text-3xl font-light text-[#001F3F]">Ride History</h2>
-          <p className="text-sm font-normal leading-relaxed text-[#001F3F]/80 px-4">
+          <h2 className="font-sans text-3xl font-light text-[#1A1A1A]">Ride History</h2>
+          <p className="text-sm font-normal leading-relaxed text-[#1A1A1A]/80 px-4">
             Review your past journeys and receipts
           </p>
         </div>
@@ -3295,16 +3228,16 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
           {history.map((ride) => (
             <div key={ride.id} className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] space-y-4 hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-shadow">
               <div className="flex justify-between items-start border-b border-black/[0.04] pb-4">
-                <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest font-medium">{ride.date}</div>
-                <div className="text-sm font-medium text-[#001F3F]">{ride.price}</div>
+                <div className="text-[11px] text-[#1A1A1A]/80 uppercase tracking-widest font-medium">{ride.date}</div>
+                <div className="text-sm font-medium text-[#1A1A1A]">{ride.price}</div>
               </div>
               <div className="flex gap-4 items-center">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                   <MapPin size={18} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-sans text-xl font-medium text-[#001F3F]">{ride.destination}</h3>
-                  <div className="text-xs text-[#001F3F]/80 mt-1">{ride.vehicle}</div>
+                  <h3 className="font-sans text-xl font-medium text-[#1A1A1A]">{ride.destination}</h3>
+                  <div className="text-xs text-[#1A1A1A]/80 mt-1">{ride.vehicle}</div>
                 </div>
               </div>
             </div>
@@ -3329,8 +3262,8 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#001F3F]">Receipt</h3>
-                <button onClick={() => setSelectedRide(null)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
+                <h3 className="text-2xl font-light text-[#1A1A1A]">Receipt</h3>
+                <button onClick={() => setSelectedRide(null)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
                   <X size={20} />
                 </button>
               </div>
@@ -3338,29 +3271,29 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
               <div className="p-6 bg-[#001F3F]/5 rounded-2xl space-y-6">
                 <div className="flex justify-between items-center border-b border-black/[0.04] pb-6">
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Date</p>
-                    <p className="text-base font-medium text-[#001F3F] mt-1">{selectedRide.date}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Date</p>
+                    <p className="text-base font-medium text-[#1A1A1A] mt-1">{selectedRide.date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Total</p>
-                    <p className="text-xl font-light text-[#001F3F] mt-1">{selectedRide.price}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Total</p>
+                    <p className="text-xl font-light text-[#1A1A1A] mt-1">{selectedRide.price}</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Destination</p>
-                    <p className="text-sm font-medium text-[#001F3F] mt-1">{selectedRide.destination}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Destination</p>
+                    <p className="text-sm font-medium text-[#1A1A1A] mt-1">{selectedRide.destination}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Vehicle Class</p>
-                    <p className="text-sm font-medium text-[#001F3F] mt-1">{selectedRide.vehicle}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Vehicle Class</p>
+                    <p className="text-sm font-medium text-[#1A1A1A] mt-1">{selectedRide.vehicle}</p>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <button className="flex-1 py-4 border border-[#001F3F]/20 text-[#001F3F] text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
+                <button className="flex-1 py-4 border border-[#001F3F]/20 text-[#1A1A1A] text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
                   Download PDF
                 </button>
                 <button className="flex-1 py-4 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
@@ -3420,19 +3353,19 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="ml-4 font-sans text-xl font-medium uppercase tracking-widest text-[#001F3F]">PAYMENT</h2>
+        <h2 className="ml-4 font-sans text-xl font-medium uppercase tracking-widest text-[#1A1A1A]">PAYMENT</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-12">
+      <div className="flex-1 overflow-y-auto px-4 pb-8">
         <div className="space-y-8">
           <div className="space-y-4">
-            <div className="text-[10px] text-[#001F3F]/80 uppercase tracking-[0.2em] font-medium px-1">Saved Cards</div>
+            <div className="text-[10px] text-[#1A1A1A]/80 uppercase tracking-[0.2em] font-medium px-1">Saved Cards</div>
 
             {/* Realistic Card UI */}
             <div className="relative w-full aspect-[1.586] rounded-2xl overflow-hidden shadow-2xl transition-transform hover:scale-[1.02] duration-300">
@@ -3497,11 +3430,11 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-white border border-black/[0.03] flex items-center justify-center shadow-sm">
-                      {method.type === 'card' ? <CreditCard size={18} className="text-[#001F3F]" /> : <Smartphone size={18} className="text-[#001F3F]" />}
+                      {method.type === 'card' ? <CreditCard size={18} className="text-[#1A1A1A]" /> : <Smartphone size={18} className="text-[#1A1A1A]" />}
                     </div>
                     <div className="text-left">
-                      <div className="text-sm font-medium text-[#001F3F]">{method.brand} •••• {method.last4}</div>
-                      <div className="text-xs text-[#001F3F]/80">{method.active ? 'Primary Payment Method' : 'Secondary'}</div>
+                      <div className="text-sm font-medium text-[#1A1A1A]">{method.brand} •••• {method.last4}</div>
+                      <div className="text-xs text-[#1A1A1A]/80">{method.active ? 'Primary Payment Method' : 'Secondary'}</div>
                     </div>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${method.active ? 'border-[#001F3F] bg-[#001F3F]' : 'border-black/10'}`}>
@@ -3515,42 +3448,42 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
           {!showAddMenu ? (
             <button
               onClick={() => setShowAddMenu(true)}
-              className="w-full py-5 bg-white text-[#001F3F] font-medium rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-black/[0.04] flex items-center justify-between px-6 hover:bg-black/[0.02] transition-colors group"
+              className="w-full py-5 bg-white text-[#1A1A1A] font-medium rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-black/[0.04] flex items-center justify-between px-4 hover:bg-black/[0.02] transition-colors group"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-[#001F3F]/10 flex items-center justify-center text-[#001F3F] group-hover:bg-[#001F3F] group-hover:text-white transition-colors">
+                <div className="w-10 h-10 rounded-full border border-[#001F3F]/10 flex items-center justify-center text-[#1A1A1A] group-hover:bg-[#001F3F] group-hover:text-white transition-colors">
                   <Plus size={18} />
                 </div>
                 <span className="text-sm font-medium uppercase tracking-widest">Add Payment Method</span>
               </div>
-              <ChevronRight size={18} className="text-[#001F3F]/70 group-hover:text-[#001F3F] transition-colors" />
+              <ChevronRight size={18} className="text-[#1A1A1A]/70 group-hover:text-[#1A1A1A] transition-colors" />
             </button>
           ) : (
             <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-[10px] text-[#001F3F]/80 uppercase tracking-[0.2em] font-medium px-1">Add New</div>
+              <div className="text-[10px] text-[#1A1A1A]/80 uppercase tracking-[0.2em] font-medium px-1">Add New</div>
               <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
                 <button
                   onClick={() => handleAddMethod('card')}
                   className="w-full p-5 border-b border-black/[0.04] flex items-center gap-4 hover:bg-black/[0.02] transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F] border border-black/[0.05]">
+                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A] border border-black/[0.05]">
                     <CreditCard size={18} />
                   </div>
-                  <span className="text-sm font-medium text-[#001F3F] uppercase tracking-wider">Credit or Debit Card</span>
+                  <span className="text-sm font-medium text-[#1A1A1A] uppercase tracking-wider">Credit or Debit Card</span>
                 </button>
                 <button
                   onClick={() => handleAddMethod('paypal')}
                   className="w-full p-5 flex items-center gap-4 hover:bg-black/[0.02] transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] font-bold border border-black/[0.05]">
+                  <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] font-medium border border-black/[0.05]">
                     P
                   </div>
-                  <span className="text-sm font-medium text-[#001F3F] uppercase tracking-wider">PayPal</span>
+                  <span className="text-sm font-medium text-[#1A1A1A] uppercase tracking-wider">PayPal</span>
                 </button>
               </div>
               <button
                 onClick={() => setShowAddMenu(false)}
-                className="w-full py-4 text-xs font-medium text-[#001F3F]/80 uppercase tracking-widest hover:text-[#001F3F] transition-colors"
+                className="w-full py-4 text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest hover:text-[#1A1A1A] transition-colors"
               >
                 Cancel
               </button>
@@ -3576,41 +3509,41 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-light uppercase tracking-widest text-[#001F3F]">Add Card</h3>
-                <button onClick={() => setShowCardModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
+                <h3 className="text-xl font-light uppercase tracking-widest text-[#1A1A1A]">Add Card</h3>
+                <button onClick={() => setShowCardModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">Card Number</label>
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/80 font-medium">Card Number</label>
                   <input
                     type="text"
                     placeholder="0000 0000 0000 0000"
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none tracking-widest placeholder:text-[#001F3F]/20"
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none tracking-widest placeholder:text-[#1A1A1A]/20"
                   />
                 </div>
                 <div className="flex gap-4">
                   <div className="space-y-2 flex-1">
-                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">Expiry</label>
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/80 font-medium">Expiry</label>
                     <input
                       type="text"
                       placeholder="MM/YY"
                       value={expiry}
                       onChange={(e) => setExpiry(e.target.value)}
-                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none tracking-widest placeholder:text-[#001F3F]/20"
+                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none tracking-widest placeholder:text-[#1A1A1A]/20"
                     />
                   </div>
                   <div className="space-y-2 flex-1">
-                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">CVV</label>
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/80 font-medium">CVV</label>
                     <input
                       type="text"
                       placeholder="123"
                       value={cvv}
                       onChange={(e) => setCvv(e.target.value)}
-                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none tracking-widest placeholder:text-[#001F3F]/20"
+                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none tracking-widest placeholder:text-[#1A1A1A]/20"
                     />
                   </div>
                 </div>
@@ -3641,13 +3574,13 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="font-sans text-xl font-medium uppercase tracking-widest text-[#001F3F]">GIFT A JOURNEY</h2>
+        <h2 className="font-sans text-xl font-medium uppercase tracking-widest text-[#1A1A1A]">GIFT A JOURNEY</h2>
       </div>
 
       <div className="flex-1 p-8 space-y-8 overflow-y-auto">
@@ -3656,8 +3589,8 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
             <Gift size={36} className="text-white" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-[#001F3F]">Surprise someone special</h3>
-            <p className="text-sm text-[#001F3F]/80 font-normal leading-relaxed max-w-[260px] mx-auto">
+            <h3 className="text-2xl font-medium text-[#1A1A1A]">Surprise someone special</h3>
+            <p className="text-sm text-[#1A1A1A]/80 font-normal leading-relaxed max-w-[260px] mx-auto">
               Send an elite chauffeur to pick up your guest.
             </p>
           </div>
@@ -3665,9 +3598,9 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
 
         <div className="space-y-6 mt-8">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/70 font-bold ml-1">Recipient Name</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Recipient Name</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/30">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1A1A1A]/30">
                 <User size={20} />
               </div>
               <input
@@ -3675,15 +3608,15 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Who are we picking up?"
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30"
+                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#1A1A1A] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#1A1A1A]/30"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/70 font-bold ml-1">Phone Number</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Phone Number</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/30">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1A1A1A]/30">
                 <Phone size={20} />
               </div>
               <input
@@ -3694,15 +3627,15 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
                   setPhone(val);
                 }}
                 placeholder="000 000 0000"
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30"
+                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#1A1A1A] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#1A1A1A]/30"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/70 font-bold ml-1">Personal Message</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Personal Message</label>
             <div className="relative">
-              <div className="absolute left-4 top-4 text-[#001F3F]/30">
+              <div className="absolute left-4 top-4 text-[#1A1A1A]/30">
                 <MessageCircle size={20} />
               </div>
               <textarea
@@ -3710,14 +3643,14 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Add a welcoming note..."
                 rows={4}
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30 resize-none"
+                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#1A1A1A] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#1A1A1A]/30 resize-none"
               />
             </div>
           </div>
         </div>
 
         <div className="pt-4">
-          <button className="w-full py-4 bg-[#D1D5DB] text-white font-bold uppercase tracking-widest hover:bg-[#001F3F] transition-colors rounded-full shadow-sm text-sm">
+          <button className="w-full py-4 bg-[#D1D5DB] text-white font-medium uppercase tracking-widest hover:bg-[#001F3F] transition-colors rounded-full shadow-sm text-sm">
             Continue to Booking
           </button>
         </div>
@@ -3737,22 +3670,22 @@ function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4 border-b border-black/[0.04]">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
         <h2 className="font-sans text-xl font-light uppercase tracking-widest">Settings</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-12">
+      <div className="flex-1 overflow-y-auto p-8 space-y-8">
         <div className="space-y-6">
           <div className="space-y-2">
-            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">General</div>
+            <div className="text-[11px] text-[#1A1A1A]/80 uppercase tracking-widest px-2">General</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <div className="flex justify-between items-center p-5 border-b border-black/[0.04]">
-                <span className="text-base font-medium text-[#001F3F]">Notifications</span>
+                <span className="text-base font-medium text-[#1A1A1A]">Notifications</span>
                 <button
                   onClick={() => setNotifications(!notifications)}
                   className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${notifications ? 'bg-[#001F3F]' : 'bg-gray-200'}`}
@@ -3764,7 +3697,7 @@ function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
                 </button>
               </div>
               <div className="flex justify-between items-center p-5 border-b border-black/[0.04]">
-                <span className="text-base font-medium text-[#001F3F]">Location Services</span>
+                <span className="text-base font-medium text-[#1A1A1A]">Location Services</span>
                 <button
                   onClick={() => setLocation(!location)}
                   className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${location ? 'bg-[#001F3F]' : 'bg-gray-200'}`}
@@ -3779,27 +3712,27 @@ function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
                 onClick={() => setShowLanguageMenu(true)}
                 className="w-full flex justify-between items-center p-5 hover:bg-black/[0.01] transition-colors"
               >
-                <span className="text-base font-medium text-[#001F3F]">Language</span>
+                <span className="text-base font-medium text-[#1A1A1A]">Language</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#001F3F]/80">{language}</span>
-                  <ChevronRight size={18} className="text-[#001F3F]/70" />
+                  <span className="text-sm text-[#1A1A1A]/80">{language}</span>
+                  <ChevronRight size={18} className="text-[#1A1A1A]/70" />
                 </div>
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Support</div>
+            <div className="text-[11px] text-[#1A1A1A]/80 uppercase tracking-widest px-2">Support</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
-              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Help Center</span></button>
-              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Terms of Service</span></button>
-              <button className="w-full text-left p-5 hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Privacy Policy</span></button>
+              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#1A1A1A]">Help Center</span></button>
+              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#1A1A1A]">Terms of Service</span></button>
+              <button className="w-full text-left p-5 hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#1A1A1A]">Privacy Policy</span></button>
             </div>
           </div>
         </div>
 
         <div className="text-center">
-          <p className="text-[10px] text-[#001F3F]/80 uppercase tracking-widest">URBONT Chauffeur v1.0.4</p>
+          <p className="text-[10px] text-[#1A1A1A]/80 uppercase tracking-widest">URBONT Chauffeur v1.0.4</p>
         </div>
       </div>
 
@@ -3820,8 +3753,8 @@ function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#001F3F]">Select Language</h3>
-                <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
+                <h3 className="text-2xl font-light text-[#1A1A1A]">Select Language</h3>
+                <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
                   <X size={20} />
                 </button>
               </div>
@@ -3830,7 +3763,7 @@ function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
                   <button
                     key={lang}
                     onClick={() => { setLanguage(lang); setShowLanguageMenu(false); }}
-                    className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all ${language === lang ? 'bg-[#001F3F] text-white shadow-lg' : 'bg-black/5 text-[#001F3F] hover:bg-black/10'}`}
+                    className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all ${language === lang ? 'bg-[#001F3F] text-white shadow-lg' : 'bg-black/5 text-[#1A1A1A] hover:bg-black/10'}`}
                   >
                     <span className="text-sm font-medium">{lang}</span>
                     {language === lang && <Check size={18} />}
@@ -3877,18 +3810,18 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col relative overflow-hidden"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col relative overflow-hidden"
     >
       <div className="flex items-center p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
       </div>
 
-      <div className="flex-1 px-6 space-y-8 overflow-y-auto pb-12">
+      <div className="flex-1 px-4 space-y-8 overflow-y-auto pb-8">
         <div className="text-center space-y-3 mt-4">
-          <h2 className="font-sans text-3xl font-light text-[#001F3F]">My Preferences</h2>
-          <p className="text-sm font-normal leading-relaxed text-[#001F3F]/80 px-4">
+          <h2 className="font-sans text-3xl font-light text-[#1A1A1A]">My Preferences</h2>
+          <p className="text-sm font-normal leading-relaxed text-[#1A1A1A]/80 px-4">
             Save your preferences and we will apply these choices to every journey for your comfort
           </p>
         </div>
@@ -3902,12 +3835,12 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
                 }`}
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                   {pref.icon}
                 </div>
-                <span className="text-base font-medium text-[#001F3F]">{pref.label}</span>
+                <span className="text-base font-medium text-[#1A1A1A]">{pref.label}</span>
               </div>
-              <div className="flex items-center gap-3 text-[#001F3F]/50">
+              <div className="flex items-center gap-3 text-[#1A1A1A]/50">
                 <span className="text-sm font-normal">{pref.value}</span>
                 <ChevronRight size={16} className="opacity-70" />
               </div>
@@ -3915,7 +3848,7 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
           ))}
         </div>
 
-        <div className="pt-6 flex items-center justify-center gap-2 text-[#001F3F]/80">
+        <div className="pt-6 flex items-center justify-center gap-2 text-[#1A1A1A]/80">
           <Info size={14} />
           <p className="text-[11px] font-light">Changes will be applied to your next journeys</p>
         </div>
@@ -3941,10 +3874,10 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
             >
               <div className="space-y-6">
                 <div className="flex justify-between items-center px-2">
-                  <h3 className="font-sans text-2xl font-light text-[#001F3F]">
+                  <h3 className="font-sans text-2xl font-light text-[#1A1A1A]">
                     {preferences.find(p => p.id === editingPref)?.label}
                   </h3>
-                  <button onClick={() => setEditingPref(null)} className="p-2 bg-black/5 rounded-full text-[#001F3F] hover:bg-black/10 transition-colors">
+                  <button onClick={() => setEditingPref(null)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A] hover:bg-black/10 transition-colors">
                     <X size={18} />
                   </button>
                 </div>
@@ -3959,15 +3892,15 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
                           setSelectedValues(prev => ({ ...prev, [editingPref]: option }));
                           setTimeout(() => setEditingPref(null), 200); // Small delay for visual feedback
                         }}
-                        className={`w-full py-4 px-6 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${isSelected
-                          ? 'bg-[#001F3F]/10 text-[#001F3F] border border-[#001F3F]/30 shadow-sm'
-                          : 'bg-white text-[#001F3F] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+                        className={`w-full py-4 px-4 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${isSelected
+                          ? 'bg-[#001F3F]/10 text-[#1A1A1A] border border-[#001F3F]/30 shadow-sm'
+                          : 'bg-white text-[#1A1A1A] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
                           }`}
                       >
                         {option}
                         {isSelected && (
                           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                            <CheckCircle2 size={20} className="text-[#001F3F]" />
+                            <CheckCircle2 size={20} className="text-[#1A1A1A]" />
                           </motion.div>
                         )}
                       </button>
@@ -4004,21 +3937,21 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center justify-between p-6">
-        <h2 className="font-sans text-2xl font-light text-[#001F3F]">Help Center</h2>
-        <button onClick={onBack} className="p-2 bg-white rounded-full shadow-sm text-[#001F3F]/80 hover:bg-white\/10 transition-colors">
+        <h2 className="font-sans text-2xl font-light text-[#1A1A1A]">Help Center</h2>
+        <button onClick={onBack} className="p-2 bg-white rounded-full shadow-sm text-[#1A1A1A]/80 hover:bg-white\/10 transition-colors">
           <X size={18} />
         </button>
       </div>
 
-      <div className="flex-1 px-6 pt-4 space-y-8">
+      <div className="flex-1 px-4 pt-4 space-y-8">
         <div className="text-center space-y-3 mb-8">
-          <div className="inline-flex p-4 bg-[#001F3F]/10 rounded-full text-[#001F3F] mb-2 shadow-sm border border-[#001F3F]/20">
+          <div className="inline-flex p-4 bg-[#001F3F]/10 rounded-full text-[#1A1A1A] mb-2 shadow-sm border border-[#001F3F]/20">
             <MessageCircle size={32} />
           </div>
-          <p className="text-sm font-normal text-[#001F3F]/80 leading-relaxed px-4">
+          <p className="text-sm font-normal text-[#1A1A1A]/80 leading-relaxed px-4">
             How can we assist you today? Our concierge team is available 24/7.
           </p>
         </div>
@@ -4026,32 +3959,32 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
           <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors group">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                 <MessageCircle size={18} />
               </div>
-              <span className="text-base font-medium text-[#001F3F]">Open Chat</span>
+              <span className="text-base font-medium text-[#1A1A1A]">Open Chat</span>
             </div>
-            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+            <ChevronRight size={16} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
           </button>
 
           <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors group">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                 <Phone size={18} />
               </div>
-              <span className="text-base font-medium text-[#001F3F]">Call Us</span>
+              <span className="text-base font-medium text-[#1A1A1A]">Call Us</span>
             </div>
-            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+            <ChevronRight size={16} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
           </button>
 
           <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 hover:bg-black/[0.02] transition-colors group">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
+              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
                 <Info size={18} />
               </div>
-              <span className="text-base font-medium text-[#001F3F]">Questions & Answers</span>
+              <span className="text-base font-medium text-[#1A1A1A]">Questions & Answers</span>
             </div>
-            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+            <ChevronRight size={16} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
           </button>
         </div>
       </div>
@@ -4066,16 +3999,16 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
             className="absolute inset-0 bg-white z-50 flex flex-col"
           >
             <div className="flex items-center p-6 gap-4 border-b border-black/[0.04] bg-white">
-              <button onClick={() => setShowChat(false)} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+              <button onClick={() => setShowChat(false)} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
                 <ArrowLeft size={24} />
               </button>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#001F3F]/10 flex items-center justify-center text-[#001F3F]">
+                <div className="w-10 h-10 rounded-full bg-[#001F3F]/10 flex items-center justify-center text-[#1A1A1A]">
                   <MessageCircle size={18} />
                 </div>
                 <div>
-                  <h3 className="font-medium text-[#001F3F]">URBONT Concierge</h3>
-                  <p className="text-xs text-[#001F3F]/80">Typically replies in minutes</p>
+                  <h3 className="font-medium text-[#1A1A1A]">URBONT Concierge</h3>
+                  <p className="text-xs text-[#1A1A1A]/80">Typically replies in minutes</p>
                 </div>
               </div>
             </div>
@@ -4083,7 +4016,7 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#001F3F]/[0.02]">
               {chatHistory.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl p-4 ${msg.sender === 'user' ? 'bg-[#001F3F] text-white rounded-tr-sm' : 'bg-white text-[#001F3F] border border-black/[0.04] shadow-sm rounded-tl-sm'}`}>
+                  <div className={`max-w-[80%] rounded-2xl p-4 ${msg.sender === 'user' ? 'bg-[#001F3F] text-white rounded-tr-sm' : 'bg-white text-[#1A1A1A] border border-black/[0.04] shadow-sm rounded-tl-sm'}`}>
                     <p className="text-sm leading-relaxed">{msg.text}</p>
                   </div>
                 </div>
@@ -4098,7 +4031,7 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="Type a message..."
-                  className="flex-1 p-4 bg-[#001F3F]/5 rounded-full text-[#001F3F] outline-none text-sm"
+                  className="flex-1 p-4 bg-[#001F3F]/5 rounded-full text-[#1A1A1A] outline-none text-sm"
                 />
                 <button
                   onClick={sendMessage}
@@ -4133,10 +4066,10 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-white text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-white text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4 border-b border-[#001F3F]/5">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
         <input
@@ -4145,14 +4078,14 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
           autoFocus
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-transparent outline-none text-lg placeholder:text-[#001F3F]/20 text-[#001F3F]"
+          className="flex-1 bg-transparent outline-none text-lg placeholder:text-[#1A1A1A]/20 text-[#1A1A1A]"
         />
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {filteredCommon.length > 0 && (
           <div className="mb-8">
-            <div className="px-8 py-4 text-[10px] text-[#001F3F]/70 uppercase tracking-[0.2em] bg-[#F5F7FA] font-bold">
+            <div className="px-4 py-4 text-[10px] text-[#1A1A1A]/70 uppercase tracking-[0.2em] bg-[#F5F7FA] font-medium">
               Common Countries
             </div>
             <div className="flex flex-col">
@@ -4160,10 +4093,10 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
                 <button
                   key={country.name}
                   onClick={() => onSelect(country.code)}
-                  className="flex items-center justify-between w-full py-5 px-8 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
+                  className="flex items-center justify-between w-full py-5 px-4 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
                 >
                   <span className="text-base font-medium">{country.name}</span>
-                  <span className="text-base font-medium text-[#001F3F]/70">{country.code}</span>
+                  <span className="text-base font-medium text-[#1A1A1A]/70">{country.code}</span>
                 </button>
               ))}
             </div>
@@ -4171,7 +4104,7 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
         )}
 
         <div>
-          <div className="px-8 py-4 text-[10px] text-[#001F3F]/70 uppercase tracking-[0.2em] bg-[#F5F7FA] font-bold">
+          <div className="px-4 py-4 text-[10px] text-[#1A1A1A]/70 uppercase tracking-[0.2em] bg-[#F5F7FA] font-medium">
             All Countries
           </div>
           <div className="flex flex-col">
@@ -4179,10 +4112,10 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
               <button
                 key={country.name}
                 onClick={() => onSelect(country.code)}
-                className="flex items-center justify-between w-full py-5 px-8 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
+                className="flex items-center justify-between w-full py-5 px-4 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
               >
                 <span className="text-base font-medium">{country.name}</span>
-                <span className="text-base font-medium text-[#001F3F]/70">{country.code}</span>
+                <span className="text-base font-medium text-[#1A1A1A]/70">{country.code}</span>
               </button>
             ))}
           </div>
@@ -4206,18 +4139,18 @@ function ServicesScreen({ onBack }: { onBack: () => void, key?: string }) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-12 space-y-8">
+      <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-8">
         <div className="text-center space-y-3 mt-2 mb-8">
-          <h2 className="font-sans text-3xl font-light text-[#001F3F]">Signature</h2>
-          <p className="text-sm font-normal leading-relaxed text-[#001F3F]/80 px-4">
+          <h2 className="font-sans text-3xl font-light text-[#1A1A1A]">Signature</h2>
+          <p className="text-sm font-normal leading-relaxed text-[#1A1A1A]/80 px-4">
             Discover the URBONT standard of travel
           </p>
         </div>
@@ -4226,14 +4159,14 @@ function ServicesScreen({ onBack }: { onBack: () => void, key?: string }) {
           {services.map((service, i) => (
             <div key={i} className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] space-y-4 group cursor-pointer hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-shadow">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F] group-hover:bg-[#001F3F] group-hover:text-white transition-colors duration-300">
+                <div className="w-12 h-12 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A] group-hover:bg-[#001F3F] group-hover:text-white transition-colors duration-300">
                   {service.icon}
                 </div>
-                <ChevronRight size={18} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+                <ChevronRight size={18} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
               </div>
               <div className="space-y-2">
-                <h3 className="font-sans text-xl font-medium text-[#001F3F]">{service.title}</h3>
-                <p className="text-sm font-normal text-[#001F3F]/80 leading-relaxed">
+                <h3 className="font-sans text-xl font-medium text-[#1A1A1A]">{service.title}</h3>
+                <p className="text-sm font-normal text-[#1A1A1A]/80 leading-relaxed">
                   {service.description}
                 </p>
               </div>
@@ -4258,7 +4191,7 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col relative">
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col relative">
       <div className="flex items-center justify-between p-6 border-b border-black/[0.04]">
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft size={24} />
@@ -4268,7 +4201,7 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
 
       <div className="p-8 space-y-6 flex-1 overflow-y-auto">
         <div className="space-y-2">
-          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Title</label>
+          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Title</label>
           <div className="flex gap-3">
             {['Mr.', 'Ms.', 'Mrs.', 'Dr.'].map((t) => (
               <button
@@ -4276,7 +4209,7 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
                 onClick={() => setTitle(t)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${title === t
                   ? 'bg-[#001F3F] text-white border-[#001F3F]'
-                  : 'bg-transparent text-[#001F3F] border-black/[0.1] hover:border-[#001F3F]'
+                  : 'bg-transparent text-[#1A1A1A] border-black/[0.1] hover:border-[#001F3F]'
                   }`}
               >
                 {t}
@@ -4286,36 +4219,36 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">First Name</label>
+          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">First Name</label>
           <input
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Last Name</label>
+          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Last Name</label>
           <input
             type="text"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Email</label>
+          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
           />
         </div>
 
         {userProfile.accountType === 'business' && (
           <div className="space-y-2 pt-4 border-t border-black/[0.04]">
-            <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium flex items-center gap-2">
+            <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium flex items-center gap-2">
               <Briefcase size={12} />
               Company Name
             </label>
@@ -4324,12 +4257,12 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder="Enter company name"
-              className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
+              className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
             />
           </div>
         )}
 
-        <div className="pt-12">
+        <div className="pt-8">
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="w-full py-4 text-red-500 text-sm font-medium uppercase tracking-widest hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -4357,14 +4290,14 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative z-10"
             >
-              <h3 className="text-xl font-medium text-[#001F3F] mb-2">Delete Account?</h3>
-              <p className="text-sm text-[#001F3F]/70 mb-6 leading-relaxed">
+              <h3 className="text-xl font-medium text-[#1A1A1A] mb-2">Delete Account?</h3>
+              <p className="text-sm text-[#1A1A1A]/70 mb-6 leading-relaxed">
                 Are you sure you want to delete your account? This action cannot be undone and you will lose all your data.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-3 rounded-xl bg-[#001F3F]/5 text-[#001F3F] font-medium text-sm uppercase tracking-wider hover:bg-[#001F3F]/10 transition-colors"
+                  className="flex-1 py-3 rounded-xl bg-[#001F3F]/5 text-[#1A1A1A] font-medium text-sm uppercase tracking-wider hover:bg-[#001F3F]/10 transition-colors"
                 >
                   Cancel
                 </button>
@@ -4395,7 +4328,7 @@ function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | '
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col">
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col">
       <div className="flex items-center justify-between p-6 border-b border-black/[0.04]">
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft size={24} />
@@ -4415,14 +4348,14 @@ function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | '
         </h2>
 
         <div className="space-y-2">
-          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Address</label>
+          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Address</label>
           <input
             type="text"
             autoFocus
             placeholder="Search for address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
           />
         </div>
       </div>
@@ -4436,9 +4369,9 @@ function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col">
+      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col">
       <div className="flex items-center p-6 gap-4 border-b border-black/[0.04]">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
         <h2 className="font-sans text-xl font-light uppercase tracking-widest">Terms & Privacy</h2>
@@ -4447,7 +4380,7 @@ function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
       <div className="flex-1 overflow-y-auto p-8 space-y-10">
         <section className="space-y-4">
           <h3 className="text-lg font-medium uppercase tracking-widest border-b border-black/5 pb-2">Terms of Service</h3>
-          <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed font-light">
+          <div className="space-y-4 text-sm text-[#1A1A1A]/80 leading-relaxed font-light">
             <p>
               Welcome to URBONT. By accessing or using our application, you agree to be bound by these Terms of Service.
             </p>
@@ -4468,7 +4401,7 @@ function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
 
         <section className="space-y-4">
           <h3 className="text-lg font-medium uppercase tracking-widest border-b border-black/5 pb-2">Privacy Policy</h3>
-          <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed font-light">
+          <div className="space-y-4 text-sm text-[#1A1A1A]/80 leading-relaxed font-light">
             <p>
               Your privacy is our priority. This policy explains how we collect, use, and protect your personal data.
             </p>
@@ -4488,7 +4421,7 @@ function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
         </section>
 
         <div className="pt-8 text-center">
-          <p className="text-[10px] text-[#001F3F]/70 uppercase tracking-widest">Last Updated: March 2026</p>
+          <p className="text-[10px] text-[#1A1A1A]/70 uppercase tracking-widest">Last Updated: March 2026</p>
         </div>
       </div>
     </motion.div>
@@ -4521,26 +4454,26 @@ function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-white text-[#001F3F] flex flex-col"
+      className="h-full w-full bg-white text-[#1A1A1A] flex flex-col"
     >
       <div className="flex items-center p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F]">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A]">
           <X size={24} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-12 no-scrollbar">
-        <div className="text-center space-y-4 mt-8 mb-16 px-6">
-          <h3 className="text-3xl font-light text-[#001F3F]">Access</h3>
-          <p className="text-base font-light text-[#001F3F] leading-relaxed">
+      <div className="flex-1 overflow-y-auto px-4 pb-8 no-scrollbar">
+        <div className="text-center space-y-4 mt-8 mb-8 px-4">
+          <h3 className="text-3xl font-light text-[#1A1A1A]">Access</h3>
+          <p className="text-base font-light text-[#1A1A1A] leading-relaxed">
             Access exclusive privileges after taking 15 journeys within 6 months, or by invitation from another member.
           </p>
 
           {/* Progress Tracker */}
           <div className="mt-12 space-y-4">
             <div className="flex justify-between items-end">
-              <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/70 font-bold">Your Progress</span>
-              <span className="text-sm font-medium text-[#001F3F]">8 / 15 Journeys</span>
+              <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 font-medium">Your Progress</span>
+              <span className="text-sm font-medium text-[#1A1A1A]">8 / 15 Journeys</span>
             </div>
             <div className="h-1.5 w-full bg-[#001F3F]/5 rounded-full overflow-hidden">
               <motion.div
@@ -4550,12 +4483,12 @@ function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
                 className="h-full bg-[#001F3F] rounded-full"
               />
             </div>
-            <p className="text-[10px] text-[#001F3F]/80 font-medium italic">7 more journeys to unlock Signature Access</p>
+            <p className="text-[10px] text-[#1A1A1A]/80 font-medium italic">7 more journeys to unlock Signature Access</p>
           </div>
         </div>
 
-        <div className="space-y-12">
-          <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F] font-medium border-t border-black/[0.03] pt-10">Membership Privileges</h4>
+        <div className="space-y-8">
+          <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium border-t border-black/[0.03] pt-10">Membership Privileges</h4>
 
           <div className="space-y-10">
             {privileges.map((item, i) => (
@@ -4568,8 +4501,8 @@ function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <h5 className="text-sm font-medium uppercase tracking-widest text-[#001F3F]">{item.name}</h5>
-                  <p className="text-sm text-[#001F3F]/80 font-light leading-relaxed">
+                  <h5 className="text-sm font-medium uppercase tracking-widest text-[#1A1A1A]">{item.name}</h5>
+                  <p className="text-sm text-[#1A1A1A]/80 font-light leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -4580,8 +4513,8 @@ function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
 
         <div className="mt-16 pt-8 border-t border-black/[0.03]">
           <button className="w-full flex items-center justify-between group">
-            <span className="text-sm font-medium text-[#001F3F]">Membership Details</span>
-            <ChevronRight size={18} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
+            <span className="text-sm font-medium text-[#1A1A1A]">Membership Details</span>
+            <ChevronRight size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
           </button>
         </div>
       </div>

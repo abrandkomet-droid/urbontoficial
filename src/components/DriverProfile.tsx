@@ -68,7 +68,7 @@ export default function DriverProfile() {
                 className="w-full h-full object-cover grayscale contrast-125"
               />
             </div>
-            <div className="absolute bottom-0 right-0 bg-[#C0C0C4] text-black text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+            <div className="absolute bottom-0 right-0 bg-[#C0C0C4] text-black text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider">
               Elite
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function DriverProfile() {
             <div className="flex items-center gap-2 mt-2 bg-[#121212] border border-[#C0C0C4]/30 px-3 py-1 rounded-full w-fit">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               <Mic size={12} className="text-[#C0C0C4]" />
-              <span className="text-[#C0C0C4] text-xs font-bold uppercase tracking-widest">Bridge Active</span>
+              <span className="text-[#C0C0C4] text-xs font-medium uppercase tracking-widest">Bridge Active</span>
             </div>
           </div>
         </div>
@@ -88,7 +88,7 @@ export default function DriverProfile() {
 
       {/* --- 1. Analytics Dashboard --- */}
       <section className="p-6 space-y-6">
-        <h2 className="text-[#C0C0C4] text-sm font-bold uppercase tracking-[0.2em] mb-4">Performance</h2>
+        <h2 className="text-[#C0C0C4] text-sm font-medium uppercase tracking-[0.2em] mb-4">Performance</h2>
         
         {/* KPI Grid */}
         <div className="grid grid-cols-2 gap-4">
@@ -146,11 +146,11 @@ export default function DriverProfile() {
                   className="w-full bg-[#C0C0C4]/20 rounded-t-sm group-hover:bg-[#C0C0C4] transition-all duration-500 relative"
                   style={{ height: `${(amount / maxEarning) * 100}%` }}
                 >
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-white text-[10px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                     ${amount}
                   </div>
                 </div>
-                <span className="text-[#C0C0C4]/40 text-[10px] font-bold text-center uppercase">
+                <span className="text-[#C0C0C4]/40 text-[10px] font-medium text-center uppercase">
                   {['S','M','T','W','T','F','S'][idx]}
                 </span>
               </div>
@@ -161,7 +161,7 @@ export default function DriverProfile() {
 
       {/* --- 2. Compliance & Documents --- */}
       <section className="p-6 pt-0 space-y-6">
-        <h2 className="text-[#C0C0C4] text-sm font-bold uppercase tracking-[0.2em] mb-4">Compliance</h2>
+        <h2 className="text-[#C0C0C4] text-sm font-medium uppercase tracking-[0.2em] mb-4">Compliance</h2>
         
         <div className="space-y-4">
           {mockDocs.map((doc) => {
@@ -182,7 +182,7 @@ export default function DriverProfile() {
                       <ShieldCheck size={20} />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white uppercase tracking-wide">{doc.type}</h3>
+                      <h3 className="text-lg font-medium text-white uppercase tracking-wide">{doc.type}</h3>
                       <p className={`text-sm font-medium ${isExpiring ? 'text-amber-500' : 'text-[#C0C0C4]/60'}`}>
                         {isExpiring ? `Expiring in ${doc.daysRemaining} days` : 'Valid & Active'}
                       </p>
@@ -203,7 +203,7 @@ export default function DriverProfile() {
 
                 {/* Action */}
                 {isExpiring && (
-                  <button className="w-full flex items-center justify-center gap-2 bg-[#C0C0C4] text-black py-3 rounded-lg text-sm font-bold uppercase tracking-widest hover:bg-white transition-colors">
+                  <button className="w-full flex items-center justify-center gap-2 bg-[#C0C0C4] text-black py-3 rounded-lg text-sm font-medium uppercase tracking-widest hover:bg-white transition-colors">
                     <Camera size={16} />
                     Update Document
                   </button>
@@ -216,7 +216,7 @@ export default function DriverProfile() {
 
       {/* --- 3. My Vehicle --- */}
       <section className="p-6 pt-0 pb-32">
-        <h2 className="text-[#C0C0C4] text-sm font-bold uppercase tracking-[0.2em] mb-4">My Vehicle</h2>
+        <h2 className="text-[#C0C0C4] text-sm font-medium uppercase tracking-[0.2em] mb-4">My Vehicle</h2>
         <div className="bg-[#121212] border border-[#C0C0C4]/20 rounded-xl overflow-hidden">
           <div className="h-40 bg-gray-800 relative">
             <img 
@@ -235,7 +235,7 @@ export default function DriverProfile() {
               <Settings size={16} />
               <span className="text-sm font-medium uppercase tracking-wider">Next Service</span>
             </div>
-            <span className="text-white font-bold text-sm">In 1,200 miles</span>
+            <span className="text-white font-medium text-sm">In 1,200 miles</span>
           </div>
         </div>
       </section>
@@ -247,7 +247,7 @@ export default function DriverProfile() {
           className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'map' ? 'text-white' : 'text-[#C0C0C4]/40'}`}
         >
           <Map size={24} strokeWidth={activeTab === 'map' ? 2.5 : 1.5} />
-          <span className="text-[10px] font-bold uppercase tracking-widest">Trip Map</span>
+          <span className="text-[10px] font-medium uppercase tracking-widest">Trip Map</span>
         </button>
         
         <button 
@@ -255,7 +255,7 @@ export default function DriverProfile() {
           className={`flex flex-col items-center gap-1 transition-colors ${activeTab === 'profile' ? 'text-white' : 'text-[#C0C0C4]/40'}`}
         >
           <User size={24} strokeWidth={activeTab === 'profile' ? 2.5 : 1.5} />
-          <span className="text-[10px] font-bold uppercase tracking-widest">Profile</span>
+          <span className="text-[10px] font-medium uppercase tracking-widest">Profile</span>
         </button>
       </nav>
 

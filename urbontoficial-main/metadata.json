@@ -1,5 +1,0 @@
-{
-  "name": "URBONT",
-  "description": "An ultra-premium private chauffeur booking experience inspired by elite mobility standards.",
-  "requestFramePermissions": ["geolocation"]
-}

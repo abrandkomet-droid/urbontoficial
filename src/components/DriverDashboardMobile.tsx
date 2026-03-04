@@ -149,10 +149,10 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
   }
 
   return (
-    <div className="h-screen w-full bg-white text-[#001F3F] font-sans flex flex-col overflow-hidden relative">
+    <div className="h-screen w-full bg-white text-[#1A1A1A] font-sans flex flex-col overflow-hidden relative">
 
       {/* --- 1. Top Bar (Common) --- */}
-      <header className="px-6 pt-12 pb-6 flex justify-between items-center bg-white z-10 border-b border-[#001F3F]/5">
+      <header className="px-4 pt-8 pb-6 flex justify-between items-center bg-white z-10 border-b border-[#001F3F]/5">
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 border border-[#001F3F]/10 overflow-hidden">
             <img
@@ -162,9 +162,9 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
             />
           </div>
           <div>
-            <h1 className="text-lg font-medium leading-none tracking-wide text-[#001F3F]">{driverProfile.name.split(' ')[0]}</h1>
-            <div className="flex items-center gap-1 text-xs text-[#001F3F]/80 font-medium mt-1">
-              <Star size={12} strokeWidth={1.5} className="text-[#001F3F] fill-[#001F3F]" />
+            <h1 className="text-lg font-medium leading-none tracking-wide text-[#1A1A1A]">{driverProfile.name.split(' ')[0]}</h1>
+            <div className="flex items-center gap-1 text-xs text-[#1A1A1A]/80 font-medium mt-1">
+              <Star size={12} strokeWidth={1.5} className="text-[#1A1A1A] fill-[#001F3F]" />
               <span>{driverProfile.rating} Rating</span>
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
           onClick={handleToggleOnline}
           className={`
             px-5 py-2 rounded-full flex items-center gap-2 transition-all duration-300
-            ${isOnline ? 'bg-[#001F3F] text-white shadow-md' : 'bg-white border border-[#001F3F]/20 text-[#001F3F]'}
+            ${isOnline ? 'bg-[#001F3F] text-white shadow-md' : 'bg-white border border-[#001F3F]/20 text-[#1A1A1A]'}
           `}
         >
           <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-white animate-pulse' : 'bg-[#001F3F]/40'}`} />
@@ -185,7 +185,7 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
       </header>
 
       {/* --- Main Content Area (Switchable) --- */}
-      <main className="flex-1 overflow-y-auto pb-24 px-6 pt-6 space-y-6 scrollbar-hide">
+      <main className="flex-1 overflow-y-auto pb-24 px-4 pt-6 space-y-6 scrollbar-hide">
         <AnimatePresence mode="wait">
           {activeTab === 'HOME' && (
             <HomeTab
@@ -211,7 +211,7 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
       </main>
 
       {/* --- Bottom Navigation --- */}
-      <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#001F3F]/5 pb-8 pt-4 px-6 flex justify-between items-center z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+      <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#001F3F]/5 pb-8 pt-4 px-4 flex justify-between items-center z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
         <NavButton icon={<Home />} label="Home" active={activeTab === 'HOME'} onClick={() => setActiveTab('HOME')} />
         <NavButton icon={<Map />} label="Rides" active={activeTab === 'RIDES'} onClick={() => setActiveTab('RIDES')} />
         <NavButton icon={<Wallet />} label="Earnings" active={activeTab === 'EARNINGS'} onClick={() => setActiveTab('EARNINGS')} />
@@ -249,23 +249,23 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
           >
             <div className="flex-1 flex flex-col items-center text-center space-y-8">
               <div className="w-24 h-24 rounded-full bg-[#001F3F]/5 flex items-center justify-center border border-[#001F3F]/10">
-                <CarFront size={40} strokeWidth={1} className="text-[#001F3F]" />
+                <CarFront size={40} strokeWidth={1} className="text-[#1A1A1A]" />
               </div>
 
               <div>
-                <h2 className="text-3xl font-light text-[#001F3F] mb-2 tracking-wide uppercase">New Request</h2>
-                <p className="text-[#001F3F]/80 text-sm font-medium uppercase tracking-widest">Premium Sedan • 4 min away</p>
+                <h2 className="text-3xl font-light text-[#1A1A1A] mb-2 tracking-wide uppercase">New Request</h2>
+                <p className="text-[#1A1A1A]/80 text-sm font-medium uppercase tracking-widest">Premium Sedan • 4 min away</p>
               </div>
 
               <div className="w-full bg-[#001F3F]/[0.02] rounded-2xl p-8 border border-[#001F3F]/5 space-y-8">
                 <div className="flex justify-between items-center pb-6 border-b border-[#001F3F]/10">
                   <div className="text-left">
-                    <p className="text-[11px] uppercase text-[#001F3F] font-bold tracking-widest mb-1">Fare</p>
-                    <p className="text-3xl font-medium text-[#001F3F]">${MOCK_REQUEST.fare}</p>
+                    <p className="text-[11px] uppercase text-[#1A1A1A] font-medium tracking-widest mb-1">Fare</p>
+                    <p className="text-3xl font-medium text-[#1A1A1A]">${MOCK_REQUEST.fare}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[11px] uppercase text-[#001F3F] font-bold tracking-widest mb-1">Distance</p>
-                    <p className="text-3xl font-medium text-[#001F3F]">{MOCK_REQUEST.distance}</p>
+                    <p className="text-[11px] uppercase text-[#1A1A1A] font-medium tracking-widest mb-1">Distance</p>
+                    <p className="text-3xl font-medium text-[#1A1A1A]">{MOCK_REQUEST.distance}</p>
                   </div>
                 </div>
 
@@ -278,12 +278,12 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
                     </div>
                     <div className="flex-1 space-y-6">
                       <div>
-                        <p className="text-xs text-[#001F3F]/70 font-medium uppercase tracking-wider mb-1">Pickup</p>
-                        <p className="text-lg font-medium text-[#001F3F]">{MOCK_REQUEST.pickup}</p>
+                        <p className="text-xs text-[#1A1A1A]/70 font-medium uppercase tracking-wider mb-1">Pickup</p>
+                        <p className="text-lg font-medium text-[#1A1A1A]">{MOCK_REQUEST.pickup}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-[#001F3F]/70 font-medium uppercase tracking-wider mb-1">Dropoff</p>
-                        <p className="text-lg font-medium text-[#001F3F]">{MOCK_REQUEST.dropoff}</p>
+                        <p className="text-xs text-[#1A1A1A]/70 font-medium uppercase tracking-wider mb-1">Dropoff</p>
+                        <p className="text-lg font-medium text-[#1A1A1A]">{MOCK_REQUEST.dropoff}</p>
                       </div>
                     </div>
                   </div>
@@ -294,7 +294,7 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
             <div className="grid grid-cols-2 gap-4 mt-8 mb-8">
               <button
                 onClick={handleDeclineRide}
-                className="py-5 rounded-xl border border-[#001F3F]/20 text-[#001F3F] font-medium uppercase tracking-widest text-sm hover:bg-[#001F3F]/5 transition-colors"
+                className="py-5 rounded-xl border border-[#001F3F]/20 text-[#1A1A1A] font-medium uppercase tracking-widest text-sm hover:bg-[#001F3F]/5 transition-colors"
               >
                 Decline
               </button>
@@ -354,12 +354,12 @@ function HomeTab({
           onClick={() => setShowRatingBreakdown(!showRatingBreakdown)}
           className="bg-white border border-[#001F3F]/10 rounded-xl p-4 flex flex-col justify-between h-28 shadow-sm hover:bg-[#001F3F]/5 transition-colors text-left"
         >
-          <div className="p-2 rounded-full w-fit bg-[#001F3F]/5 text-[#001F3F]">
+          <div className="p-2 rounded-full w-fit bg-[#001F3F]/5 text-[#1A1A1A]">
             <Star size={20} strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-[#001F3F] mb-1">Rating</p>
-            <p className="text-2xl font-medium tracking-tight text-[#001F3F]">4.98</p>
+            <p className="text-[11px] font-medium uppercase tracking-widest text-[#1A1A1A] mb-1">Rating</p>
+            <p className="text-2xl font-medium tracking-tight text-[#1A1A1A]">4.98</p>
           </div>
         </button>
       </div>
@@ -373,7 +373,7 @@ function HomeTab({
             className="bg-[#001F3F] text-white rounded-2xl p-6 space-y-4 overflow-hidden"
           >
             <div className="flex justify-between items-center">
-              <h4 className="text-[11px] uppercase tracking-widest font-bold opacity-100">Rating Breakdown</h4>
+              <h4 className="text-[11px] uppercase tracking-widest font-medium opacity-100">Rating Breakdown</h4>
               <button onClick={() => setShowRatingBreakdown(false)}><X size={16} /></button>
             </div>
             <div className="space-y-3">
@@ -399,31 +399,31 @@ function HomeTab({
         {rideStatus === 'INCOMING' ? (
           <div className="space-y-4">
             <div className="w-16 h-16 bg-[#001F3F]/10 rounded-full flex items-center justify-center mx-auto animate-pulse">
-              <Bell size={32} strokeWidth={1.5} className="text-[#001F3F]" />
+              <Bell size={32} strokeWidth={1.5} className="text-[#1A1A1A]" />
             </div>
             <div>
-              <h3 className="text-xl font-medium text-[#001F3F]">Incoming Request</h3>
-              <button onClick={onRequestOpen} className="text-sm text-[#001F3F] mt-2 font-medium border-b border-[#001F3F] pb-0.5">View Details</button>
+              <h3 className="text-xl font-medium text-[#1A1A1A]">Incoming Request</h3>
+              <button onClick={onRequestOpen} className="text-sm text-[#1A1A1A] mt-2 font-medium border-b border-[#001F3F] pb-0.5">View Details</button>
             </div>
           </div>
         ) : isOnline ? (
           <div className="space-y-4">
             <div className="w-16 h-16 bg-[#001F3F]/5 rounded-full flex items-center justify-center mx-auto border border-[#001F3F]/10">
-              <Navigation size={32} strokeWidth={1.5} className="text-[#001F3F]" />
+              <Navigation size={32} strokeWidth={1.5} className="text-[#1A1A1A]" />
             </div>
             <div>
-              <h3 className="text-xl font-medium text-[#001F3F]">You are Online</h3>
-              <p className="text-sm text-[#001F3F]/70 font-medium mt-1">Finding rides near you...</p>
+              <h3 className="text-xl font-medium text-[#1A1A1A]">You are Online</h3>
+              <p className="text-sm text-[#1A1A1A]/70 font-medium mt-1">Finding rides near you...</p>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="w-16 h-16 bg-[#001F3F]/5 rounded-full flex items-center justify-center mx-auto border border-[#001F3F]/10">
-              <LogOut size={32} strokeWidth={1.5} className="text-[#001F3F]/70" />
+              <LogOut size={32} strokeWidth={1.5} className="text-[#1A1A1A]/70" />
             </div>
             <div>
-              <h3 className="text-xl font-medium text-[#001F3F]">You are Offline</h3>
-              <p className="text-sm text-[#001F3F]/70 font-medium mt-1">Go online to start earning.</p>
+              <h3 className="text-xl font-medium text-[#1A1A1A]">You are Offline</h3>
+              <p className="text-sm text-[#1A1A1A]/70 font-medium mt-1">Go online to start earning.</p>
             </div>
           </div>
         )}
@@ -431,7 +431,7 @@ function HomeTab({
 
       {/* Recent Activity List */}
       <div>
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#001F3F] mb-4 pl-1">Recent Activity</h3>
+        <h3 className="text-[11px] font-medium uppercase tracking-widest text-[#1A1A1A] mb-4 pl-1">Recent Activity</h3>
         <div className="space-y-3">
           <ActivityItem
             title="JFK Airport Transfer"
@@ -466,12 +466,12 @@ function ComplianceModal({ onClose, onConfirm }: { onClose: () => void, onConfir
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-[60] bg-white/95 backdrop-blur-xl flex flex-col p-6 text-[#001F3F]"
+      className="absolute inset-0 z-[60] bg-white/95 backdrop-blur-xl flex flex-col p-6 text-[#1A1A1A]"
     >
-      <div className="flex justify-between items-center mb-8 pt-12">
+      <div className="flex justify-between items-center mb-8 pt-8">
         <h2 className="text-2xl font-light uppercase tracking-wide">Pre-Ride Check</h2>
         <button onClick={onClose} className="p-2 bg-[#001F3F]/5 rounded-full hover:bg-[#001F3F]/10 transition-colors">
-          <XCircle size={24} strokeWidth={1.5} className="text-[#001F3F]/80" />
+          <XCircle size={24} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
         </button>
       </div>
 
@@ -508,7 +508,7 @@ function ComplianceModal({ onClose, onConfirm }: { onClose: () => void, onConfir
           disabled={!allChecked}
           className={`
             w-full py-5 rounded-xl font-medium uppercase tracking-widest text-sm transition-all shadow-xl
-            ${allChecked ? 'bg-[#001F3F] text-white' : 'bg-[#001F3F]/10 text-[#001F3F]/70 cursor-not-allowed'}
+            ${allChecked ? 'bg-[#001F3F] text-white' : 'bg-[#001F3F]/10 text-[#1A1A1A]/70 cursor-not-allowed'}
           `}
         >
           Confirm & Go Online
@@ -528,12 +528,12 @@ function ComplianceItem({ label, status, checked, onChange }: any) {
       `}
     >
       <div className="flex items-center gap-4">
-        <div className={`p-2 rounded-full ${checked ? 'bg-[#001F3F]/10 text-[#001F3F]' : 'bg-[#001F3F]/5 text-[#001F3F]/70'}`}>
+        <div className={`p-2 rounded-full ${checked ? 'bg-[#001F3F]/10 text-[#1A1A1A]' : 'bg-[#001F3F]/5 text-[#1A1A1A]/70'}`}>
           <Shield size={20} strokeWidth={1.5} />
         </div>
         <div>
-          <p className="text-sm font-medium text-[#001F3F]">{label}</p>
-          <p className={`text-[11px] font-semibold ${checked ? 'text-[#001F3F]' : 'text-[#001F3F]/50'}`}>{status}</p>
+          <p className="text-sm font-medium text-[#1A1A1A]">{label}</p>
+          <p className={`text-[11px] font-medium ${checked ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/50'}`}>{status}</p>
         </div>
       </div>
       <div className={`w-6 h-6 rounded-full border flex items-center justify-center ${checked ? 'bg-[#001F3F] border-[#001F3F]' : 'border-[#001F3F]/20'}`}>
@@ -587,12 +587,12 @@ function RidesTab({ onSelectRide }: { onSelectRide: (ride: any) => void, key?: s
       exit={{ opacity: 0 }}
       className="space-y-6"
     >
-      <h2 className="text-2xl font-bold uppercase tracking-wide text-[#001F3F]">My Rides</h2>
+      <h2 className="text-2xl font-medium uppercase tracking-wide text-[#1A1A1A]">My Rides</h2>
 
       <div className="flex gap-6 border-b border-[#001F3F]/10 pb-1">
-        <button className="text-sm font-medium text-[#001F3F] border-b-2 border-[#001F3F] pb-3 px-2">Completed</button>
-        <button className="text-sm font-medium text-[#001F3F]/70 pb-3 px-2 hover:text-[#001F3F]/80">Scheduled</button>
-        <button className="text-sm font-medium text-[#001F3F]/70 pb-3 px-2 hover:text-[#001F3F]/80">Cancelled</button>
+        <button className="text-sm font-medium text-[#1A1A1A] border-b-2 border-[#001F3F] pb-3 px-2">Completed</button>
+        <button className="text-sm font-medium text-[#1A1A1A]/70 pb-3 px-2 hover:text-[#1A1A1A]/80">Scheduled</button>
+        <button className="text-sm font-medium text-[#1A1A1A]/70 pb-3 px-2 hover:text-[#1A1A1A]/80">Cancelled</button>
       </div>
 
       <div className="space-y-4">
@@ -627,8 +627,8 @@ function EarningsTab({ }: { key?: string } = {}) {
       className="space-y-8"
     >
       <div className="text-center space-y-2 py-6">
-        <p className="text-xs font-medium text-[#001F3F]/80 uppercase tracking-widest">Total Balance</p>
-        <h2 className="text-5xl font-light tracking-tight text-[#001F3F]">$1,450.00</h2>
+        <p className="text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest">Total Balance</p>
+        <h2 className="text-5xl font-light tracking-tight text-[#1A1A1A]">$1,450.00</h2>
         <button
           onClick={() => {
             setIsCashingOut(true);
@@ -638,7 +638,7 @@ function EarningsTab({ }: { key?: string } = {}) {
             }, 2000);
           }}
           disabled={isCashingOut}
-          className="mt-4 px-8 py-3 border border-[#001F3F]/20 rounded-full text-xs font-medium text-[#001F3F] uppercase tracking-widest hover:bg-[#001F3F]/5 transition-colors disabled:opacity-50"
+          className="mt-4 px-4 py-3 border border-[#001F3F]/20 rounded-full text-xs font-medium text-[#1A1A1A] uppercase tracking-widest hover:bg-[#001F3F]/5 transition-colors disabled:opacity-50"
         >
           {isCashingOut ? 'Processing...' : 'Cash Out'}
         </button>
@@ -647,8 +647,8 @@ function EarningsTab({ }: { key?: string } = {}) {
       {/* Chart */}
       <div className="bg-[#001F3F]/[0.02] border border-[#001F3F]/5 rounded-2xl p-6">
         <div className="flex justify-between items-center mb-8">
-          <h3 className="font-medium text-lg text-[#001F3F]">Weekly Summary</h3>
-          <span className="text-xs font-medium bg-[#001F3F]/5 text-[#001F3F] px-2 py-1 rounded">+12% vs last week</span>
+          <h3 className="font-medium text-lg text-[#1A1A1A]">Weekly Summary</h3>
+          <span className="text-xs font-medium bg-[#001F3F]/5 text-[#1A1A1A] px-2 py-1 rounded">+12% vs last week</span>
         </div>
         <div className="flex justify-between items-end h-32 gap-3">
           {WEEKLY_EARNINGS.map((amount, i) => (
@@ -661,7 +661,7 @@ function EarningsTab({ }: { key?: string } = {}) {
                   ${amount}
                 </div>
               </div>
-              <span className="text-[10px] text-center text-[#001F3F]/70 font-medium">
+              <span className="text-[10px] text-center text-[#1A1A1A]/70 font-medium">
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}
               </span>
             </div>
@@ -671,7 +671,7 @@ function EarningsTab({ }: { key?: string } = {}) {
 
       {/* Transactions */}
       <div>
-        <h3 className="text-xs font-medium uppercase tracking-widest text-[#001F3F]/70 mb-4 pl-1">Recent Transactions</h3>
+        <h3 className="text-xs font-medium uppercase tracking-widest text-[#1A1A1A]/70 mb-4 pl-1">Recent Transactions</h3>
         <div className="space-y-1">
           <TransactionItem label="Weekly Payout" date="Feb 26" amount="+$1,240.00" type="payout" />
           <TransactionItem label="Trip Payment" date="Feb 26" amount="+$85.00" type="income" />
@@ -718,7 +718,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {chatHistory.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#001F3F] rounded-tl-none'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#1A1A1A] rounded-tl-none'}`}>
                     {msg.text}
                   </div>
                 </div>
@@ -770,26 +770,26 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
                   <Camera size={16} />
                 </button>
               </div>
-              <p className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Tap to change photo</p>
+              <p className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Tap to change photo</p>
             </div>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/70 font-bold ml-1">Full Name</label>
+                <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Full Name</label>
                 <input
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-white border border-[#001F3F]/10 rounded-xl p-4 text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all"
+                  className="w-full bg-white border border-[#001F3F]/10 rounded-xl p-4 text-[#1A1A1A] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/70 font-bold ml-1">Driver ID</label>
+                <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Driver ID</label>
                 <input
                   type="text"
                   value={profile.id}
                   disabled
-                  className="w-full bg-[#001F3F]/[0.02] border border-[#001F3F]/10 rounded-xl p-4 text-[#001F3F]/70 outline-none"
+                  className="w-full bg-[#001F3F]/[0.02] border border-[#001F3F]/10 rounded-xl p-4 text-[#1A1A1A]/70 outline-none"
                 />
               </div>
             </div>
@@ -810,32 +810,32 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
           <div className="space-y-6">
             <div className="bg-white border border-[#001F3F]/10 rounded-2xl p-6 space-y-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-xl bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                <div className="w-16 h-16 rounded-xl bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A]">
                   <CarFront size={32} strokeWidth={1} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-[#001F3F]">{profile.vehicle.model}</h3>
-                  <p className="text-sm text-[#001F3F]/80">{profile.vehicle.class}</p>
+                  <h3 className="text-lg font-medium text-[#1A1A1A]">{profile.vehicle.model}</h3>
+                  <p className="text-sm text-[#1A1A1A]/80">{profile.vehicle.class}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#001F3F]/5">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#001F3F]/70 font-bold mb-1">License Plate</p>
-                  <p className="text-sm font-medium text-[#001F3F]">{profile.vehicle.plate}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 font-medium mb-1">License Plate</p>
+                  <p className="text-sm font-medium text-[#1A1A1A]">{profile.vehicle.plate}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-[#001F3F]/70 font-bold mb-1">Status</p>
+                  <p className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 font-medium mb-1">Status</p>
                   <p className="text-sm font-medium text-emerald-600">Active</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
-              <button className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors">
+              <button className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#1A1A1A] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors">
                 View Vehicle Documents
               </button>
-              <button className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors">
+              <button className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#1A1A1A] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors">
                 Change Vehicle
               </button>
             </div>
@@ -845,8 +845,8 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
         return (
           <div className="space-y-4 pb-24">
             <div className="bg-[#001F3F]/5 p-4 rounded-xl flex items-center gap-3 mb-4">
-              <Shield size={20} className="text-[#001F3F]" />
-              <p className="text-xs text-[#001F3F]/80 font-medium">Keep your documents up to date to stay online.</p>
+              <Shield size={20} className="text-[#1A1A1A]" />
+              <p className="text-xs text-[#1A1A1A]/80 font-medium">Keep your documents up to date to stay online.</p>
             </div>
 
             {[
@@ -864,7 +864,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
             ].map(doc => (
               <div key={doc.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${uploadedDocs[doc.id] === 'verified' ? 'bg-green-100 text-green-600' : uploadedDocs[doc.id] === 'uploaded' ? 'bg-blue-100 text-blue-600' : 'bg-[#001F3F]/5 text-[#001F3F]/70'}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${uploadedDocs[doc.id] === 'verified' ? 'bg-green-100 text-green-600' : uploadedDocs[doc.id] === 'uploaded' ? 'bg-blue-100 text-blue-600' : 'bg-[#001F3F]/5 text-[#1A1A1A]/70'}`}>
                     {uploadedDocs[doc.id] === 'verified' ? <CheckCircle2 size={20} /> : uploadedDocs[doc.id] === 'uploaded' ? <Clock size={20} /> : <FileText size={20} />}
                   </div>
                   <div className="flex-1">
@@ -890,7 +890,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
                     }}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
-                  <div className={`px-4 py-2 rounded-lg text-[10px] font-medium uppercase tracking-widest transition-colors ${uploadedDocs[doc.id] ? 'bg-black/5 text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
+                  <div className={`px-4 py-2 rounded-lg text-[10px] font-medium uppercase tracking-widest transition-colors ${uploadedDocs[doc.id] ? 'bg-black/5 text-[#1A1A1A]' : 'bg-[#001F3F] text-white'}`}>
                     {uploadedDocs[doc.id] ? 'Update' : 'Upload'}
                   </div>
                 </div>
@@ -903,17 +903,17 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
           <div className="space-y-4">
             <div className="p-5 rounded-xl border border-[#001F3F]/10 bg-[#001F3F]/[0.02] flex justify-between items-center">
               <div className="flex items-center gap-4">
-                <div className="p-2 rounded-full bg-[#001F3F]/10 text-[#001F3F]">
+                <div className="p-2 rounded-full bg-[#001F3F]/10 text-[#1A1A1A]">
                   <CreditCard size={20} strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#001F3F]">Chase Sapphire</p>
-                  <p className="text-xs text-[#001F3F]/80">**** 4242</p>
+                  <p className="text-sm font-medium text-[#1A1A1A]">Chase Sapphire</p>
+                  <p className="text-xs text-[#1A1A1A]/80">**** 4242</p>
                 </div>
               </div>
-              <span className="text-xs font-medium text-[#001F3F] bg-[#001F3F]/5 px-2 py-1 rounded">Primary</span>
+              <span className="text-xs font-medium text-[#1A1A1A] bg-[#001F3F]/5 px-2 py-1 rounded">Primary</span>
             </div>
-            <button className="w-full py-4 rounded-xl border border-dashed border-[#001F3F]/20 text-[#001F3F]/80 font-medium uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-colors">
+            <button className="w-full py-4 rounded-xl border border-dashed border-[#001F3F]/20 text-[#1A1A1A]/80 font-medium uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-colors">
               + Add Payment Method
             </button>
           </div>
@@ -952,11 +952,11 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
                 />
               </div>
               <div>
-                <h2 className="text-xl font-medium text-[#001F3F]">{profile.name}</h2>
-                <p className="text-sm text-[#001F3F]/80 font-light">Elite Chauffeur • ID: {profile.id}</p>
+                <h2 className="text-xl font-medium text-[#1A1A1A]">{profile.name}</h2>
+                <p className="text-sm text-[#1A1A1A]/80 font-light">Elite Chauffeur • ID: {profile.id}</p>
                 <button
                   onClick={() => setView('EDIT_PROFILE')}
-                  className="text-xs text-[#001F3F] mt-2 font-medium border-b border-[#001F3F] pb-0.5"
+                  className="text-xs text-[#1A1A1A] mt-2 font-medium border-b border-[#001F3F] pb-0.5"
                 >
                   Edit Profile
                 </button>
@@ -997,7 +997,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
             <div className="pt-6">
               <button
                 onClick={onLogout}
-                className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F]/80 font-medium uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#1A1A1A]/80 font-medium uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-colors flex items-center justify-center gap-2"
               >
                 <LogOut size={16} strokeWidth={1.5} />
                 Log Out
@@ -1018,7 +1018,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
       {view !== 'MAIN' && (
         <button
           onClick={() => setView('MAIN')}
-          className="flex items-center gap-2 text-[#001F3F]/80 hover:text-[#001F3F] transition-colors mb-2"
+          className="flex items-center gap-2 text-[#1A1A1A]/80 hover:text-[#1A1A1A] transition-colors mb-2"
         >
           <ChevronLeft size={20} strokeWidth={1.5} />
           <span className="text-sm font-medium">Back to Profile</span>
@@ -1026,7 +1026,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
       )}
 
       {view !== 'MAIN' && (
-        <h2 className="text-2xl font-light uppercase tracking-wide text-[#001F3F] mb-6">
+        <h2 className="text-2xl font-light uppercase tracking-wide text-[#1A1A1A] mb-6">
           {view.charAt(0) + view.slice(1).toLowerCase()}
         </h2>
       )}
@@ -1051,12 +1051,12 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
 function StatCard({ icon, label, value }: any) {
   return (
     <div className="bg-white border border-[#001F3F]/10 rounded-xl p-4 flex flex-col justify-between h-28 shadow-sm">
-      <div className="p-2 rounded-full w-fit bg-[#001F3F]/5 text-[#001F3F]">
+      <div className="p-2 rounded-full w-fit bg-[#001F3F]/5 text-[#1A1A1A]">
         {icon}
       </div>
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-widest text-[#001F3F] mb-1">{label}</p>
-        <p className="text-2xl font-medium tracking-tight text-[#001F3F]">{value}</p>
+        <p className="text-[11px] font-medium uppercase tracking-widest text-[#1A1A1A] mb-1">{label}</p>
+        <p className="text-2xl font-medium tracking-tight text-[#1A1A1A]">{value}</p>
       </div>
     </div>
   );
@@ -1066,10 +1066,10 @@ function NavButton({ icon, label, active, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${active ? 'text-[#001F3F] scale-105' : 'text-[#001F3F]/70 hover:text-[#001F3F]/80'}`}
+      className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${active ? 'text-[#1A1A1A] scale-105' : 'text-[#1A1A1A]/70 hover:text-[#1A1A1A]/80'}`}
     >
       {React.cloneElement(icon, { strokeWidth: active ? 2 : 1.5, size: 24 })}
-      <span className="text-[11px] font-bold tracking-wide uppercase">{label}</span>
+      <span className="text-[11px] font-medium tracking-wide uppercase">{label}</span>
     </button>
   );
 }
@@ -1078,17 +1078,17 @@ function ActivityItem({ title, time, amount, status }: any) {
   return (
     <div className="bg-white border border-[#001F3F]/5 rounded-xl p-4 flex justify-between items-center shadow-sm">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-[#001F3F]/5 rounded-full text-[#001F3F]/80">
+        <div className="p-2 bg-[#001F3F]/5 rounded-full text-[#1A1A1A]/80">
           <CarFront size={16} strokeWidth={1.5} />
         </div>
         <div>
-          <p className="text-sm font-medium text-[#001F3F]">{title}</p>
-          <p className="text-xs text-[#001F3F]/70 font-light">{time}</p>
+          <p className="text-sm font-medium text-[#1A1A1A]">{title}</p>
+          <p className="text-xs text-[#1A1A1A]/70 font-light">{time}</p>
         </div>
       </div>
       <div className="text-right">
-        <p className="text-sm font-medium text-[#001F3F]">{amount}</p>
-        <p className="text-[11px] text-[#001F3F] font-bold uppercase tracking-wider">{status}</p>
+        <p className="text-sm font-medium text-[#1A1A1A]">{amount}</p>
+        <p className="text-[11px] text-[#1A1A1A] font-medium uppercase tracking-wider">{status}</p>
       </div>
     </div>
   );
@@ -1098,12 +1098,12 @@ function RideCard({ date, from, to, price, rating }: any) {
   return (
     <div className="bg-white border border-[#001F3F]/5 rounded-xl p-5 space-y-4 shadow-sm">
       <div className="flex justify-between items-start">
-        <div className="flex items-center gap-2 text-xs text-[#001F3F]/80 font-medium">
+        <div className="flex items-center gap-2 text-xs text-[#1A1A1A]/80 font-medium">
           <Calendar size={12} strokeWidth={1.5} />
           <span>{date}</span>
         </div>
-        <div className="flex items-center gap-1 bg-[#001F3F]/5 px-2 py-1 rounded text-xs text-[#001F3F]">
-          <Star size={10} strokeWidth={1.5} className="text-[#001F3F] fill-[#001F3F]" />
+        <div className="flex items-center gap-1 bg-[#001F3F]/5 px-2 py-1 rounded text-xs text-[#1A1A1A]">
+          <Star size={10} strokeWidth={1.5} className="text-[#1A1A1A] fill-[#001F3F]" />
           <span>{rating}.0</span>
         </div>
       </div>
@@ -1111,18 +1111,18 @@ function RideCard({ date, from, to, price, rating }: any) {
       <div className="space-y-3 relative pl-4">
         <div className="absolute left-1.5 top-2 bottom-2 w-px bg-[#001F3F]/10" />
         <div>
-          <p className="text-[10px] uppercase text-[#001F3F]/70 font-medium tracking-wider mb-0.5">Pickup</p>
-          <p className="text-sm font-medium text-[#001F3F]">{from}</p>
+          <p className="text-[10px] uppercase text-[#1A1A1A]/70 font-medium tracking-wider mb-0.5">Pickup</p>
+          <p className="text-sm font-medium text-[#1A1A1A]">{from}</p>
         </div>
         <div>
-          <p className="text-[10px] uppercase text-[#001F3F]/70 font-medium tracking-wider mb-0.5">Dropoff</p>
-          <p className="text-sm font-medium text-[#001F3F]">{to}</p>
+          <p className="text-[10px] uppercase text-[#1A1A1A]/70 font-medium tracking-wider mb-0.5">Dropoff</p>
+          <p className="text-sm font-medium text-[#1A1A1A]">{to}</p>
         </div>
       </div>
 
       <div className="pt-3 border-t border-[#001F3F]/5 flex justify-between items-center">
-        <span className="text-xs font-medium text-[#001F3F]/80">Premium Sedan</span>
-        <span className="text-lg font-medium text-[#001F3F]">{price}</span>
+        <span className="text-xs font-medium text-[#1A1A1A]/80">Premium Sedan</span>
+        <span className="text-lg font-medium text-[#1A1A1A]">{price}</span>
       </div>
     </div>
   );
@@ -1132,15 +1132,15 @@ function TransactionItem({ label, date, amount, type }: any) {
   return (
     <div className="py-4 border-b border-[#001F3F]/5 flex justify-between items-center last:border-0">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-full ${type === 'payout' ? 'bg-[#001F3F]/5 text-[#001F3F]' : 'bg-[#001F3F]/5 text-[#001F3F]/80'}`}>
+        <div className={`p-2 rounded-full ${type === 'payout' ? 'bg-[#001F3F]/5 text-[#1A1A1A]' : 'bg-[#001F3F]/5 text-[#1A1A1A]/80'}`}>
           {type === 'payout' ? <CheckCircle2 size={16} strokeWidth={1.5} /> : <Wallet size={16} strokeWidth={1.5} />}
         </div>
         <div>
-          <p className="text-sm font-medium text-[#001F3F]">{label}</p>
-          <p className="text-xs text-[#001F3F]/70 font-light">{date}</p>
+          <p className="text-sm font-medium text-[#1A1A1A]">{label}</p>
+          <p className="text-xs text-[#1A1A1A]/70 font-light">{date}</p>
         </div>
       </div>
-      <span className={`text-sm font-medium ${type === 'payout' ? 'text-[#001F3F]' : 'text-[#001F3F]'}`}>
+      <span className={`text-sm font-medium ${type === 'payout' ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]'}`}>
         {amount}
       </span>
     </div>
@@ -1154,13 +1154,13 @@ function MenuItem({ icon, label, subLabel, onClick }: any) {
       className="w-full bg-white border border-[#001F3F]/5 rounded-xl p-4 flex justify-between items-center hover:bg-[#001F3F]/5 transition-colors mb-3"
     >
       <div className="flex items-center gap-3">
-        <div className="text-[#001F3F]/80">{icon}</div>
+        <div className="text-[#1A1A1A]/80">{icon}</div>
         <div className="text-left">
-          <p className="text-sm font-medium text-[#001F3F]">{label}</p>
-          {subLabel && <p className="text-xs text-[#001F3F]/70 font-light">{subLabel}</p>}
+          <p className="text-sm font-medium text-[#1A1A1A]">{label}</p>
+          {subLabel && <p className="text-xs text-[#1A1A1A]/70 font-light">{subLabel}</p>}
         </div>
       </div>
-      {onClick && <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/70" />}
+      {onClick && <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/70" />}
     </button>
   );
 }
@@ -1178,45 +1178,45 @@ function RideDetailModal({ ride, onClose }: { ride: any, onClose: () => void }) 
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="w-full bg-white rounded-t-[32px] p-8 pb-12 space-y-8"
+        className="w-full bg-white rounded-t-[32px] p-8 pb-8 space-y-8"
       >
         <div className="flex justify-between items-center">
-          <h3 className="text-2xl font-light uppercase tracking-wide text-[#001F3F]">Ride Details</h3>
+          <h3 className="text-2xl font-light uppercase tracking-wide text-[#1A1A1A]">Ride Details</h3>
           <button onClick={onClose} className="p-2 bg-[#001F3F]/5 rounded-full"><X size={20} /></button>
         </div>
 
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-xs uppercase tracking-widest text-[#001F3F]/70 font-bold mb-1">Passenger</p>
-              <p className="text-lg font-medium text-[#001F3F]">{ride.passenger}</p>
+              <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/70 font-medium mb-1">Passenger</p>
+              <p className="text-lg font-medium text-[#1A1A1A]">{ride.passenger}</p>
             </div>
             <div className="text-right">
-              <p className="text-xs uppercase tracking-widest text-[#001F3F]/70 font-bold mb-1">Fare</p>
-              <p className="text-lg font-medium text-[#001F3F]">{ride.price}</p>
+              <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/70 font-medium mb-1">Fare</p>
+              <p className="text-lg font-medium text-[#1A1A1A]">{ride.price}</p>
             </div>
           </div>
 
           <div className="space-y-4 relative pl-4">
             <div className="absolute left-1.5 top-2 bottom-2 w-px bg-[#001F3F]/10" />
             <div>
-              <p className="text-[10px] uppercase text-[#001F3F]/70 font-medium tracking-wider mb-0.5">Pickup</p>
-              <p className="text-sm font-medium text-[#001F3F]">{ride.from}</p>
+              <p className="text-[10px] uppercase text-[#1A1A1A]/70 font-medium tracking-wider mb-0.5">Pickup</p>
+              <p className="text-sm font-medium text-[#1A1A1A]">{ride.from}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase text-[#001F3F]/70 font-medium tracking-wider mb-0.5">Dropoff</p>
-              <p className="text-sm font-medium text-[#001F3F]">{ride.to}</p>
+              <p className="text-[10px] uppercase text-[#1A1A1A]/70 font-medium tracking-wider mb-0.5">Dropoff</p>
+              <p className="text-sm font-medium text-[#1A1A1A]">{ride.to}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#001F3F]/5">
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-[#001F3F]/70 font-bold mb-1">Distance</p>
-              <p className="text-sm font-medium text-[#001F3F]">{ride.distance}</p>
+              <p className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 font-medium mb-1">Distance</p>
+              <p className="text-sm font-medium text-[#1A1A1A]">{ride.distance}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-widest text-[#001F3F]/70 font-bold mb-1">Duration</p>
-              <p className="text-sm font-medium text-[#001F3F]">{ride.duration}</p>
+              <p className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 font-medium mb-1">Duration</p>
+              <p className="text-sm font-medium text-[#1A1A1A]">{ride.duration}</p>
             </div>
           </div>
         </div>

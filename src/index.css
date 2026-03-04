@@ -1,21 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;500&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Rajdhani", sans-serif;
 
-  --color-urbont-navy: #0A2140;
+  --color-urbont-navy: #001F3F;
   --color-urbont-blue: #1F6FEB;
   --color-urbont-green: #16A34A;
   --color-urbont-orange: #F59E0B;
 
-  --color-urbont-black: #050505;
+  --color-urbont-black: #1A1A1A;
   --color-urbont-silver: #C0C0C4;
   --color-navy: #001F3F;
   --color-white: #FFFFFF;
-  --color-black: #000000;
+  --color-black: #050505;
 
   --color-border-subtle: rgba(255, 255, 255, 0.1);
   --color-surface: #001F3F;
@@ -39,14 +37,16 @@
 
 @layer base {
   body {
-    @apply bg-black text-white font-sans font-light antialiased overflow-hidden;
+    @apply bg-black text-white font-sans font-light antialiased overflow-hidden selection:bg-white selection:text-black;
+    font-weight: 300;
   }
 }
 
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  @apply text-[11px] uppercase tracking-[0.3em] opacity-60 font-medium;
+  @apply text-[11px] uppercase tracking-[0.3em] opacity-60;
+  font-weight: 500;
 }
 
 /* Custom Scrollbar */
@@ -60,11 +60,13 @@
 }
 
 .btn-primary {
-  @apply bg-white text-navy px-10 py-5 text-xs font-medium tracking-[0.2em] uppercase transition-all active:scale-95 rounded-full shadow-2xl shadow-white/5 hover:bg-white/90;
+  @apply bg-white text-navy px-10 py-5 text-xs tracking-[0.2em] uppercase transition-all active:scale-95 rounded-full shadow-2xl shadow-white/5 hover:bg-white/90;
+  font-weight: 500;
 }
 
 .btn-secondary {
-  @apply border border-white/20 bg-white/5 text-white px-10 py-5 text-xs font-light tracking-[0.2em] uppercase transition-all active:scale-95 rounded-full backdrop-blur-md hover:bg-white/10;
+  @apply border border-white/20 bg-white/5 text-white px-10 py-5 text-xs tracking-[0.2em] uppercase transition-all active:scale-95 rounded-full backdrop-blur-md hover:bg-white/10;
+  font-weight: 300;
 }
 
 .input-field {
@@ -72,29 +74,39 @@
 }
 
 .label-micro {
-  @apply text-[11px] uppercase tracking-[0.3em] text-white/70 font-semibold;
+  @apply text-[11px] uppercase tracking-[0.3em] text-white/70;
+  font-weight: 500;
 }
 
 .app-container {
-  @apply relative h-screen w-full max-w-lg mx-auto bg-black overflow-hidden flex flex-col;
+  @apply relative h-screen w-full mx-auto bg-black overflow-hidden flex flex-col;
   box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+  min-height: -webkit-fill-available;
 }
 
 .navy-gradient-bg {
-  background: linear-gradient(-45deg, #000000, #001F3F, #0A2140, #000000);
+  background: linear-gradient(-45deg, #050505, #001F3F, #0A2140, #050505);
   background-size: 400% 400%;
   animation: gradient-xy 15s ease infinite;
 }
 
 .white-gradient-bg {
-  background: linear-gradient(-45deg, #FFFFFF, #F8F9FA, #E9ECEF, #FFFFFF);
+  background: linear-gradient(-45deg, #FFFFFF, #F8F9FA, #F0F2F5, #FFFFFF);
   background-size: 400% 400%;
   animation: gradient-xy 15s ease infinite;
 }
 
+.light-mode {
+  @apply white-gradient-bg text-[#1A1A1A];
+}
+
+.light-mode * {
+  border-color: rgba(26, 26, 26, 0.1);
+}
+
 @media (min-width: 768px) {
   body {
-    @apply bg-black flex items-center justify-center;
+    @apply bg-[#050505] flex items-center justify-center;
   }
 }
 

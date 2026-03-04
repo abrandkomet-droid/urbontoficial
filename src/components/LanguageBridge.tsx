@@ -170,7 +170,7 @@ export default function LanguageBridge({ rideId, senderRole, onClose }: Language
           const isMe = msg.senderRole === senderRole;
           return (
             <div key={idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-              <div className={`max-w-[85%] p-4 rounded-2xl ${isMe ? 'bg-white text-[#001F3F] rounded-tr-none' : 'bg-white/10 text-white rounded-tl-none'}`}>
+              <div className={`max-w-[85%] p-4 rounded-2xl ${isMe ? 'bg-white text-[#1A1A1A] rounded-tr-none' : 'bg-white/10 text-white rounded-tl-none'}`}>
                 <p className="text-sm font-medium mb-1 opacity-60 uppercase tracking-wider text-[10px]">
                   {isMe ? 'You said' : 'Translated'}
                 </p>
@@ -212,14 +212,14 @@ export default function LanguageBridge({ rideId, senderRole, onClose }: Language
             className={`
               relative w-24 h-24 rounded-full flex items-center justify-center
               transition-all duration-200
-              ${isRecording ? 'scale-110 bg-red-500 shadow-[0_0_40px_rgba(239,68,68,0.4)]' : 'bg-white text-[#001F3F] shadow-lg hover:scale-105 active:scale-95'}
+              ${isRecording ? 'scale-110 bg-red-500 shadow-[0_0_40px_rgba(239,68,68,0.4)]' : 'bg-white text-[#1A1A1A] shadow-lg hover:scale-105 active:scale-95'}
               ${isProcessing ? 'opacity-50 cursor-wait' : 'cursor-pointer'}
             `}
           >
             {isProcessing ? (
               <div className="w-8 h-8 border-2 border-[#001F3F] border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Mic size={32} className={isRecording ? 'text-white' : 'text-[#001F3F]'} />
+              <Mic size={32} className={isRecording ? 'text-white' : 'text-[#1A1A1A]'} />
             )}
             
             {/* Ripple Effect Ring */}

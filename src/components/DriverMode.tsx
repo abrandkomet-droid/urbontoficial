@@ -141,7 +141,7 @@ export default function DriverMode({
         {/* Top Bar: Status & Menu */}
         <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-10 bg-gradient-to-b from-black/80 to-transparent h-32">
           <div className="bg-[#1A1A1B] border border-[#C0C0C4] px-4 py-2 rounded-lg shadow-xl">
-             <span className="text-[#E0E0E0] text-lg font-bold tracking-wider uppercase">
+             <span className="text-[#E0E0E0] text-lg font-medium tracking-wider uppercase">
                {tripStatus.replace('_', ' ')}
              </span>
           </div>
@@ -164,20 +164,20 @@ export default function DriverMode({
               <div className="flex items-center justify-between mb-2 border-b border-[#C0C0C4]/20 pb-2">
                 <div className="flex items-center gap-2 text-[#E0E0E0]">
                   <Plane size={20} />
-                  <span className="text-xl font-bold">{flightInfo.number}</span>
+                  <span className="text-xl font-medium">{flightInfo.number}</span>
                 </div>
-                <span className={`text-sm font-bold px-2 py-0.5 rounded ${flightInfo.status === 'Landed' ? 'bg-green-900 text-green-100' : 'bg-yellow-900 text-yellow-100'}`}>
+                <span className={`text-sm font-medium px-2 py-0.5 rounded ${flightInfo.status === 'Landed' ? 'bg-green-900 text-green-100' : 'bg-yellow-900 text-yellow-100'}`}>
                   {flightInfo.status.toUpperCase()}
                 </span>
               </div>
               <div className="flex justify-between text-[#E0E0E0]">
                 <div className="flex flex-col">
                   <span className="text-xs uppercase opacity-60">Terminal</span>
-                  <span className="text-lg font-bold">{flightInfo.terminal}</span>
+                  <span className="text-lg font-medium">{flightInfo.terminal}</span>
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-xs uppercase opacity-60">Gate</span>
-                  <span className="text-lg font-bold">{flightInfo.gate}</span>
+                  <span className="text-lg font-medium">{flightInfo.gate}</span>
                 </div>
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function DriverMode({
               <div className="bg-[#1A1A1B] border border-[#C0C0C4] rounded-xl p-4 shadow-2xl flex items-center gap-4">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
                 <div className="flex-1">
-                  <p className="text-[#C0C0C4] text-xs font-bold tracking-widest uppercase mb-1">LISTENING...</p>
+                  <p className="text-[#C0C0C4] text-xs font-medium tracking-widest uppercase mb-1">LISTENING...</p>
                   <p className="text-white text-xl font-medium leading-none">
                     {transcription || "..."}
                   </p>
@@ -246,7 +246,7 @@ export default function DriverMode({
 
           {/* Dynamic Timer */}
           <div className={`flex flex-col items-end p-3 rounded-lg border ${timeLeft < 0 ? 'bg-amber-900/20 border-amber-500/50' : 'bg-[#1A1A1B] border-[#C0C0C4]/30'}`}>
-            <span className="text-[#C0C0C4] text-xs font-bold uppercase tracking-widest mb-1">
+            <span className="text-[#C0C0C4] text-xs font-medium uppercase tracking-widest mb-1">
               {timeLeft < 0 ? 'OVERTIME' : 'WAITING TIME'}
             </span>
             <div className="flex items-baseline gap-1">
@@ -256,7 +256,7 @@ export default function DriverMode({
               </span>
             </div>
             {timeLeft < 0 && (
-              <span className="text-amber-400 text-sm font-bold mt-1">
+              <span className="text-amber-400 text-sm font-medium mt-1">
                 +${overtimeCost.toFixed(2)}
               </span>
             )}
@@ -292,12 +292,12 @@ export default function DriverMode({
             className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center cursor-pointer"
             onClick={() => setIsVipSignVisible(false)}
           >
-            <div className="text-center space-y-12 px-4">
+            <div className="text-center space-y-8 px-4">
               <p className="text-[#C0C0C4] text-2xl uppercase tracking-[0.5em] font-medium">Urbont Chauffeur</p>
               <h1 className="text-white text-[15vw] leading-none font-extrabold uppercase tracking-tighter">
                 {passengerName.split(' ')[0]}
               </h1>
-              <h1 className="text-[#404040] text-[10vw] leading-none font-bold uppercase tracking-tighter">
+              <h1 className="text-[#404040] text-[10vw] leading-none font-medium uppercase tracking-tighter">
                 {passengerName.split(' ').slice(1).join(' ')}
               </h1>
             </div>

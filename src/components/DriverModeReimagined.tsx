@@ -212,10 +212,10 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
     return 'Complete Trip';
   };
 
-  if (!isLoaded) return <div className="h-screen w-full bg-white flex items-center justify-center text-[#001F3F]">Loading Navigation...</div>;
+  if (!isLoaded) return <div className="h-screen w-full bg-white flex items-center justify-center text-[#1A1A1A]">Loading Navigation...</div>;
 
   return (
-    <div className="h-screen w-full bg-white relative overflow-hidden font-sans text-[#001F3F]">
+    <div className="h-screen w-full bg-white relative overflow-hidden font-sans text-[#1A1A1A]">
       
       {/* --- Map Layer --- */}
       <div className="absolute inset-0 z-0">
@@ -279,8 +279,8 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               <Menu size={20} strokeWidth={1.5} />
             </button>
             <div className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 px-4 py-2 rounded-full shadow-sm">
-              <span className="text-2xl font-medium text-[#001F3F]">{Math.round(speed)}</span>
-              <span className="text-xs text-[#001F3F]/60 ml-1 font-medium">MPH</span>
+              <span className="text-2xl font-medium text-[#1A1A1A]">{Math.round(speed)}</span>
+              <span className="text-xs text-[#1A1A1A]/60 ml-1 font-medium">MPH</span>
             </div>
           </div>
         </div>
@@ -292,10 +292,10 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
         
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-medium text-[#001F3F] mb-1">
+            <h2 className="text-2xl font-medium text-[#1A1A1A] mb-1">
               {tripStage === 'PICKUP' ? 'Picking up Sarah' : 'Dropping off Sarah'}
             </h2>
-            <div className="flex items-center gap-2 text-[#001F3F]/60 text-sm">
+            <div className="flex items-center gap-2 text-[#1A1A1A]/60 text-sm">
               <Clock size={14} strokeWidth={1.5} />
               <span>{tripDetails.time} remaining</span>
               <span>•</span>
@@ -303,16 +303,16 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             </div>
           </div>
           <div className="flex gap-3">
-            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors">
+            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] hover:bg-[#001F3F]/10 transition-colors">
               <Phone size={20} strokeWidth={1.5} />
             </button>
             <button 
               onClick={() => setShowChat(true)}
-              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
+              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] hover:bg-[#001F3F]/10 transition-colors"
             >
               <MessageSquare size={20} strokeWidth={1.5} />
             </button>
-            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors">
+            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] hover:bg-[#001F3F]/10 transition-colors">
               <ShieldAlert size={20} strokeWidth={1.5} />
             </button>
           </div>
@@ -327,12 +327,12 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
           </div>
           <div className="flex-1 space-y-6">
             <div className={tripStage === 'PICKUP' ? 'opacity-100' : 'opacity-40'}>
-              <p className="text-xs uppercase tracking-widest text-[#001F3F]/40 font-medium mb-1">Pickup</p>
-              <p className="text-lg font-medium text-[#001F3F]">{tripDetails.pickup}</p>
+              <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/40 font-medium mb-1">Pickup</p>
+              <p className="text-lg font-medium text-[#1A1A1A]">{tripDetails.pickup}</p>
             </div>
             <div className={tripStage === 'DROPOFF' ? 'opacity-100' : 'opacity-40'}>
-              <p className="text-xs uppercase tracking-widest text-[#001F3F]/40 font-medium mb-1">Dropoff</p>
-              <p className="text-lg font-medium text-[#001F3F]">{tripDetails.dropoff}</p>
+              <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/40 font-medium mb-1">Dropoff</p>
+              <p className="text-lg font-medium text-[#1A1A1A]">{tripDetails.dropoff}</p>
             </div>
           </div>
         </div>
@@ -357,14 +357,14 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-50 bg-[#001F3F]/95 backdrop-blur-xl flex flex-col p-8 text-white"
           >
-            <div className="flex justify-between items-center mb-12 pt-8">
+            <div className="flex justify-between items-center mb-8 pt-8">
               <h2 className="text-3xl font-light uppercase tracking-widest">Trip Menu</h2>
               <button onClick={() => setShowMenu(false)} className="p-2 bg-white/10 rounded-full"><X size={24} /></button>
             </div>
             
             <div className="flex-1 space-y-4">
               <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
+                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#1A1A1A] transition-all">
                   <Maximize2 size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -374,7 +374,7 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               </button>
               
               <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
+                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#1A1A1A] transition-all">
                   <ShieldAlert size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -384,7 +384,7 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               </button>
 
               <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
+                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#1A1A1A] transition-all">
                   <X size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -412,12 +412,12 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
           >
             <div className="p-6 border-b border-[#001F3F]/5 flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A]">
                   <User size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#001F3F]">{tripDetails.passengerName}</p>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Online</p>
+                  <p className="text-sm font-medium text-[#1A1A1A]">{tripDetails.passengerName}</p>
+                  <p className="text-[10px] text-emerald-600 font-medium uppercase tracking-widest">Online</p>
                 </div>
               </div>
               <button onClick={() => setShowChat(false)} className="p-2 bg-[#001F3F]/5 rounded-full"><X size={20} /></button>
@@ -426,7 +426,7 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {chatHistory.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'driver' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'driver' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#001F3F] rounded-tl-none'}`}>
+                  <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'driver' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#1A1A1A] rounded-tl-none'}`}>
                     {msg.text}
                   </div>
                 </div>

@@ -55,7 +55,8 @@
 }
 
 .glass-panel {
-  @apply bg-navy/80 backdrop-blur-3xl border-t border-white/5 shadow-[0_-20px_60px_rgba(0, 0, 0, 0.8)] rounded-t-[48px];
+  @apply bg-navy/80 backdrop-blur-3xl border-t border-white/5 rounded-t-[48px];
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.8);
 }
 
 .btn-primary {
@@ -75,7 +76,8 @@
 }
 
 .app-container {
-  @apply relative h-screen w-full max-w-md mx-auto bg-black overflow-hidden flex flex-col shadow-[0_0_100px_rgba(0, 0, 0, 0.5)];
+  @apply relative h-screen w-full max-w-md mx-auto bg-black overflow-hidden flex flex-col;
+  box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
 }
 
 .navy-gradient-bg {

@@ -458,7 +458,7 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
-      className="relative h-full w-full flex flex-col justify-between p-8 overflow-hidden navy-gradient-bg"
+      className="relative h-full w-full flex flex-col justify-between p-6 overflow-hidden navy-gradient-bg"
     >
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -488,7 +488,7 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -20, opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-white/80 text-xs uppercase tracking-[0.3em] font-light absolute text-center w-full"
+                className="text-white/95 text-[11px] uppercase tracking-[0.2em] font-medium absolute text-center w-full px-4"
               >
                 {slides[currentSlide]}
               </motion.p>
@@ -505,14 +505,14 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
       >
         <button
           onClick={onStart}
-          className="w-full py-5 bg-white text-[#001F3F] font-medium uppercase tracking-[0.2em] hover:bg-white/90 transition-all rounded-full flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-[0.98] text-xs"
+          className="w-full py-5 bg-white text-[#001F3F] font-bold uppercase tracking-[0.1em] hover:bg-white/90 transition-all rounded-full flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-[0.98] text-[13px]"
         >
           Get Started
         </button>
 
         <button
           onClick={onChauffeurStart}
-          className="w-full py-4 text-white/70 font-medium uppercase tracking-[0.2em] text-[10px] hover:text-white transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 text-white/90 font-semibold uppercase tracking-[0.1em] text-[11px] hover:text-white transition-all flex items-center justify-center gap-2"
         >
           Chauffeur Login <ArrowRight size={12} strokeWidth={1.5} />
         </button>
@@ -530,7 +530,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col p-8 pt-24 navy-gradient-bg text-white relative"
+      className="h-full w-full flex flex-col p-6 pt-16 navy-gradient-bg text-white relative"
     >
       <button onClick={onBack} className="absolute top-8 left-6 p-2 text-white hover:bg-white/10 rounded-full transition-colors">
         <ArrowLeft size={24} />
@@ -550,7 +550,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
 
         <div className="w-full space-y-6">
           <div className="space-y-2">
-            <label className="font-sans text-[10px] text-white/40 uppercase tracking-[0.3em] font-bold">Email ID</label>
+            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-bold">Email ID</label>
             <input
               type="email"
               value={email}
@@ -561,7 +561,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
           </div>
 
           <div className="space-y-2">
-            <label className="font-sans text-[10px] text-white/40 uppercase tracking-[0.3em] font-bold">Password</label>
+            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-bold">Password</label>
             <input
               type="password"
               value={password}
@@ -621,13 +621,13 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
 
   const InputField = ({ label, value, onChange, placeholder, type = "text" }: any) => (
     <div className="space-y-1">
-      <label className="text-[10px] uppercase tracking-widest text-[#001F3F]/60 font-medium">{label}</label>
+      <label className="text-[11px] uppercase tracking-widest text-[#001F3F]/80 font-bold">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full p-3 bg-white border border-black/10 rounded-lg text-sm text-[#001F3F] placeholder:text-[#001F3F]/30 focus:outline-none focus:border-[#001F3F] transition-colors"
+        className="w-full p-3 bg-white border border-black/10 rounded-lg text-base text-[#001F3F] placeholder:text-[#001F3F]/30 focus:outline-none focus:border-[#001F3F] transition-colors"
       />
     </div>
   );
@@ -1038,7 +1038,7 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="h-full w-full flex flex-col p-8 pt-20 navy-gradient-bg text-white"
+      className="h-full w-full flex flex-col p-6 pt-16 navy-gradient-bg text-white"
     >
       <button onClick={onBack} className="p-2 -ml-2 mb-8 text-white hover:bg-white/10 rounded-full transition-colors w-fit">
         <ArrowLeft size={24} />
@@ -1046,7 +1046,7 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
 
       <div className="space-y-12">
         <div className="space-y-2">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">Verification</span>
+          <span className="text-[11px] uppercase tracking-[0.2em] text-white/70 font-bold">Verification</span>
           <h2 className="font-sans text-4xl font-light uppercase tracking-tight text-white">Enter Code</h2>
           <p className="text-xs text-white/60 leading-relaxed font-medium">
             Sent to {phoneNumber}
@@ -1080,7 +1080,7 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
               Resend Code
             </button>
           ) : (
-            <p className="text-xs text-white/40 font-medium uppercase tracking-widest">
+            <p className="text-xs text-white/70 font-semibold uppercase tracking-widest">
               Resend code in {timer}s
             </p>
           )}
@@ -1543,7 +1543,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       </div>
 
       {/* Floating Bottom Content */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[32px] z-20 transition-all duration-500 ${destination ? 'h-[60%]' : 'h-auto p-6 pb-10'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[32px] z-20 transition-all duration-500 overflow-y-auto ${destination ? 'h-[75%] sm:h-[60%]' : 'h-auto p-6 pb-10'}`}>
         {!destination ? (
           <div className="space-y-6">
             <div className="space-y-1">
@@ -1658,8 +1658,8 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
             {/* Options Section */}
             <div className="py-6 border-b border-black/[0.03]">
               <div className="px-6 flex items-center justify-between mb-4">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">Options</span>
-                <button className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">See All</button>
+                <span className="text-[11px] uppercase tracking-[0.2em] text-[#001F3F] font-bold">Options</span>
+                <button className="text-[11px] uppercase tracking-[0.1em] text-[#001F3F] font-bold">See All</button>
               </div>
               <div className="flex gap-3 overflow-x-auto px-6 no-scrollbar">
                 <button onClick={() => setShowScheduleModal(true)} className="shrink-0 px-6 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#001F3F] hover:bg-black/10 transition-colors">
@@ -1682,7 +1682,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               >
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium uppercase tracking-widest text-[#001F3F]">Business Class</span>
+                    <span className="text-base font-bold uppercase tracking-widest text-[#001F3F]">Business Class</span>
                     <ChevronRight size={14} className="text-[#001F3F]" />
                   </div>
                   <span className="text-xs text-[#001F3F]/80 mt-1">$85–$120</span>
@@ -1691,7 +1691,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                   <div className="w-10 h-10 rounded-xl border border-dashed border-black/20 flex items-center justify-center">
                     <Plus size={16} className="text-[#001F3F]/80" />
                   </div>
-                  <span className="text-xs font-medium text-[#001F3F]/80">Add Card</span>
+                  <span className="text-xs font-bold text-[#001F3F]">Add Card</span>
                 </div>
               </button>
 
@@ -2084,7 +2084,7 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
 
             {/* Ride Preferences Section */}
             <div className="py-6 space-y-6">
-              <h4 className="text-[10px] uppercase tracking-[0.3em] text-[#001F3F]/70 font-bold">Ride Preferences</h4>
+              <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#001F3F] font-bold">Ride Preferences</h4>
 
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-3">
@@ -2167,16 +2167,16 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
               onClick={() => setSelectedIdx(i)}
               className="flex flex-col items-center gap-2 shrink-0"
             >
-              <span className={`text-[10px] font-medium uppercase tracking-[0.2em] transition-colors ${i === selectedIdx ? 'text-[#001F3F]' : 'text-[#001F3F]/70'}`}>
+              <span className={`text-[12px] font-bold uppercase tracking-[0.1em] transition-colors ${i === selectedIdx ? 'text-[#001F3F]' : 'text-[#001F3F]/60'}`}>
                 {v.id.toUpperCase()}
               </span>
               {i === selectedIdx && (
                 <div className="w-1 h-1 rounded-full bg-[#001F3F]" />
               )}
               {v.id === 'suv' || v.id === 'concierge' ? (
-                <span className="text-[8px] text-white\/60 font-medium">Members Only</span>
+                <span className="text-[10px] text-[#001F3F] font-bold">Members Only</span>
               ) : (
-                <span className="text-[8px] text-white\/60 font-medium">3 min</span>
+                <span className="text-[10px] text-[#001F3F] font-bold">3 min</span>
               )}
             </button>
           ))}
@@ -2195,8 +2195,8 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
             onClick={() => onConfirm(vehicle)}
             className="w-full py-5 bg-[#001F3F] text-white rounded-xl flex flex-col items-center justify-center gap-0.5 active:scale-[0.98] transition-all"
           >
-            <span className="text-sm font-medium uppercase tracking-[0.2em]">Select {vehicle.id.toUpperCase()}</span>
-            <span className="text-[10px] text-[#001F3F]/80 font-medium uppercase tracking-widest">3 min away</span>
+            <span className="text-sm font-bold uppercase tracking-[0.2em]">Select {vehicle.id.toUpperCase()}</span>
+            <span className="text-[11px] text-white/90 font-bold uppercase tracking-widest">3 min away</span>
           </button>
         </div>
       </div>
@@ -2234,7 +2234,7 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
       style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', background: '#FFFFFF', fontFamily: "'Barlow Condensed', sans-serif" }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '48px 20px 16px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '32px 20px 16px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
         <button onClick={onBack} style={{ padding: 8, marginLeft: -8, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%', color: '#1A1A1A' }}>
           <ArrowLeft size={24} />
         </button>
@@ -2273,7 +2273,7 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
 
         {/* Payment Method Section */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#1A1A1A', opacity: 0.6, margin: 0, lineHeight: 1.5 }}>Payment Method</h3>
+          <h3 style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#1A1A1A', opacity: 0.8, margin: 0, lineHeight: 1.5 }}>Payment Method</h3>
 
           {/* Selected Card */}
           <div style={{
@@ -2314,7 +2314,7 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
           background: 'rgba(10,37,64,0.03)', borderRadius: 12
         }}>
           <ShieldCheck size={20} color="#0A2540" style={{ flexShrink: 0 }} />
-          <p style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.6, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.8, margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
             Your payment is processed securely by Stripe. Card data is encrypted end-to-end.
           </p>
         </div>
@@ -2780,7 +2780,7 @@ function TrackingScreen({ vehicle, onBack }: { vehicle: Vehicle, onBack: () => v
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', background: tripStatus === 'ARRIVED' ? '#FFFFFF' : '#28A745', display: 'inline-block' }} />
           <span style={{
-            fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const,
+            fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const,
             color: tripStatus === 'ARRIVED' ? '#FFFFFF' : '#1A1A1A'
           }}>
             {tripStatus === 'ARRIVED' ? 'Arrived' : 'En Route'}
@@ -2804,7 +2804,7 @@ function TrackingScreen({ vehicle, onBack }: { vehicle: Vehicle, onBack: () => v
           }}
         >
           <Phone size={18} />
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Call</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Call</span>
         </button>
 
         <button
@@ -2818,7 +2818,7 @@ function TrackingScreen({ vehicle, onBack }: { vehicle: Vehicle, onBack: () => v
           }}
         >
           <MessageCircle size={18} />
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Message</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Message</span>
           <span style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#28A745', boxShadow: '0 0 4px rgba(40,167,69,0.6)' }} />
         </button>
 
@@ -2837,7 +2837,7 @@ function TrackingScreen({ vehicle, onBack }: { vehicle: Vehicle, onBack: () => v
           }}
         >
           <Share2 size={18} />
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Share</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Share</span>
         </button>
 
         <button
@@ -2850,7 +2850,7 @@ function TrackingScreen({ vehicle, onBack }: { vehicle: Vehicle, onBack: () => v
           }}
         >
           <X size={18} />
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Cancel</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Cancel</span>
         </button>
       </div>
 
@@ -3081,15 +3081,15 @@ function ProfileScreen({
           {/* User Info Card */}
           <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1">Name</div>
+              <div className="text-[12px] text-[#001F3F] uppercase tracking-widest font-bold mb-1">Name</div>
               <div className="text-base font-medium text-[#001F3F]">{userProfile.firstName} {userProfile.lastName}</div>
             </div>
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1">Phone</div>
+              <div className="text-[12px] text-[#001F3F] uppercase tracking-widest font-bold mb-1">Phone</div>
               <div className="text-base font-medium text-[#001F3F]">{userProfile.phone}</div>
             </div>
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1">Email</div>
+              <div className="text-[12px] text-[#001F3F] uppercase tracking-widest font-bold mb-1">Email</div>
               <div className="text-base font-medium text-[#001F3F]">{userProfile.email}</div>
             </div>
             {userProfile.accountType === 'business' && (
@@ -3105,7 +3105,7 @@ function ProfileScreen({
 
           {/* Favorites Card */}
           <div className="space-y-3">
-            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Favorites</div>
+            <div className="text-[12px] text-[#001F3F] uppercase tracking-widest px-2 font-bold transition-all">Favorites</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <button onClick={() => onEditAddress('home')} className="flex items-center gap-4 w-full p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
                 <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
@@ -3158,7 +3158,7 @@ function ProfileScreen({
 
           {/* Settings Card */}
           <div className="space-y-3">
-            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Settings</div>
+            <div className="text-[12px] text-[#001F3F] uppercase tracking-widest px-2 font-bold transition-all">Settings</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <div className="p-5 border-b border-black/[0.04]">
                 <div className="flex justify-between items-center mb-2">

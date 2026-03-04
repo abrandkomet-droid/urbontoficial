@@ -46,7 +46,7 @@
 .vertical-text {
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  @apply text-[10px] uppercase tracking-[0.4em] opacity-30 font-light;
+  @apply text-[11px] uppercase tracking-[0.3em] opacity-60 font-medium;
 }
 
 /* Custom Scrollbar */
@@ -72,11 +72,11 @@
 }
 
 .label-micro {
-  @apply text-[9px] uppercase tracking-[0.4em] text-white/40 font-medium;
+  @apply text-[11px] uppercase tracking-[0.3em] text-white/70 font-semibold;
 }
 
 .app-container {
-  @apply relative h-screen w-full max-w-md mx-auto bg-black overflow-hidden flex flex-col;
+  @apply relative h-screen w-full max-w-lg mx-auto bg-black overflow-hidden flex flex-col;
   box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
 }
 

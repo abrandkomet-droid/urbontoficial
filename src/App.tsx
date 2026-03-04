@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+// Version: 1.0.1 - UI Improvements Deployment
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import {
@@ -707,7 +708,7 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
 
         {step === 3 && (
           <div className="space-y-4">
-            <p className="text-sm opacity-80 mb-4">
+            <p className="text-sm text-[#001F3F] font-bold mb-4">
               Please upload clear, legible copies of the following required documents.
             </p>
             {REQUIRED_DOCS.map(doc => (
@@ -747,7 +748,7 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
 
         {step === 4 && (
           <div className="space-y-6">
-            <p className="text-sm opacity-80 mb-4">
+            <p className="text-sm text-[#001F3F] font-bold mb-4">
               Enter your banking information for weekly payouts.
             </p>
             <InputField label="Bank Name" value={formData.bankName} onChange={(v: string) => setFormData({ ...formData, bankName: v })} placeholder="Chase" />

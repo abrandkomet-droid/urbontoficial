@@ -1940,10 +1940,10 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="h-full w-full bg-white flex flex-col"
+      className="h-full w-full bg-white flex flex-col overflow-hidden"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-8 pb-4 shrink-0">
+      <div className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0 border-b border-black/[0.03]">
         <button onClick={onBack} className="p-2 -ml-2">
           <X size={24} className="text-[#1A1A1A]" />
         </button>
@@ -1954,23 +1954,23 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 overflow-y-auto scrollbar-hide">
         {/* Vehicle Image */}
-        <div className="w-full aspect-[4/3] relative overflow-hidden bg-black/5">
+        <div className="w-full aspect-video relative overflow-hidden bg-black/[0.02]">
           <img
             src={vehicle.image}
             alt={vehicle.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             referrerPolicy="no-referrer"
           />
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
             {VEHICLES.map((_, i) => (
-              <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === selectedIdx ? 'bg-white' : 'bg-white/40'}`} />
+              <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === selectedIdx ? 'bg-[#001F3F]' : 'bg-[#001F3F]/20'}`} />
             ))}
           </div>
         </div>
 
-        <div className="px-4 py-8 space-y-8">
+        <div className="px-4 py-6 space-y-6">
           {/* Title & Description */}
           <div className="text-center space-y-2">
             <h3 className="text-2xl font-light text-[#1A1A1A]">{vehicle.name}</h3>
@@ -1978,12 +1978,12 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
           </div>
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-6 text-sm font-medium text-[#1A1A1A]">
+          <div className="flex items-center justify-center gap-4 text-xs font-medium text-[#1A1A1A] uppercase tracking-widest">
             <span>From {vehicle.price}</span>
             <span className="w-1 h-1 rounded-full bg-black/20" />
-            <span className="flex items-center gap-1.5"><Users size={16} /> 4</span>
+            <span className="flex items-center gap-1.5"><Users size={14} /> 4</span>
             <span className="w-1 h-1 rounded-full bg-black/20" />
-            <span className="flex items-center gap-1.5"><Briefcase size={16} /> 1–3</span>
+            <span className="flex items-center gap-1.5"><Briefcase size={14} /> 1–3</span>
           </div>
 
           {/* Price Comparison */}
@@ -1995,39 +1995,27 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
               </div>
               <div className="h-8 w-px bg-[#001F3F]/10" />
               <div className="flex flex-col text-right">
-                <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">Competitors</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">Others</span>
                 <span className="text-lg font-light text-[#1A1A1A]/80 line-through decoration-red-500/50">{vehicle.competitorPrice}</span>
               </div>
             </div>
           )}
 
-          <p className="text-sm text-[#1A1A1A] font-light text-center leading-relaxed">
-            An elevated, professional service for all your business needs. Finely crafted interiors and exquisite personal service.
-          </p>
-
           {/* Details List */}
           <div className="space-y-0 border-t border-black/[0.03] pt-4">
-            <div className="flex items-center justify-between py-4 border-b border-black/[0.03]">
-              <span className="text-sm font-normal text-[#1A1A1A]">Estimated Price</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-[#1A1A1A]/80">From {vehicle.price}</span>
-                <ChevronRight size={16} className="text-[#1A1A1A]/70" />
-              </div>
-            </div>
-
             {/* Ride Preferences Section */}
-            <div className="py-6 space-y-6">
-              <h4 className="text-[12px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium">Ride Preferences</h4>
+            <div className="py-2 space-y-6">
+              <h4 className="text-[11px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium text-center">Preferences</h4>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-3">
-                  <p className="text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest">Climate Control</p>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                  <p className="text-[10px] font-medium text-[#1A1A1A]/60 uppercase tracking-widest text-center">Climate Control</p>
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar justify-center">
                     {PREF_OPTIONS.climate.map(opt => (
                       <button
                         key={opt}
                         onClick={() => setPreferences({ ...preferences, climate: opt })}
-                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.climate === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
+                        className={`px-4 py-2 rounded-full text-[11px] transition-all border shrink-0 ${preferences.climate === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10'}`}
                       >
                         {opt}
                       </button>
@@ -2036,28 +2024,13 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest">Music Genre</p>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                  <p className="text-[10px] font-medium text-[#1A1A1A]/60 uppercase tracking-widest text-center">Music Genre</p>
+                  <div className="flex gap-2 overflow-x-auto no-scrollbar justify-center">
                     {PREF_OPTIONS.music.map(opt => (
                       <button
                         key={opt}
                         onClick={() => setPreferences({ ...preferences, music: opt })}
-                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.music === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest">Conversation</p>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    {PREF_OPTIONS.conversation.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => setPreferences({ ...preferences, conversation: opt })}
-                        className={`px-4 py-2 rounded-full text-xs transition-all border ${preferences.conversation === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10 hover:border-[#001F3F]/30'}`}
+                        className={`px-4 py-2 rounded-full text-[11px] transition-all border shrink-0 ${preferences.music === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10'}`}
                       >
                         {opt}
                       </button>
@@ -2068,72 +2041,56 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
             </div>
 
             <div className="flex items-center justify-between py-4 border-b border-black/[0.03]">
-              <span className="text-sm font-normal text-[#1A1A1A]">Passengers</span>
+              <span className="text-sm font-normal text-[#1A1A1A]">Capacity</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#1A1A1A]/80">Up to 4 people</span>
-                <ChevronRight size={16} className="text-[#1A1A1A]/70" />
+                <span className="text-sm text-[#1A1A1A]/80">4 Pax • 3 Bags</span>
               </div>
             </div>
-            <div className="flex items-center justify-between py-4 border-b border-black/[0.03]">
-              <span className="text-sm font-normal text-[#1A1A1A]">Luggage Capacity</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-[#1A1A1A]/80">1–3 suitcases</span>
-                <ChevronRight size={16} className="text-[#1A1A1A]/70" />
-              </div>
-            </div>
-            <div className="flex items-start justify-between py-4">
-              <span className="text-sm font-normal text-[#1A1A1A] shrink-0">Amenities</span>
-              <span className="text-sm text-[#1A1A1A]/80 text-right max-w-[200px]">
-                Water, phone charger, tissues, sanitising wipes
-              </span>
+
+            <div className="py-4">
+              <span className="text-sm font-normal text-[#1A1A1A] block mb-2">Amenities</span>
+              <p className="text-sm text-[#1A1A1A]/60 font-light leading-relaxed">
+                Water, phone charger, tissues, and premium sanitising wipes included.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer Selector */}
-      <div className="shrink-0 bg-white border-t border-black/[0.03] pb-10">
-        <div className="flex gap-8 overflow-x-auto px-4 py-6 no-scrollbar justify-center">
+      <div className="shrink-0 bg-white border-t border-black/[0.03] pb-8 pt-4">
+        <div className="flex gap-6 overflow-x-auto px-4 py-4 no-scrollbar justify-start sm:justify-center mb-2">
           {VEHICLES.map((v, i) => (
             <button
               key={v.id}
               onClick={() => setSelectedIdx(i)}
-              className="flex flex-col items-center gap-2 shrink-0"
+              className="flex flex-col items-center gap-1.5 shrink-0"
             >
-              <span className={`text-[12px] font-medium uppercase tracking-[0.1em] transition-colors ${i === selectedIdx ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/60'}`}>
+              <span className={`text-[11px] font-medium uppercase tracking-[0.1em] transition-colors ${i === selectedIdx ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/40'}`}>
                 {v.id.toUpperCase()}
               </span>
-              {i === selectedIdx && (
+              {i === selectedIdx ? (
                 <div className="w-1 h-1 rounded-full bg-[#001F3F]" />
-              )}
-              {v.id === 'suv' || v.id === 'concierge' ? (
-                <span className="text-[10px] text-[#1A1A1A] font-medium">Members Only</span>
               ) : (
-                <span className="text-[10px] text-[#1A1A1A] font-medium">3 min</span>
+                <div className="w-1 h-1 rounded-full bg-transparent" />
               )}
             </button>
           ))}
         </div>
 
-        <div className="px-4 space-y-4">
-          <button className="w-full flex items-center justify-between p-4 rounded-xl border border-black/[0.04] bg-white hover:bg-black/[0.02] transition-colors">
-            <div className="flex items-center gap-3">
-              <CreditCard size={18} className="text-[#1A1A1A]" />
-              <span className="text-sm font-medium text-[#1A1A1A]">Personal • Visa 4242</span>
-            </div>
-            <ChevronRight size={16} className="text-[#1A1A1A]/70" />
-          </button>
-
+        <div className="px-4 space-y-3">
           <button
             onClick={() => onConfirm(vehicle)}
-            className="w-full py-5 bg-[#001F3F] text-white rounded-xl flex flex-col items-center justify-center gap-0.5 active:scale-[0.98] transition-all"
+            className="w-full py-4 bg-[#001F3F] text-white rounded-xl flex flex-col items-center justify-center gap-0.5 active:scale-[0.98] transition-all shadow-lg shadow-[#001F3F]/10"
           >
             <span className="text-sm font-medium uppercase tracking-[0.2em]">Select {vehicle.id.toUpperCase()}</span>
-            <span className="text-[11px] text-white/90 font-medium uppercase tracking-widest">3 min away</span>
+            <span className="text-[10px] text-white/70 font-medium uppercase tracking-[0.1em]">{vehicle.price} • ETA 3 min</span>
           </button>
         </div>
       </div>
     </motion.div>
+  );
+}
   );
 }
 

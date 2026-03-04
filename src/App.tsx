@@ -2,50 +2,38 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 import {
-  MapPin,
-  Clock,
-  ArrowLeft,
-  Star,
-  ShieldCheck,
-  Navigation,
-  Menu,
-  User,
-  Phone,
-  Search,
-  History,
-  CreditCard,
-  Settings,
-  LogOut,
-  Users,
-  Briefcase,
-  CheckCircle2,
-  X,
-  ChevronRight,
-  Camera,
-  Home,
-  Plus,
-  Music,
-  Sun,
-  DoorOpen,
-  Info,
-  Plane,
-  Train,
-  MessageCircle,
-  Crown,
-  Zap,
-  Bell,
-  ArrowRight,
-  Gift,
-  Percent,
-  CheckCheck,
-  BellOff,
-  Share2,
-  Smartphone,
-  Check,
-  FileText,
-  Mail,
-  AlertTriangle
+  Train, MessageCircle, Crown, Zap, Bell, ArrowRight, Gift, Percent,
+  CheckCheck, BellOff, Share2, Smartphone, Check, FileText, Mail,
+  AlertTriangle, Search, ArrowLeft, ShieldCheck, MapPin, Star, Phone,
+  X, CheckCircle2, User, CreditCard, Clock, Settings, LogOut, Heart,
+  HelpCircle, Shield, ChevronRight, Menu, Map as MapIcon, Calendar,
+  Info, Layers, Compass, Loader2, Briefcase, Camera, Plus, Music,
+  Sun, DoorOpen, Plane, History, Navigation, Users
 } from 'lucide-react';
+
+// --- Animated Premium Icon Component ---
+const AnimatedIcon = ({ icon: Icon, size = 20, color = 'currentColor', animation = 'pulse' as 'pulse' | 'spin' | 'float' | 'ping' }) => {
+  const animations = {
+    pulse: { scale: [1, 1.05, 1], opacity: [0.9, 1, 0.9] },
+    spin: { rotate: 360 },
+    float: { y: [0, -3, 0] },
+    ping: { scale: [1, 1.1], opacity: [1, 0] }
+  };
+
+  return (
+    <motion.div
+      animate={animations[animation]}
+      transition={{
+        duration: animation === 'spin' ? 2 : 2.5,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Icon size={size} color={color} />
+    </motion.div>
+  );
+};
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile, Chauffeur } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
 import DriverDashboardMobile from './components/DriverDashboardMobile';
@@ -2376,7 +2364,7 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
 
 function SearchingScreen({ onFound }: { onFound: () => void, key?: string }) {
   useEffect(() => {
-    const timer = setTimeout(onFound, 3000);
+    const timer = setTimeout(onFound, 4000);
     return () => clearTimeout(timer);
   }, [onFound]);
 
@@ -2396,36 +2384,33 @@ function SearchingScreen({ onFound }: { onFound: () => void, key?: string }) {
         <motion.div
           animate={{ scale: [1, 2.2], opacity: [0.3, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
-          style={{ position: 'absolute', inset: -20, borderRadius: '50%', border: '1px solid #C0C0C0' }}
+          style={{ position: 'absolute', inset: -20, borderRadius: '50%', border: '1px solid rgba(192,192,192,0.3)' }}
         />
         <motion.div
           animate={{ scale: [1, 2.5], opacity: [0.2, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeOut', delay: 0.5 }}
-          style={{ position: 'absolute', inset: -20, borderRadius: '50%', border: '1px solid #C0C0C0' }}
-        />
-        <motion.div
-          animate={{ scale: [1, 3], opacity: [0.15, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeOut', delay: 1 }}
-          style={{ position: 'absolute', inset: -20, borderRadius: '50%', border: '1px solid #C0C0C0' }}
+          style={{ position: 'absolute', inset: -20, borderRadius: '50%', border: '1px solid rgba(192,192,192,0.2)' }}
         />
         <div style={{
-          position: 'relative', width: 96, height: 96, borderRadius: '50%',
-          border: '1px solid rgba(192,192,192,0.3)', display: 'flex',
+          position: 'relative', width: 100, height: 100, borderRadius: '50%',
+          border: '1px solid rgba(192,192,192,0.2)', display: 'flex',
           alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(192,192,192,0.05)', backdropFilter: 'blur(8px)'
+          background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
+          boxShadow: '0 0 40px rgba(0,0,0,0.3)'
         }}>
-          <motion.div animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>
-            <Navigation size={36} color="#C0C0C0" />
-          </motion.div>
+          <AnimatedIcon icon={Compass} size={40} color="#C0C0C0" animation="spin" />
         </div>
       </div>
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <h2 style={{ fontSize: 28, fontWeight: 300, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#FFFFFF', margin: 0, lineHeight: 1.3 }}>
-          Finding your Chauffeur
+      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 300, textTransform: 'uppercase' as const, letterSpacing: '0.15em', color: '#FFFFFF', margin: 0, lineHeight: 1.3 }}>
+          Searching for Excellence
         </h2>
-        <p style={{ fontSize: 14, letterSpacing: '0.15em', textTransform: 'uppercase' as const, fontWeight: 500, color: '#C0C0C0', margin: 0, lineHeight: 1.5 }}>
-          Connecting to elite fleet...
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Loader2 size={16} className="animate-spin text-[#C0C0C0]" />
+          <p style={{ fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, fontWeight: 500, color: '#C0C0C0', margin: 0 }}>
+            Contacting elite chauffeurs
+          </p>
+        </div>
       </div>
     </motion.div>
   );

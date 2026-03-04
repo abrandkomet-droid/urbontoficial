@@ -125,18 +125,33 @@ URBONT uses 4 external APIs for core functionality. This document covers configu
 
 ---
 
-## Environment Variables Summary
+## 6. Freepik (Iconos & Assets)
+**Propósito:** Iconografía premium y elementos visuales animados.
+
+| Detalle | Valor |
+|--------|-------|
+| **API Key Variable** | `FREEPIK_API_KEY` |
+| **Location** | `.env` |
+
+### Notas
+- Se utiliza para obtener iconos SVG de alta calidad y animaciones lottie.
+- Los assets se cargan de forma dinámica para mantener el bundle size ligero.
+
+---
+
+## Resumen de Variables de Entorno (Actualizado)
 
 ```bash
-# Server-side (never exposed to client)
-GROQ_API_KEY=gsk_...
+# Servidor (Privadas)
+GROQ_API_KEY=...
 GEMINI_API_KEY=...
-STRIPE_SECRET_KEY=sk_test_...
-CLOUDINARY_URL=cloudinary://...
+STRIPE_SECRET_KEY=...
+CLOUDINARY_URL=...
+FREEPIK_API_KEY=FPSXd269abd3d8ed2d36624e2df72a1ba264
 
-# Client-side (prefixed with VITE_)
+# Cliente (Públicas)
 VITE_GOOGLE_MAPS_API_KEY=...
-VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+VITE_STRIPE_PUBLISHABLE_KEY=...
 ```
 
 ## Security Rules

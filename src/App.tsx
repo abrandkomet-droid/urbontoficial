@@ -2552,30 +2552,26 @@ function TrackingScreen({ vehicle, onBack, isLoaded }: { vehicle: Vehicle, onBac
         background: '#FFFFFF', position: 'relative', fontFamily: "'Barlow Condensed', sans-serif"
       }}
     >
-      {/* Top Bar — Chauffeur Mini Info (60px) */}
-      <div style={{
-        height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px', background: '#FFFFFF',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.06)', zIndex: 10, flexShrink: 0, marginTop: 40
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={onBack} style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: '#1A1A1A', borderRadius: '50%' }}>
+      {/* Top Bar — Chauffeur Mini Info */}
+      <div className="h-[75px] flex items-center justify-between px-4 bg-white shadow-sm z-50 shrink-0 pt-6 border-b border-black/[0.03]">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="p-2 hover:bg-black/5 rounded-full text-[#1A1A1A] transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', border: '2px solid #0A2540', flexShrink: 0 }}>
-            <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
+          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#001F3F] shrink-0">
+            <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           </div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.3 }}>{CHAUFFEUR.name}</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Star size={11} fill="#FFC107" color="#FFC107" />
-              <span style={{ fontSize: 12, fontWeight: 500, color: '#1A1A1A', opacity: 0.6 }}>{CHAUFFEUR.rating}</span>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-[#1A1A1A] leading-tight">{CHAUFFEUR.name}</span>
+            <div className="flex items-center gap-1">
+              <Star size={10} className="fill-[#FFC107] text-[#FFC107]" />
+              <span className="text-[10px] font-medium text-[#1A1A1A]/50">{CHAUFFEUR.rating} • {vehicle.id.toUpperCase()}</span>
             </div>
           </div>
         </div>
         <button
           onClick={() => setShowFullProfile(true)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 500, color: '#0066CC', fontFamily: "'Barlow Condensed', sans-serif", padding: '4px 8px' }}
+          className="px-3 py-1.5 rounded-full bg-[#001F3F]/05 text-[#001F3F] text-[10px] font-medium uppercase tracking-widest border border-[#001F3F]/10 active:bg-[#001F3F]/10 transition-colors"
         >
           View profile
         </button>
@@ -2653,70 +2649,54 @@ function TrackingScreen({ vehicle, onBack, isLoaded }: { vehicle: Vehicle, onBac
         </div>
       </div>
 
-      {/* Bottom Bar — 3 Equal Buttons (80px) */}
-      <div style={{
-        height: 80, display: 'flex', alignItems: 'center', gap: 8,
-        padding: '0 20px', background: '#FFFFFF',
-        boxShadow: '0 -2px 12px rgba(0,0,0,0.06)', zIndex: 10, flexShrink: 0, paddingBottom: 16
-      }}>
-        <button
-          onClick={() => window.open(`tel:${CHAUFFEUR.phone}`)}
-          style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 4, padding: '10px 0',
-            background: 'rgba(0,102,204,0.08)', border: '1px solid rgba(0,102,204,0.2)',
-            borderRadius: 12, cursor: 'pointer', color: '#0066CC', fontFamily: "'Barlow Condensed', sans-serif"
-          }}
-        >
-          <Phone size={18} />
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Call</span>
-        </button>
+      {/* Action Buttons — 4 Equal Columns */}
+      <div className="bg-white border-t border-black/[0.03] p-4 pb-12 z-50 space-y-4">
+        <div className="grid grid-cols-4 gap-2">
+          <button
+            onClick={() => window.open(`tel:${CHAUFFEUR.phone}`)}
+            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-[#001F3F]"
+          >
+            <div className="w-10 h-10 rounded-full bg-[#001F3F]/[0.05] flex items-center justify-center">
+              <Phone size={18} />
+            </div>
+            <span className="text-[10px] font-medium uppercase tracking-widest">Call</span>
+          </button>
 
-        <button
-          onClick={() => setShowChat(true)}
-          style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 4, padding: '10px 0',
-            background: 'rgba(40,167,69,0.08)', border: '1px solid rgba(40,167,69,0.2)',
-            borderRadius: 12, cursor: 'pointer', color: '#28A745', fontFamily: "'Barlow Condensed', sans-serif",
-            position: 'relative'
-          }}
-        >
-          <MessageCircle size={18} />
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Message</span>
-          <span style={{ position: 'absolute', top: 6, right: 6, width: 7, height: 7, borderRadius: '50%', background: '#28A745', boxShadow: '0 0 4px rgba(40,167,69,0.6)' }} />
-        </button>
+          <button
+            onClick={() => setShowChat(true)}
+            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-[#28A745] relative"
+          >
+            <div className="w-10 h-10 rounded-full bg-[#28A745]/[0.05] flex items-center justify-center">
+              <MessageCircle size={18} />
+            </div>
+            <span className="text-[10px] font-medium uppercase tracking-widest">Chat</span>
+            <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#28A745] ring-2 ring-white" />
+          </button>
 
-        {/* Share Trip button */}
-        <button
-          onClick={() => {
-            const shareData = { title: 'URBONT Trip', text: `I'm on my way with URBONT. Chauffeur: ${CHAUFFEUR.name}`, url: window.location.href };
-            if (navigator.share) { navigator.share(shareData).catch(() => { }); }
-            else { navigator.clipboard.writeText(shareData.text); }
-          }}
-          style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 4, padding: '10px 0',
-            background: 'rgba(10,37,64,0.05)', border: '1px solid rgba(10,37,64,0.12)',
-            borderRadius: 12, cursor: 'pointer', color: '#0A2540', fontFamily: "'Barlow Condensed', sans-serif"
-          }}
-        >
-          <Share2 size={18} />
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Share</span>
-        </button>
+          <button
+            onClick={() => {
+              const shareData = { title: 'URBONT Trip', text: `I'm on my way with URBONT. Chauffeur: ${CHAUFFEUR.name}`, url: window.location.href };
+              if (navigator.share) { navigator.share(shareData).catch(() => { }); }
+              else { navigator.clipboard.writeText(shareData.text); }
+            }}
+            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-[#001F3F]"
+          >
+            <div className="w-10 h-10 rounded-full bg-[#001F3F]/[0.05] flex items-center justify-center">
+              <Share2 size={18} />
+            </div>
+            <span className="text-[10px] font-medium uppercase tracking-widest">Share</span>
+          </button>
 
-        <button
-          onClick={() => setShowCancelDialog(true)}
-          style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', gap: 4, padding: '10px 0',
-            background: 'rgba(220,53,69,0.06)', border: '1px solid rgba(220,53,69,0.15)',
-            borderRadius: 12, cursor: 'pointer', color: '#DC3545', fontFamily: "'Barlow Condensed', sans-serif"
-          }}
-        >
-          <X size={18} />
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' as const }}>Cancel</span>
-        </button>
+          <button
+            onClick={() => setShowCancelDialog(true)}
+            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-red-500"
+          >
+            <div className="w-10 h-10 rounded-full bg-red-500/[0.05] flex items-center justify-center">
+              <X size={18} />
+            </div>
+            <span className="text-[10px] font-medium uppercase tracking-widest">Cancel</span>
+          </button>
+        </div>
       </div>
 
       {/* Trip Completed bar — shown when chauffeur ARRIVED */}

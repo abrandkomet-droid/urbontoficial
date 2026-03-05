@@ -1,4 +1,4 @@
-export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health';
+export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health' | 'schedule-ride' | 'trip-completed';
 
 export interface Vehicle {
   id: string;
@@ -34,7 +34,7 @@ export const VEHICLES: Vehicle[] = [
   {
     id: 'business',
     name: 'Business Class',
-    description: 'Mercedes-Benz E-Class, EQE, EQS or BMW 5-Series',
+    description: 'Cadillac CT5, Lincoln Continental or similar',
     price: '$85',
     competitorPrice: '$115',
     image: 'https://lh3.googleusercontent.com/d/1YCyiCKOslLhw9IuVvSYIoM3a4VHQ_S8u'
@@ -42,7 +42,7 @@ export const VEHICLES: Vehicle[] = [
   {
     id: 'suv',
     name: 'SUV Class',
-    description: 'Suburban, Escalade or Lincoln Navigator',
+    description: 'Escalade, Suburban, Tahoe, GMC Yukon or Lincoln Navigator',
     price: '$125',
     competitorPrice: '$160',
     image: 'https://lh3.googleusercontent.com/d/1qNamqzOFyRgZbiBfk_2woxQvToRtDeLY'

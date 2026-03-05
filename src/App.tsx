@@ -48,7 +48,9 @@ import {
   Mail,
   AlertTriangle,
   MessageSquare,
-  Building2
+  Building2,
+  UserPlus,
+  Calendar,
 } from 'lucide-react';
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
@@ -75,6 +77,12 @@ export default function App() {
   const [editingAddressType, setEditingAddressType] = useState<'home' | 'work' | 'other' | null>(null);
   const [returnToMenu, setReturnToMenu] = useState(false);
   const [activeTrip, setActiveTrip] = useState(false);
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
+    libraries: ['places']
+  });
 
   const navigate = (screen: Screen, fromMenu = false) => {
     setCurrentScreen(screen);
@@ -184,7 +192,7 @@ export default function App() {
                     <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">SIGNATURE</span>
                   </button>
                   <button onClick={() => navigate('membership', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">ACCESS</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">THE CLUB</span>
                   </button>
                   <button onClick={() => navigate('customer-service', true)} className="group flex flex-col items-start">
                     <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">HELP CENTER</span>
@@ -221,6 +229,13 @@ export default function App() {
                     <div className="flex items-center gap-3">
                       <CreditCard size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
                       <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">PAYMENT</span>
+                    </div>
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
+                  </button>
+                  <button onClick={() => navigate('schedule-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
+                    <div className="flex items-center gap-3">
+                      <Calendar size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">SCHEDULE RIDE</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
@@ -307,6 +322,8 @@ export default function App() {
             onPaymentMethods={() => navigate('payment-methods')}
             activeTrip={activeTrip}
             onReturnToTrip={() => navigate('tracking')}
+            isLoaded={isLoaded}
+            loadError={loadError}
           />
         )}
         {currentScreen === 'notifications' && (
@@ -351,6 +368,15 @@ export default function App() {
               setActiveTrip(false);
               navigate('booking');
             }}
+            onCompleteTrip={() => {
+              setActiveTrip(false);
+              navigate('trip-completed');
+            }}
+          />
+        )}
+        {currentScreen === 'trip-completed' && (
+          <TripCompletedScreen 
+            onBack={() => navigate('booking')} 
           />
         )}
         {currentScreen === 'profile' && (
@@ -421,6 +447,13 @@ export default function App() {
         {currentScreen === 'gift-ride' && (
           <GiftRideScreen 
             onBack={handleBack} 
+            isLoaded={isLoaded}
+          />
+        )}
+        {currentScreen === 'schedule-ride' && (
+          <ScheduleRideScreen 
+            onBack={handleBack} 
+            isLoaded={isLoaded}
           />
         )}
         {currentScreen === 'settings' && (
@@ -1074,7 +1107,7 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
   );
 }
 
-function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, activeTrip, onReturnToTrip }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, activeTrip: boolean, onReturnToTrip: () => void }) {
+function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, activeTrip, onReturnToTrip, isLoaded, loadError }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, activeTrip: boolean, onReturnToTrip: () => void, isLoaded: boolean, loadError: Error | undefined }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showHourlyModal, setShowHourlyModal] = useState(false);
@@ -1088,6 +1121,8 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
   const [pickup, setPickup] = useState('Detecting location...');
   const [extraDestinations, setExtraDestinations] = useState<string[]>([]);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [flightNumber, setFlightNumber] = useState('');
+  const [isAirportPickup, setIsAirportPickup] = useState(false);
   const places = ['Times Square', 'Beverly Hills', 'Miami Beach', 'Las Vegas', 'Grand Canyon', 'Central Park'];
 
   useEffect(() => {
@@ -1096,12 +1131,6 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
     }, 3000);
     return () => clearInterval(interval);
   }, []);
-
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
-    libraries: ['places']
-  });
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -1507,7 +1536,10 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
 
             <div className="space-y-0 border-t border-black/[0.04] pt-2">
               <div 
-                onClick={() => { setDestination('Heathrow Airport'); }}
+                onClick={() => { 
+                  setDestination('Heathrow Airport'); 
+                  setIsAirportPickup(true);
+                }}
                 className="flex items-center gap-4 w-full py-5 border-b border-black/[0.04] cursor-pointer hover:bg-black/[0.02] rounded-xl px-2 transition-colors -mx-2 group"
               >
                 <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
@@ -1588,6 +1620,31 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                     </button>
                   </motion.div>
                 ))}
+
+                {/* Flight Number Input */}
+                {isAirportPickup && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="flex items-start gap-4"
+                  >
+                    <div className="mt-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full border-2 border-[#001F3F] flex items-center justify-center">
+                        <Plane size={8} className="text-[#001F3F]" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <input 
+                        type="text"
+                        value={flightNumber}
+                        onChange={(e) => setFlightNumber(e.target.value)}
+                        placeholder="Flight Number (e.g. AA123)"
+                        className="text-base font-medium text-[#001F3F] bg-transparent outline-none w-full border-b border-black/5 pb-1"
+                      />
+                      <p className="text-xs text-[#001F3F]/50 mt-0.5">We track your flight for delays</p>
+                    </div>
+                  </motion.div>
+                )}
 
                 <div className="flex items-start gap-4">
                   <div className="mt-1.5">
@@ -2379,7 +2436,81 @@ function ConfirmedScreen({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-function TrackingScreen({ vehicle, onBack, onEndTrip }: { vehicle: Vehicle, onBack: () => void, onEndTrip: () => void }) {
+function TripCompletedScreen({ onBack }: { onBack: () => void }) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
+    >
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 size={40} className="text-emerald-600" />
+        </div>
+        
+        <h2 className="text-2xl font-light text-[#001F3F] mb-2">Trip Completed</h2>
+        <p className="text-sm text-gray-500 mb-8">Your ride has been successfully completed.</p>
+
+        <div className="w-full bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+              <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            </div>
+            <div className="text-left">
+              <h4 className="font-bold text-[#001F3F] text-lg">{CHAUFFEUR.name}</h4>
+              <p className="text-xs text-gray-500">URB-2026 • Black</p>
+            </div>
+          </div>
+
+          <div className="space-y-2 mb-6">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Rate your experience</p>
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button 
+                  key={star}
+                  onClick={() => setRating(star)}
+                  className="p-1 transition-transform active:scale-90"
+                >
+                  <Star 
+                    size={32} 
+                    className={`${rating >= star ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} transition-colors`} 
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <textarea
+            placeholder="Add a comment (optional)..."
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#001F3F] transition-colors resize-none h-24"
+          />
+        </div>
+
+        <div className="w-full space-y-4">
+          <div className="flex justify-between items-center px-4">
+            <span className="text-sm text-gray-500">Total Fare</span>
+            <span className="text-xl font-bold text-[#001F3F]">$85.00</span>
+          </div>
+          
+          <button 
+            onClick={onBack}
+            className="w-full py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip }: { vehicle: Vehicle, onBack: () => void, onEndTrip: () => void, onCompleteTrip: () => void }) {
   const [isPanelExpanded, setIsPanelExpanded] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
@@ -2535,12 +2666,20 @@ function TrackingScreen({ vehicle, onBack, onEndTrip }: { vehicle: Vehicle, onBa
 
           {/* Quick Cancel Button (Visible in collapsed view) */}
           {!isPanelExpanded && (
-            <button 
-              onClick={onEndTrip}
-              className="w-full py-3 text-red-600 text-[10px] font-bold uppercase tracking-[0.2em] border border-red-100 rounded-xl hover:bg-red-50 transition-all mb-4"
-            >
-              Cancel Journey
-            </button>
+            <div className="flex gap-2 mb-4">
+              <button 
+                onClick={onEndTrip}
+                className="flex-1 py-3 text-red-600 text-[10px] font-bold uppercase tracking-[0.2em] border border-red-100 rounded-xl hover:bg-red-50 transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={onCompleteTrip}
+                className="flex-1 py-3 bg-[#001F3F] text-white text-[10px] font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-[#001F3F]/90 transition-all"
+              >
+                Complete Trip
+              </button>
+            </div>
           )}
 
           {/* Expanded Details */}
@@ -3079,9 +3218,9 @@ function ProfileScreen({
 function RideHistoryScreen({ onBack }: { onBack: () => void }) {
   const [selectedRide, setSelectedRide] = useState<any>(null);
   const history = [
-    { id: 1, date: 'Oct 24, 2024', destination: 'JFK Airport, Terminal 4', vehicle: 'First Class', price: '$145.00' },
-    { id: 2, date: 'Oct 20, 2024', destination: 'The Plaza Hotel', vehicle: 'Business Class', price: '$85.00' },
-    { id: 3, date: 'Oct 15, 2024', destination: 'Madison Square Garden', vehicle: 'Business XL', price: '$120.00' },
+    { id: 1, date: 'Oct 24, 2024', destination: 'JFK Airport, Terminal 4', vehicle: 'First Class', price: '$145.00', status: 'Completed' },
+    { id: 2, date: 'Oct 20, 2024', destination: 'The Plaza Hotel', vehicle: 'Business Class', price: '$85.00', status: 'Completed' },
+    { id: 3, date: 'Oct 15, 2024', destination: 'Madison Square Garden', vehicle: 'Business XL', price: '$120.00', status: 'Cancelled' },
   ];
 
   return (
@@ -3108,9 +3247,20 @@ function RideHistoryScreen({ onBack }: { onBack: () => void }) {
 
         <div className="space-y-4">
           {history.map((ride) => (
-            <div key={ride.id} className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] space-y-4 hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-shadow">
+            <button 
+              key={ride.id} 
+              onClick={() => setSelectedRide(ride)}
+              className="w-full text-left bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] space-y-4 hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all active:scale-[0.99]"
+            >
               <div className="flex justify-between items-start border-b border-black/[0.04] pb-4">
-                <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest font-medium">{ride.date}</div>
+                <div className="flex items-center gap-3">
+                  <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest font-medium">{ride.date}</div>
+                  <div className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${
+                    ride.status === 'Completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  }`}>
+                    {ride.status}
+                  </div>
+                </div>
                 <div className="text-sm font-medium text-[#001F3F]">{ride.price}</div>
               </div>
               <div className="flex gap-4 items-center">
@@ -3121,8 +3271,9 @@ function RideHistoryScreen({ onBack }: { onBack: () => void }) {
                   <h3 className="font-sans text-xl font-medium text-[#001F3F]">{ride.destination}</h3>
                   <div className="text-xs text-[#001F3F]/80 mt-1">{ride.vehicle}</div>
                 </div>
+                <ChevronRight size={18} className="text-[#001F3F]/30" />
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -3135,6 +3286,7 @@ function RideHistoryScreen({ onBack }: { onBack: () => void }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
+            onClick={() => setSelectedRide(null)}
           >
             <motion.div 
               initial={{ y: '100%' }}
@@ -3142,6 +3294,7 @@ function RideHistoryScreen({ onBack }: { onBack: () => void }) {
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center">
                 <h3 className="text-2xl font-light text-[#001F3F]">Receipt</h3>
@@ -3170,6 +3323,12 @@ function RideHistoryScreen({ onBack }: { onBack: () => void }) {
                   <div>
                     <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Vehicle Class</p>
                     <p className="text-sm font-medium text-[#001F3F] mt-1">{selectedRide.vehicle}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Status</p>
+                    <p className={`text-sm font-medium mt-1 ${
+                      selectedRide.status === 'Completed' ? 'text-green-700' : 'text-red-700'
+                    }`}>{selectedRide.status}</p>
                   </div>
                 </div>
               </div>
@@ -3441,10 +3600,41 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function GiftRideScreen({ onBack }: { onBack: () => void }) {
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [message, setMessage] = useState('');
+function ScheduleRideScreen({ onBack, isLoaded }: { onBack: () => void, isLoaded: boolean }) {
+  const [pickup, setPickup] = useState('');
+  const [dropoff, setDropoff] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  
+  const [pickupRef, setPickupRef] = useState<google.maps.places.Autocomplete | null>(null);
+  const [dropoffRef, setDropoffRef] = useState<google.maps.places.Autocomplete | null>(null);
+
+  const onPickupLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    setPickupRef(autocomplete);
+  };
+
+  const onPickupPlaceChanged = () => {
+    if (pickupRef) {
+      const place = pickupRef.getPlace();
+      setPickup(place.formatted_address || '');
+    }
+  };
+
+  const onDropoffLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    setDropoffRef(autocomplete);
+  };
+
+  const onDropoffPlaceChanged = () => {
+    if (dropoffRef) {
+      const place = dropoffRef.getPlace();
+      setDropoff(place.formatted_address || '');
+    }
+  };
+
+  const handleSchedule = () => {
+    console.log('Scheduling ride:', { pickup, dropoff, date, time });
+    onBack();
+  };
 
   return (
     <motion.div 
@@ -3453,87 +3643,458 @@ function GiftRideScreen({ onBack }: { onBack: () => void }) {
       exit={{ x: '100%' }}
       className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
-      <div className="flex items-center p-6 gap-4">
+      <div className="flex items-center p-6 gap-4 border-b border-black/[0.04]">
         <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="font-sans text-xl font-medium uppercase tracking-widest text-[#001F3F]">GIFT A JOURNEY</h2>
+        <h2 className="font-sans text-xl font-light uppercase tracking-widest text-[#001F3F]">
+          Schedule Ride
+        </h2>
       </div>
 
-      <div className="flex-1 p-8 space-y-8 overflow-y-auto pb-24">
-        <div className="space-y-6 text-center mt-4">
-          <div className="w-24 h-24 bg-[#001F3F] rounded-full flex items-center justify-center mx-auto shadow-xl shadow-[#001F3F]/20">
-            <Gift size={36} className="text-white" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-[#001F3F]">Surprise someone special</h3>
-            <p className="text-sm text-[#001F3F]/60 font-normal leading-relaxed max-w-[260px] mx-auto">
-              Send an elite chauffeur to pick up your guest.
-            </p>
+      <div className="flex-1 overflow-y-auto bg-[#F5F7FA] p-6 space-y-8">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] space-y-6">
+          <div className="space-y-4">
+            <label className="text-xs font-bold uppercase tracking-widest text-[#001F3F]/50">Trip Details</label>
+            <div className="space-y-3">
+              <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3 relative z-20">
+                <MapPin size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                {isLoaded ? (
+                  <Autocomplete
+                    onLoad={onPickupLoad}
+                    onPlaceChanged={onPickupPlaceChanged}
+                    className="w-full"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Pickup Location"
+                      value={pickup}
+                      onChange={(e) => setPickup(e.target.value)}
+                      className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                    />
+                  </Autocomplete>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Pickup Location"
+                    value={pickup}
+                    onChange={(e) => setPickup(e.target.value)}
+                    className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                  />
+                )}
+              </div>
+              <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3 relative z-10">
+                <MapPin size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                {isLoaded ? (
+                  <Autocomplete
+                    onLoad={onDropoffLoad}
+                    onPlaceChanged={onDropoffPlaceChanged}
+                    className="w-full"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Dropoff Location"
+                      value={dropoff}
+                      onChange={(e) => setDropoff(e.target.value)}
+                      className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                    />
+                  </Autocomplete>
+                ) : (
+                  <input
+                    type="text"
+                    placeholder="Dropoff Location"
+                    value={dropoff}
+                    onChange={(e) => setDropoff(e.target.value)}
+                    className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                  />
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                  <Calendar size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                  <input
+                    type="date"
+                    placeholder="Date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                  />
+                </div>
+                <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                  <Clock size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                  <input
+                    type="time"
+                    placeholder="Time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="space-y-6 mt-8">
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold ml-1">Recipient Name</label>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/30">
-                <User size={20} />
-              </div>
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Who are we picking up?"
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30"
-              />
-            </div>
-          </div>
+        <button 
+          onClick={handleSchedule}
+          disabled={!pickup || !dropoff || !date || !time}
+          className="w-full py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-[#001F3F]/20 disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98]"
+        >
+          Schedule Ride
+        </button>
+      </div>
+    </motion.div>
+  );
+}
 
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold ml-1">Phone Number</label>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/30">
-                <Phone size={20} />
-              </div>
-              <input 
-                type="tel" 
-                value={phone}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '');
-                  setPhone(val);
-                }}
-                placeholder="000 000 0000"
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30"
-              />
-            </div>
-          </div>
+function GiftRideScreen({ onBack, isLoaded }: { onBack: () => void, isLoaded: boolean }) {
+  const [view, setView] = useState<'menu' | 'gift_card' | 'guest_booking'>('menu');
+  
+  // Gift Card State
+  const [amount, setAmount] = useState<number | null>(null);
+  const [customAmount, setCustomAmount] = useState('');
+  const [recipientName, setRecipientName] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [message, setMessage] = useState('');
 
-          <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold ml-1">Personal Message</label>
-            <div className="relative">
-              <div className="absolute left-4 top-4 text-[#001F3F]/30">
-                <MessageCircle size={20} />
-              </div>
-              <textarea 
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Add a welcoming note..."
-                rows={4}
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30 resize-none"
-              />
-            </div>
-          </div>
-        </div>
+  // Guest Booking State
+  const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [pickup, setPickup] = useState('');
+  const [dropoff, setDropoff] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
 
-        <div className="pt-4 pb-12">
-          <button 
-            disabled={!name || !phone}
-            className="w-full h-14 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-30 disabled:bg-[#D1D5DB] hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all flex items-center justify-center shadow-lg shadow-[#001F3F]/10"
-          >
-            Continue to Booking
-          </button>
-        </div>
+  const [pickupRef, setPickupRef] = useState<google.maps.places.Autocomplete | null>(null);
+  const [dropoffRef, setDropoffRef] = useState<google.maps.places.Autocomplete | null>(null);
+
+  const onPickupLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    setPickupRef(autocomplete);
+  };
+
+  const onPickupPlaceChanged = () => {
+    if (pickupRef) {
+      const place = pickupRef.getPlace();
+      setPickup(place.formatted_address || '');
+    }
+  };
+
+  const onDropoffLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    setDropoffRef(autocomplete);
+  };
+
+  const onDropoffPlaceChanged = () => {
+    if (dropoffRef) {
+      const place = dropoffRef.getPlace();
+      setDropoff(place.formatted_address || '');
+    }
+  };
+
+  const handleBack = () => {
+    if (view !== 'menu') {
+      setView('menu');
+    } else {
+      onBack();
+    }
+  };
+
+  const handleSendGiftCard = () => {
+    // Logic to send gift card
+    console.log('Sending gift card:', { amount: amount || customAmount, recipientName, recipientEmail, message });
+    onBack();
+  };
+
+  const handleBookGuest = () => {
+    // Logic to book for guest
+    console.log('Booking for guest:', { guestName, guestPhone, pickup, dropoff, date, time });
+    onBack();
+  };
+
+  return (
+    <motion.div 
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '100%' }}
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
+    >
+      <div className="flex items-center p-6 gap-4 border-b border-black/[0.04]">
+        <button onClick={handleBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+          <ArrowLeft size={24} />
+        </button>
+        <h2 className="font-sans text-xl font-light uppercase tracking-widest text-[#001F3F]">
+          {view === 'menu' ? 'Gift a Journey' : view === 'gift_card' ? 'Send Gift Card' : 'Guest Booking'}
+        </h2>
+      </div>
+
+      <div className="flex-1 overflow-y-auto bg-[#F5F7FA]">
+        <AnimatePresence mode="wait">
+          {view === 'menu' && (
+            <motion.div 
+              key="menu"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="p-6 space-y-6"
+            >
+              <div className="text-center space-y-4 py-8">
+                <div className="w-20 h-20 bg-[#001F3F] rounded-full flex items-center justify-center mx-auto shadow-xl shadow-[#001F3F]/20 text-white">
+                  <Gift size={32} />
+                </div>
+                <h3 className="text-2xl font-light text-[#001F3F]">Share the Experience</h3>
+                <p className="text-sm text-[#001F3F]/60 leading-relaxed max-w-xs mx-auto">
+                  Choose how you'd like to share the URBONT experience with others.
+                </p>
+              </div>
+
+              <div className="grid gap-4">
+                <button 
+                  onClick={() => setView('gift_card')}
+                  className="bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] flex items-center justify-between group hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                      <CreditCard size={24} />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-lg font-medium text-[#001F3F]">Send a Gift Card</h4>
+                      <p className="text-xs text-[#001F3F]/50 mt-1">Send credit to friends or family</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={20} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+                </button>
+
+                <button 
+                  onClick={() => setView('guest_booking')}
+                  className="bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] flex items-center justify-between group hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                      <UserPlus size={24} />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-lg font-medium text-[#001F3F]">Book for a Guest</h4>
+                      <p className="text-xs text-[#001F3F]/50 mt-1">Arrange a ride for someone else</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={20} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'gift_card' && (
+            <motion.div 
+              key="gift_card"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="p-6 space-y-8"
+            >
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] space-y-6">
+                <div className="space-y-4">
+                  <label className="text-xs font-bold uppercase tracking-widest text-[#001F3F]/50">Select Amount</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[50, 100, 250].map((amt) => (
+                      <button
+                        key={amt}
+                        onClick={() => { setAmount(amt); setCustomAmount(''); }}
+                        className={`py-3 rounded-xl text-sm font-medium transition-all ${
+                          amount === amt 
+                            ? 'bg-[#001F3F] text-white shadow-lg shadow-[#001F3F]/20' 
+                            : 'bg-[#F5F7FA] text-[#001F3F] hover:bg-[#001F3F]/5'
+                        }`}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/40 font-medium">$</span>
+                    <input
+                      type="number"
+                      placeholder="Custom Amount"
+                      value={customAmount}
+                      onChange={(e) => { setCustomAmount(e.target.value); setAmount(null); }}
+                      className={`w-full bg-[#F5F7FA] rounded-xl py-3 pl-8 pr-4 text-sm font-medium outline-none transition-all ${
+                        customAmount ? 'ring-2 ring-[#001F3F] bg-white' : 'focus:bg-white focus:ring-2 focus:ring-[#001F3F]/10'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-xs font-bold uppercase tracking-widest text-[#001F3F]/50">Recipient Details</label>
+                  <div className="space-y-3">
+                    <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                      <User size={18} className="text-[#001F3F]/30 mr-3" />
+                      <input
+                        type="text"
+                        placeholder="Recipient Name"
+                        value={recipientName}
+                        onChange={(e) => setRecipientName(e.target.value)}
+                        className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                      />
+                    </div>
+                    <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                      <Mail size={18} className="text-[#001F3F]/30 mr-3" />
+                      <input
+                        type="email"
+                        placeholder="Recipient Email"
+                        value={recipientEmail}
+                        onChange={(e) => setRecipientEmail(e.target.value)}
+                        className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                      />
+                    </div>
+                    <div className="flex items-start bg-[#F5F7FA] rounded-xl px-4 py-3">
+                      <MessageCircle size={18} className="text-[#001F3F]/30 mr-3 mt-0.5" />
+                      <textarea
+                        placeholder="Add a personal message..."
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        rows={3}
+                        className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30 resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleSendGiftCard}
+                disabled={(!amount && !customAmount) || !recipientName || !recipientEmail}
+                className="w-full py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-[#001F3F]/20 disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98]"
+              >
+                Send Gift Card
+              </button>
+            </motion.div>
+          )}
+
+          {view === 'guest_booking' && (
+            <motion.div 
+              key="guest_booking"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="p-6 space-y-8"
+            >
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] space-y-6">
+                <div className="space-y-4">
+                  <label className="text-xs font-bold uppercase tracking-widest text-[#001F3F]/50">Guest Details</label>
+                  <div className="space-y-3">
+                    <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                      <User size={18} className="text-[#001F3F]/30 mr-3" />
+                      <input
+                        type="text"
+                        placeholder="Guest Name"
+                        value={guestName}
+                        onChange={(e) => setGuestName(e.target.value)}
+                        className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                      />
+                    </div>
+                    <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                      <Phone size={18} className="text-[#001F3F]/30 mr-3" />
+                      <input
+                        type="tel"
+                        placeholder="Guest Phone Number"
+                        value={guestPhone}
+                        onChange={(e) => setGuestPhone(e.target.value)}
+                        className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-xs font-bold uppercase tracking-widest text-[#001F3F]/50">Trip Details</label>
+                  <div className="space-y-3">
+                    <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3 relative z-20">
+                      <MapPin size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                      {isLoaded ? (
+                        <Autocomplete
+                          onLoad={onPickupLoad}
+                          onPlaceChanged={onPickupPlaceChanged}
+                          className="w-full"
+                        >
+                          <input
+                            type="text"
+                            placeholder="Pickup Location"
+                            value={pickup}
+                            onChange={(e) => setPickup(e.target.value)}
+                            className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                          />
+                        </Autocomplete>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Pickup Location"
+                          value={pickup}
+                          onChange={(e) => setPickup(e.target.value)}
+                          className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                        />
+                      )}
+                    </div>
+                    <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3 relative z-10">
+                      <MapPin size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                      {isLoaded ? (
+                        <Autocomplete
+                          onLoad={onDropoffLoad}
+                          onPlaceChanged={onDropoffPlaceChanged}
+                          className="w-full"
+                        >
+                          <input
+                            type="text"
+                            placeholder="Dropoff Location"
+                            value={dropoff}
+                            onChange={(e) => setDropoff(e.target.value)}
+                            className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                          />
+                        </Autocomplete>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="Dropoff Location"
+                          value={dropoff}
+                          onChange={(e) => setDropoff(e.target.value)}
+                          className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                        />
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                        <Calendar size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                        <input
+                          type="date"
+                          placeholder="Date"
+                          value={date}
+                          onChange={(e) => setDate(e.target.value)}
+                          className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                        />
+                      </div>
+                      <div className="flex items-center bg-[#F5F7FA] rounded-xl px-4 py-3">
+                        <Clock size={18} className="text-[#001F3F]/30 mr-3 shrink-0" />
+                        <input
+                          type="time"
+                          placeholder="Time"
+                          value={time}
+                          onChange={(e) => setTime(e.target.value)}
+                          className="bg-transparent w-full outline-none text-sm text-[#001F3F] placeholder:text-[#001F3F]/30"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleBookGuest}
+                disabled={!guestName || !guestPhone || !pickup || !dropoff || !date || !time}
+                className="w-full py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-[#001F3F]/20 disabled:opacity-50 disabled:shadow-none transition-all active:scale-[0.98]"
+              >
+                Request Booking
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
@@ -3565,7 +4126,12 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
             <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">General</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <div className="flex justify-between items-center p-5 border-b border-black/[0.04]">
-                <span className="text-base font-medium text-[#001F3F]">Notifications</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                    <Bell size={16} />
+                  </div>
+                  <span className="text-base font-medium text-[#001F3F]">Notifications</span>
+                </div>
                 <button 
                   onClick={() => setNotifications(!notifications)}
                   className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${notifications ? 'bg-[#001F3F]' : 'bg-gray-200'}`}
@@ -3577,7 +4143,12 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
                 </button>
               </div>
               <div className="flex justify-between items-center p-5 border-b border-black/[0.04]">
-                <span className="text-base font-medium text-[#001F3F]">Location Services</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                    <MapPin size={16} />
+                  </div>
+                  <span className="text-base font-medium text-[#001F3F]">Location Services</span>
+                </div>
                 <button 
                   onClick={() => setLocation(!location)}
                   className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${location ? 'bg-[#001F3F]' : 'bg-gray-200'}`}
@@ -3592,7 +4163,12 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
                 onClick={() => setShowLanguageMenu(true)}
                 className="w-full flex justify-between items-center p-5 hover:bg-black/[0.01] transition-colors"
               >
-                <span className="text-base font-medium text-[#001F3F]">Language</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                    <MessageSquare size={16} />
+                  </div>
+                  <span className="text-base font-medium text-[#001F3F]">Language</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-[#001F3F]/60">{language}</span>
                   <ChevronRight size={18} className="text-[#001F3F]/40" />
@@ -3604,9 +4180,24 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
           <div className="space-y-2">
             <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Support</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
-              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Help Center</span></button>
-              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Terms of Service</span></button>
-              <button className="w-full text-left p-5 hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Privacy Policy</span></button>
+              <button className="w-full flex items-center gap-3 p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
+                <div className="w-8 h-8 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                  <Info size={16} />
+                </div>
+                <span className="text-base font-medium text-[#001F3F]">Help Center</span>
+              </button>
+              <button className="w-full flex items-center gap-3 p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
+                <div className="w-8 h-8 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                  <FileText size={16} />
+                </div>
+                <span className="text-base font-medium text-[#001F3F]">Terms of Service</span>
+              </button>
+              <button className="w-full flex items-center gap-3 p-5 hover:bg-black/[0.02] transition-colors">
+                <div className="w-8 h-8 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                  <ShieldCheck size={16} />
+                </div>
+                <span className="text-base font-medium text-[#001F3F]">Privacy Policy</span>
+              </button>
             </div>
           </div>
         </div>
@@ -3799,9 +4390,18 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void }) {
 }
 
 function CustomerServiceScreen({ onBack }: { onBack: () => void }) {
-  const [showChat, setShowChat] = useState(false);
+  const [view, setView] = useState<'main' | 'chat' | 'faq'>('main');
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<{sender: 'user' | 'agent', text: string}[]>([{sender: 'agent', text: 'Hello! How can I assist you today?'}]);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  const faqs = [
+    { q: "How do I book a ride?", a: "You can book a ride directly from the home screen by entering your pickup and drop-off locations." },
+    { q: "What is the cancellation policy?", a: "Cancellations made less than 2 hours before pickup incur a 100% fee. Airport transfers have a 60-minute grace period." },
+    { q: "Can I book for someone else?", a: "Yes, use the 'Gift a Ride' feature in the menu to book a journey for a guest." },
+    { q: "What payment methods are accepted?", a: "We accept all major credit cards, Apple Pay, and Google Pay." },
+    { q: "Are pets allowed?", a: "Small pets in carriers are allowed in SUV class vehicles. Please notify us in advance." },
+  ];
 
   const sendMessage = () => {
     if (message.trim()) {
@@ -3813,6 +4413,14 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const handleBack = () => {
+    if (view !== 'main') {
+      setView('main');
+    } else {
+      onBack();
+    }
+  };
+
   return (
     <motion.div 
       initial={{ y: '100%' }}
@@ -3821,113 +4429,157 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void }) {
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
       className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
-      <div className="flex items-center justify-between p-6">
-        <h2 className="font-sans text-2xl font-light text-[#001F3F]">Help Center</h2>
-        <button onClick={onBack} className="p-2 bg-white rounded-full shadow-sm text-[#001F3F]/80 hover:bg-white/10 transition-colors">
-          <X size={18} />
-        </button>
-      </div>
-
-      <div className="flex-1 px-6 pt-4 space-y-8">
-        <div className="text-center space-y-3 mb-8">
-          <div className="inline-flex p-4 bg-[#001F3F]/10 rounded-full text-[#001F3F] mb-2 shadow-sm border border-[#001F3F]/20">
-            <MessageCircle size={32} />
-          </div>
-          <p className="text-sm font-normal text-[#001F3F]/80 leading-relaxed px-4">
-            How can we assist you today? Our concierge team is available 24/7.
-          </p>
-        </div>
-
-        <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
-          <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors group">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
-                <MessageCircle size={18} />
-              </div>
-              <span className="text-base font-medium text-[#001F3F]">Open Chat</span>
-            </div>
-            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+      <div className="flex items-center justify-between p-6 border-b border-black/[0.04]">
+        <div className="flex items-center gap-4">
+          <button onClick={handleBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
+            <ArrowLeft size={24} />
           </button>
-          
-          <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors group">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
-                <Phone size={18} />
-              </div>
-              <span className="text-base font-medium text-[#001F3F]">Call Us</span>
-            </div>
-            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
-          </button>
-          
-          <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 hover:bg-black/[0.02] transition-colors group">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
-                <Info size={18} />
-              </div>
-              <span className="text-base font-medium text-[#001F3F]">Questions & Answers</span>
-            </div>
-            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
-          </button>
+          <h2 className="font-sans text-xl font-light uppercase tracking-widest">
+            {view === 'main' ? 'Help Center' : view === 'chat' ? 'Live Chat' : 'FAQ'}
+          </h2>
         </div>
       </div>
-    
-      {/* Chat Modal */}
-      <AnimatePresence>
-        {showChat && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-white z-50 flex flex-col"
-          >
-            <div className="flex items-center p-6 gap-4 border-b border-black/[0.04] bg-white">
-              <button onClick={() => setShowChat(false)} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
-                <ArrowLeft size={24} />
-              </button>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#001F3F]/10 flex items-center justify-center text-[#001F3F]">
-                  <MessageCircle size={18} />
-                </div>
-                <div>
-                  <h3 className="font-medium text-[#001F3F]">URBONT Concierge</h3>
-                  <p className="text-xs text-[#001F3F]/80">Typically replies in minutes</p>
-                </div>
-              </div>
-            </div>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#001F3F]/[0.02]">
-              {chatHistory.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl p-4 ${msg.sender === 'user' ? 'bg-[#001F3F] text-white rounded-tr-sm' : 'bg-white text-[#001F3F] border border-black/[0.04] shadow-sm rounded-tl-sm'}`}>
-                    <p className="text-sm leading-relaxed">{msg.text}</p>
+      <div className="flex-1 overflow-y-auto bg-[#F5F7FA]">
+        <AnimatePresence mode="wait">
+          {view === 'main' && (
+            <motion.div 
+              key="main"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="p-6 space-y-8"
+            >
+              <div className="text-center space-y-4 mt-4">
+                <div className="w-20 h-20 bg-[#001F3F] rounded-full flex items-center justify-center mx-auto shadow-xl shadow-[#001F3F]/20 text-white">
+                  <MessageCircle size={32} />
+                </div>
+                <h3 className="text-2xl font-light text-[#001F3F]">How can we help?</h3>
+                <p className="text-sm text-[#001F3F]/60 leading-relaxed max-w-xs mx-auto">
+                  Our concierge team is available 24/7 to assist you with any inquiries.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <button onClick={() => setView('chat')} className="w-full bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] flex items-center justify-between group hover:shadow-md transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                      <MessageSquare size={20} />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-base font-medium text-[#001F3F]">Start Live Chat</h4>
+                      <p className="text-xs text-[#001F3F]/50 mt-1">Wait time: &lt; 2 min</p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="p-6 bg-white border-t border-black/[0.04]">
-              <div className="flex items-center gap-3">
-                <input 
-                  type="text" 
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                  placeholder="Type a message..."
-                  className="flex-1 p-4 bg-[#001F3F]/5 rounded-full text-[#001F3F] outline-none text-sm"
-                />
-                <button 
-                  onClick={sendMessage}
-                  disabled={!message.trim()}
-                  className="w-12 h-12 rounded-full bg-[#001F3F] text-white flex items-center justify-center disabled:opacity-50 transition-opacity"
-                >
-                  <ArrowRight size={20} />
+                  <ChevronRight size={20} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+                </button>
+                
+                <button onClick={() => setView('chat')} className="w-full bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] flex items-center justify-between group hover:shadow-md transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                      <Phone size={20} />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-base font-medium text-[#001F3F]">Call Concierge</h4>
+                      <p className="text-xs text-[#001F3F]/50 mt-1">Available 24/7</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={20} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
+                </button>
+                
+                <button onClick={() => setView('faq')} className="w-full bg-white p-6 rounded-2xl shadow-sm border border-black/[0.04] flex items-center justify-between group hover:shadow-md transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                      <Info size={20} />
+                    </div>
+                    <div className="text-left">
+                      <h4 className="text-base font-medium text-[#001F3F]">Questions & Answers</h4>
+                      <p className="text-xs text-[#001F3F]/50 mt-1">Common topics</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={20} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
                 </button>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-  
+            </motion.div>
+          )}
+
+          {view === 'chat' && (
+            <motion.div 
+              key="chat"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="flex flex-col h-full"
+            >
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {chatHistory.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] rounded-2xl p-4 ${msg.sender === 'user' ? 'bg-[#001F3F] text-white rounded-tr-sm' : 'bg-white text-[#001F3F] border border-black/[0.04] shadow-sm rounded-tl-sm'}`}>
+                      <p className="text-sm leading-relaxed">{msg.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-4 bg-white border-t border-black/[0.04]">
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="text" 
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder="Type a message..."
+                    className="flex-1 p-4 bg-[#F5F7FA] rounded-full text-[#001F3F] outline-none text-sm focus:bg-[#001F3F]/5 transition-colors"
+                  />
+                  <button 
+                    onClick={sendMessage}
+                    disabled={!message.trim()}
+                    className="w-12 h-12 rounded-full bg-[#001F3F] text-white flex items-center justify-center disabled:opacity-50 transition-opacity shadow-lg shadow-[#001F3F]/20"
+                  >
+                    <ArrowRight size={20} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {view === 'faq' && (
+            <motion.div 
+              key="faq"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="p-6 space-y-4"
+            >
+              {faqs.map((faq, idx) => (
+                <div key={idx} className="bg-white rounded-2xl border border-black/[0.04] overflow-hidden shadow-sm">
+                  <button 
+                    onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
+                    className="w-full flex items-center justify-between p-5 text-left"
+                  >
+                    <span className="text-sm font-medium text-[#001F3F]">{faq.q}</span>
+                    <ChevronRight size={16} className={`text-[#001F3F]/40 transition-transform duration-300 ${expandedFaq === idx ? 'rotate-90' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {expandedFaq === idx && (
+                      <motion.div 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-5 pb-5 pt-0 text-sm text-[#001F3F]/70 leading-relaxed font-light border-t border-black/[0.04] mt-2 pt-4">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
@@ -4317,20 +4969,24 @@ function LegalScreen({ onBack }: { onBack: () => void }) {
 function MembershipScreen({ onBack }: { onBack: () => void }) {
   const privileges = [
     { 
-      name: 'LUXE', 
-      description: 'Discover the latest-generation Mercedes-Maybach S-Class, delivering the smoothest and most elegant journeys. Available in Dubai and Paris.' 
+      name: 'PRESIDENTIAL', 
+      description: 'The ultimate in American executive travel. Featuring the Lincoln Continental and Cadillac CT6 for a smooth, authoritative arrival.' 
     },
     { 
-      name: 'SUV', 
-      description: 'Experience URBONT’s most refined class to date, featuring the latest generation Range Rover Long Wheelbase 4×4, available exclusively in London.' 
+      name: 'FLAGSHIP SUV', 
+      description: 'Command presence with the Cadillac Escalade ESV and Lincoln Navigator. Unmatched luxury, space, and American craftsmanship.' 
     },
     { 
-      name: 'CONCIERGE', 
-      description: 'Reclaim your precious time by having a trusted chauffeur handle errands — including seamless purchasing — on your behalf.' 
+      name: 'EXECUTIVE SUV', 
+      description: 'Versatility meets comfort. The Chevrolet Suburban, Tahoe, and GMC Yukon Denali offer superior capacity for your entourage and luggage.' 
     },
     { 
-      name: 'CHAUFFEUR FOR A DAY', 
-      description: 'Reserve a chauffeur for up to an entire day, at a convenient flat hourly rate.' 
+      name: 'LIFESTYLE', 
+      description: 'Reclaim your time. Our trusted team handles errands, exclusive purchases, and reservations on your behalf.' 
+    },
+    { 
+      name: 'CHARTER', 
+      description: 'Complete freedom. A dedicated chauffeur and vehicle at your disposal for as long as you need, at a flat hourly rate.' 
     }
   ];
 
@@ -4350,15 +5006,15 @@ function MembershipScreen({ onBack }: { onBack: () => void }) {
 
       <div className="flex-1 overflow-y-auto px-6 pb-12 no-scrollbar">
         <div className="text-center space-y-4 mt-8 mb-16 px-6">
-          <h3 className="text-3xl font-light text-[#001F3F]">Access</h3>
+          <h3 className="text-3xl font-light text-[#001F3F]">The Club</h3>
           <p className="text-base font-light text-[#001F3F] leading-relaxed">
-            Access exclusive privileges after taking 15 journeys within 6 months, or by invitation from another member.
+            Unlock elite status after taking 15 journeys within 6 months, or by invitation from another member.
           </p>
           
           {/* Progress Tracker */}
           <div className="mt-12 space-y-4">
             <div className="flex justify-between items-end">
-              <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/40 font-bold">Your Progress</span>
+              <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/40 font-bold">Status Tracker</span>
               <span className="text-sm font-medium text-[#001F3F]">8 / 15 Journeys</span>
             </div>
             <div className="h-1.5 w-full bg-[#001F3F]/5 rounded-full overflow-hidden">
@@ -4369,12 +5025,12 @@ function MembershipScreen({ onBack }: { onBack: () => void }) {
                 className="h-full bg-[#001F3F] rounded-full"
               />
             </div>
-            <p className="text-[10px] text-[#001F3F]/60 font-medium italic">7 more journeys to unlock Signature Access</p>
+            <p className="text-[10px] text-[#001F3F]/60 font-medium italic">7 more journeys to unlock Elite Status</p>
           </div>
         </div>
 
         <div className="space-y-12">
-          <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F] font-medium border-t border-black/[0.03] pt-10">Membership Privileges</h4>
+          <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F] font-medium border-t border-black/[0.03] pt-10">Club Privileges</h4>
           
           <div className="space-y-10">
             {privileges.map((item, i) => (

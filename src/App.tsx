@@ -241,13 +241,6 @@ export default function App() {
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
-                  <button onClick={() => navigate('news', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
-                    <div className="flex items-center gap-3">
-                      <Bell size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">NEWS & UPDATES</span>
-                    </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
-                  </button>
                   <button onClick={() => navigate('gift-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Gift size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
@@ -388,12 +381,6 @@ export default function App() {
   onBack={() => navigate('booking')}
   />
   )}
-  {currentScreen === 'news' && (
-  <NewsScreen
-  onBack={() => navigate('booking')}
-  onOpenMenu={toggleMenu}
-  />
-  )}
   {currentScreen === 'profile' && (
           <ProfileScreen 
             key="profile-screen" 
@@ -499,7 +486,7 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
       className="relative h-full w-full flex flex-col justify-between overflow-hidden"
     >
       {/* Video Background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900">
         <video
           autoPlay
           muted
@@ -508,7 +495,7 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
           onLoadedData={() => setVideoLoaded(true)}
           className="w-full h-full object-cover"
         >
-          <source src="https://drive.google.com/uc?export=download&id=1m2u9FjvWRRxn_yVXowV0vIVCWtI0CuEq" type="video/mp4" />
+          <source src="/videos/banner.mp4" type="video/mp4" />
         </video>
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
@@ -1014,18 +1001,31 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
         </p>
       </div>
 
-      <button 
-        disabled={value.length < 5}
-        onClick={() => onContinue(value)} 
-        className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-20 hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/10 mt-8 mb-20"
-      >
-        CONTINUE
-      </button>
-    </motion.div>
-  );
-}
+  <button
+  disabled={value.length < 5}
+  onClick={() => onContinue(value)}
+  className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-20 hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/10 mt-8"
+  >
+  CONTINUE
+  </button>
 
-function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onBack: () => void, onVerify: () => void }) {
+  {/* Access Chauffeur Link */}
+  <div className="w-full py-6 border-t border-white/10 mt-8">
+    <button 
+      onClick={() => {
+        onBack();
+        // La navegación a chauffeur-login ocurre desde el onClick de onChauffeurStart en la pantalla Welcome
+      }}
+      className="w-full py-3 text-white/60 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2"
+    >
+      Access Chauffeur <ArrowRight size={12} strokeWidth={1.5} />
+    </button>
+  </div>
+  </motion.div>
+  );
+  }
+  
+  function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onBack: () => void, onVerify: () => void }) {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
@@ -2556,139 +2556,6 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
             Return to Home
           </motion.button>
         )}
-      </div>
-    </motion.div>
-  );
-}
-
-function NewsScreen({ onBack, onOpenMenu }: { onBack: () => void, onOpenMenu: () => void }) {
-  const newsArticles = [
-    {
-      id: 1,
-      title: "Summer Promotion: 20% Off Your First 5 Rides",
-      category: "Promotion",
-      date: "March 5, 2024",
-      image: "/images/news-hero.jpg",
-      excerpt: "Enjoy exclusive discounts on our premium services this summer. Limited time offer for new and existing members.",
-      featured: true
-    },
-    {
-      id: 2,
-      title: "New Eco-Friendly Vehicle Fleet Now Available",
-      category: "Fleet Update",
-      date: "March 3, 2024",
-      image: "https://images.unsplash.com/photo-1569163139394-de4798aa62b5?q=80&w=1000&auto=format&fit=crop",
-      excerpt: "We're proud to introduce our new electric vehicle fleet with zero emissions.",
-      featured: false
-    },
-    {
-      id: 3,
-      title: "Enhanced Safety Features Deployed",
-      category: "Safety",
-      date: "March 1, 2024",
-      image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1000&auto=format&fit=crop",
-      excerpt: "Real-time tracking and emergency response features for your peace of mind.",
-      featured: false
-    },
-    {
-      id: 4,
-      title: "Business Account Benefits Now Available",
-      category: "Services",
-      date: "February 28, 2024",
-      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop",
-      excerpt: "Corporate accounts now offer exclusive benefits and dedicated support.",
-      featured: false
-    }
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-100">
-        <div>
-          <h1 className="text-2xl font-light">News & Updates</h1>
-          <p className="text-sm text-gray-500">Stay informed about Urbont</p>
-        </div>
-        <button 
-          onClick={onOpenMenu}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-        >
-          <Menu size={24} />
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto space-y-6 p-6 pb-24">
-        {/* Featured Article */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="relative rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow cursor-pointer h-64"
-        >
-          <img 
-            src={newsArticles[0].image} 
-            alt={newsArticles[0].title}
-            className="w-full h-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <span className="inline-block bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
-              {newsArticles[0].category}
-            </span>
-            <h3 className="text-lg font-semibold leading-tight mb-2">{newsArticles[0].title}</h3>
-            <p className="text-sm text-white/80">{newsArticles[0].date}</p>
-          </div>
-        </motion.div>
-
-        {/* Article Grid */}
-        <div className="space-y-4">
-          {newsArticles.slice(1).map((article, index) => (
-            <motion.div
-              key={article.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + index * 0.05 }}
-              className="flex gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-gray-100 transition-colors cursor-pointer"
-            >
-              <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
-                <img 
-                  src={article.image} 
-                  alt={article.title}
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-2">
-                  <span className="text-xs font-bold text-[#001F3F] uppercase tracking-widest">
-                    {article.category}
-                  </span>
-                </div>
-                <h4 className="text-sm font-semibold text-[#001F3F] mb-1 line-clamp-2">
-                  {article.title}
-                </h4>
-                <p className="text-xs text-gray-500">{article.date}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Back Button */}
-      <div className="fixed bottom-8 left-6 right-6">
-        <button 
-          onClick={onBack}
-          className="w-full py-3 bg-gray-100 text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-gray-200 active:scale-[0.98] transition-all"
-        >
-          Back
-        </button>
       </div>
     </motion.div>
   );

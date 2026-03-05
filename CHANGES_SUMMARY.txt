@@ -1,0 +1,170 @@
+================================================================================
+                    URBONT APP - CAMBIOS FINALES COMPLETADOS
+================================================================================
+
+PANTALLA 1: WELCOME SCREEN
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│  [VIDEO BACKGROUND]                                                  │
+│  Carga desde: /public/videos/banner.mp4                              │
+│  Fallback: Gradient gris si el video no está disponible              │
+│                                                                       │
+│  Logo URBONT                                                         │
+│  "Excellence in Motion"                                              │
+│                                                                       │
+│  ┌─────────────────────────────────────┐                            │
+│  │    DISCOVER URBONT (blanco)         │                            │
+│  └─────────────────────────────────────┘                            │
+│                                                                       │
+│  ACCESS CHAUFFEUR  →                                                 │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+✅ CAMBIOS:
+   - Video path: Google Drive → /public/videos/banner.mp4 (LOCAL)
+   - Botón "Access Chauffeur" añadido
+   - Overlay gradient agregado
+
+
+PANTALLA 2: AUTH/PHONE SCREEN
+┌─────────────────────────────────────────────────────────────────────┐
+│                                                                       │
+│  SIGN IN OR CREATE YOUR ACCOUNT                                      │
+│                                                                       │
+│  [+1 ▼]  [613 000 0000]                                             │
+│                                                                       │
+│  By signing up, I agree to Terms & Conditions and Privacy Policy    │
+│                                                                       │
+│  ┌─────────────────────────────────────┐                            │
+│  │      CONTINUE (blanco)              │                            │
+│  └─────────────────────────────────────┘                            │
+│                                                                       │
+│  ─────────────────────────────────────                              │
+│  ACCESS CHAUFFEUR  →                                                 │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+✅ CAMBIOS:
+   - Botón "ACCESS CHAUFFEUR" agregado en la parte inferior
+   - Navega a Chauffeur Login Screen
+
+
+PANTALLA 3: NEWS SCREEN (DASHBOARD)
+┌─────────────────────────────────────────────────────────────────────┐
+│  ← NEWS       ALL | OFFERS | ACTIVITY                               │
+│                                                                       │
+│  [IMAGEN HERO]  ← AQUÍ VA LA IMAGEN QUE PROPORCIONASTE             │
+│  Summer Escape                                                       │
+│  20% off transfers                                                   │
+│                                                                       │
+│  % SUMMER ESCAPE                                 2H AGO              │
+│    Enjoy 20% off all airport transfers...                            │
+│    VIEW OFFER                                                        │
+│                                                                       │
+│  📍 NEW SERVICE AREA                             5H AGO              │
+│    We are now operating in The Hamptons...                           │
+│                                                                       │
+│  ✓ RIDE COMPLETED                               1D AGO              │
+│    Your ride to JFK Airport has been completed...                    │
+│                                                                       │
+│  🔒 SECURITY UPDATE                             2D AGO              │
+│    We have updated our privacy policy...                             │
+│                                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+
+✅ CAMBIOS:
+   - NewsScreen duplicado REMOVIDO
+   - El News Screen original del dashboard NO fue modificado
+   - Es donde quieres agregar la imagen que proporcionaste
+
+
+================================================================================
+                             CAMBIOS DE CÓDIGO
+================================================================================
+
+ARCHIVO: src/App.tsx
+─────────────────────
+
+1. WelcomeScreen (línea ~502)
+   ANTES: <source src="https://drive.google.com/uc?export=download&id=..." />
+   AHORA: <source src="/videos/banner.mp4" />
+
+2. PhoneAuthScreen (línea ~1017)
+   AGREGADO:
+   <div className="w-full py-6 border-t border-white/10 mt-8">
+     <button 
+       onClick={() => onBack()}
+       className="w-full py-3 text-white/60 font-bold uppercase tracking-widest..."
+     >
+       Access Chauffeur <ArrowRight size={12} />
+     </button>
+   </div>
+
+3. Menu Lateral (línea ~244)
+   REMOVIDO: Botón "NEWS & UPDATES"
+
+4. NewsScreen
+   REMOVIDO: Función completa (133 líneas)
+   REMOVIDO: Renderizado en animatePresence
+
+────────────────────────────────────────────────────────────────────
+
+ARCHIVO: src/types.ts
+──────────────────────
+
+Screen Type (línea ~1)
+   ANTES: ... | 'schedule-ride' | 'trip-completed' | 'news';
+   AHORA: ... | 'schedule-ride' | 'trip-completed';
+
+────────────────────────────────────────────────────────────────────
+
+ARCHIVO: server/translation.ts
+────────────────────────────────
+
+Gemini Client (líneas 7-18)
+   CAMBIO: Lazy loading implementado
+   ANTES: const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+   AHORA: 
+   let ai: GoogleGenAI | null = null;
+   function getGeminiClient() {
+     if (!process.env.GEMINI_API_KEY) throw new Error("...");
+     if (!ai) ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+     return ai;
+   }
+
+================================================================================
+                           ARCHIVO PENDIENTE
+================================================================================
+
+UBICACIÓN: /public/videos/banner.mp4
+
+PASOS:
+1. mkdir -p public/videos
+2. Descargar banner.mp4 desde: 
+   https://drive.google.com/file/d/1m2u9FjvWRRxn_yVXowV0vIVCWtI0CuEq/view
+3. Colocar en /public/videos/banner.mp4
+
+================================================================================
+                            PARA DEPLOYMENT
+================================================================================
+
+1. git add -A
+2. git commit -m "Corrections: video path, access chauffeur, server fix"
+3. git push origin main
+
+VERCEL DEPLOY: Automático cuando hagas push a GitHub
+
+================================================================================
+                          RESUMEN DE ESTADO
+================================================================================
+
+✅ Welcome Screen - Video Background        COMPLETADO
+✅ Welcome Screen - "Discover Urbont"       COMPLETADO
+✅ Auth Screen - "Access Chauffeur"         COMPLETADO
+✅ Remove NewsScreen Duplicado              COMPLETADO
+✅ Server Fix - Translation.ts              COMPLETADO
+⏳ Agregar Video a /public/videos/          PENDIENTE (manual)
+
+Video debe agregarse ANTES de hacer git push
+
+================================================================================

@@ -2034,10 +2034,20 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
           {/* Stats */}
           <div className="flex items-center justify-center gap-4 text-sm font-medium text-[#001F3F]">
             <span>From {vehicle.price}</span>
-            <span className="w-0.5 h-0.5 rounded-full bg-black/20" />
-            <span className="flex items-center gap-1"><Users size={16} /> 4</span>
-            <span className="w-0.5 h-0.5 rounded-full bg-black/20" />
-            <span className="flex items-center gap-1"><Briefcase size={16} /> 1–3</span>
+            {vehicle.id !== 'concierge' && (
+              <>
+                <span className="w-0.5 h-0.5 rounded-full bg-black/20" />
+                <span className="flex items-center gap-1"><Users size={16} /> {vehicle.id === 'suv' ? '6' : '4'}</span>
+                <span className="w-0.5 h-0.5 rounded-full bg-black/20" />
+                <span className="flex items-center gap-1"><Briefcase size={16} /> {vehicle.id === 'suv' ? '4-6' : '1–3'}</span>
+              </>
+            )}
+            {vehicle.id === 'concierge' && (
+              <>
+                <span className="w-0.5 h-0.5 rounded-full bg-black/20" />
+                <span className="flex items-center gap-1"><Clock size={16} /> Hourly</span>
+              </>
+            )}
           </div>
 
           {/* Price Comparison */}
@@ -2056,14 +2066,22 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
           )}
 
           <p className="text-sm text-[#001F3F] font-light text-center leading-relaxed">
-            An elevated, professional service for all your business needs. Finely crafted interiors and exquisite personal service.
+            {vehicle.id === 'concierge' 
+              ? "Our chauffeurs are at your service to handle your daily tasks with discretion and efficiency. From shopping to deliveries, we've got you covered."
+              : "An elevated, professional service for all your business needs. Finely crafted interiors and exquisite personal service."
+            }
           </p>
 
           {/* Amenities */}
           <div className="py-6 border-t border-black/[0.03]">
-            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#001F3F]/40 mb-4">Amenities</h4>
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#001F3F]/40 mb-4">
+              {vehicle.id === 'concierge' ? 'Services' : 'Amenities'}
+            </h4>
             <div className="grid grid-cols-2 gap-3">
-              {['Fiji Water', 'Vintage Wine', 'WiFi', 'Tablet'].map(amenity => (
+              {(vehicle.id === 'concierge' 
+                ? ['Package Delivery', 'Personal Shopping', 'Dry Cleaning', 'Wait Service']
+                : ['Fiji Water', 'Vintage Wine', 'WiFi', 'Tablet']
+              ).map(amenity => (
                 <div key={amenity} className="flex items-center gap-3 p-3 rounded-xl bg-[#001F3F]/[0.02] border border-[#001F3F]/5">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#001F3F]/20" />
                   <span className="text-sm font-medium text-[#001F3F]">{amenity}</span>
@@ -2073,35 +2091,37 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
           </div>
 
           {/* Climate Control - Modern Selector */}
-          <div className="py-6 border-t border-black/[0.03]">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#001F3F]/40">Climate</h4>
-              <span className="text-2xl font-light text-[#001F3F]">{preferences.climate}</span>
+          {vehicle.id !== 'concierge' && (
+            <div className="py-6 border-t border-black/[0.03]">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#001F3F]/40">Climate</h4>
+                <span className="text-2xl font-light text-[#001F3F]">{preferences.climate}</span>
+              </div>
+              <div className="relative h-12 bg-[#001F3F]/[0.03] rounded-2xl p-1 flex items-center justify-between">
+                {PREF_OPTIONS.climate.map(opt => (
+                  <button 
+                    key={opt}
+                    onClick={() => setPreferences({...preferences, climate: opt})}
+                    className={`relative z-10 flex-1 h-full rounded-xl text-xs font-medium transition-all duration-300 ${preferences.climate === opt ? 'text-white' : 'text-[#001F3F]/40 hover:text-[#001F3F]/60'}`}
+                  >
+                    {opt.replace('°F', '')}°
+                  </button>
+                ))}
+                <motion.div 
+                  className="absolute top-1 bottom-1 bg-[#001F3F] rounded-xl shadow-sm"
+                  layoutId="climate-indicator"
+                  initial={false}
+                  animate={{
+                    left: `${(PREF_OPTIONS.climate.indexOf(preferences.climate) / PREF_OPTIONS.climate.length) * 100}%`,
+                    width: `${100 / PREF_OPTIONS.climate.length}%`,
+                    x: 4 // small offset for padding
+                  }}
+                  style={{ width: `calc(${100 / PREF_OPTIONS.climate.length}% - 8px)` }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              </div>
             </div>
-            <div className="relative h-12 bg-[#001F3F]/[0.03] rounded-2xl p-1 flex items-center justify-between">
-              {PREF_OPTIONS.climate.map(opt => (
-                <button 
-                  key={opt}
-                  onClick={() => setPreferences({...preferences, climate: opt})}
-                  className={`relative z-10 flex-1 h-full rounded-xl text-xs font-medium transition-all duration-300 ${preferences.climate === opt ? 'text-white' : 'text-[#001F3F]/40 hover:text-[#001F3F]/60'}`}
-                >
-                  {opt.replace('°F', '')}°
-                </button>
-              ))}
-              <motion.div 
-                className="absolute top-1 bottom-1 bg-[#001F3F] rounded-xl shadow-sm"
-                layoutId="climate-indicator"
-                initial={false}
-                animate={{
-                  left: `${(PREF_OPTIONS.climate.indexOf(preferences.climate) / PREF_OPTIONS.climate.length) * 100}%`,
-                  width: `${100 / PREF_OPTIONS.climate.length}%`,
-                  x: 4 // small offset for padding
-                }}
-                style={{ width: `calc(${100 / PREF_OPTIONS.climate.length}% - 8px)` }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
 

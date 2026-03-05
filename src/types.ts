@@ -50,7 +50,7 @@ export const VEHICLES: Vehicle[] = [
   {
     id: 'concierge',
     name: 'Concierge',
-    description: 'Have a trusted chauffeur handle your errands',
+    description: 'Personal assistance for errands, deliveries, and tasks.',
     price: '$60/hr',
     competitorPrice: '$95/hr',
     image: 'https://lh3.googleusercontent.com/d/1k3AWFoBkRZmHFaVHN_0Kqq2j0-t0bqOm'

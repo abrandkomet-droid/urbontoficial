@@ -484,10 +484,10 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
-      className="relative h-full w-full flex flex-col justify-between overflow-hidden"
+      className="relative h-full w-full flex flex-col overflow-hidden"
     >
       {/* Video Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900">
+      <div className="absolute inset-0">
         <video
           autoPlay
           muted
@@ -498,55 +498,61 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
         >
           <source src="/videos/banner.mp4" type="video/mp4" />
         </video>
-        {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+        {/* Soft Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
       </div>
 
-      {/* Content - Logo and Description */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-8 px-8">
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="flex flex-col items-center text-center"
-        >
-          <img 
-            src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
-            alt="URBONT Logo" 
-            className="h-32 object-contain drop-shadow-2xl brightness-0 invert mb-6"
-            referrerPolicy="no-referrer"
-          />
-          
-          <div className="space-y-4">
-            <h1 className="text-white text-4xl font-light tracking-tight leading-tight">
-              Excellence in Motion
-            </h1>
-            <p className="text-white/70 text-sm leading-relaxed max-w-xs">
-              Experience luxury chauffeur services with professional drivers, premium vehicles, and unmatched comfort.
-            </p>
-          </div>
-        </motion.div>
-      </div>
+      {/* Top Logo Section with Subtle Gradient Background */}
+      <motion.div 
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="relative z-20 pt-12 pb-8 px-8 bg-gradient-to-b from-black/40 to-transparent"
+      >
+        <img 
+          src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
+          alt="URBONT Logo" 
+          className="h-12 object-contain drop-shadow-lg brightness-0 invert"
+          referrerPolicy="no-referrer"
+        />
+      </motion.div>
 
-      {/* Bottom Action Buttons */}
+      {/* Center Content - Spacer */}
+      <div className="relative z-10 flex-1" />
+
+      {/* Bottom Content Section */}
       <motion.div 
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 1.2 }}
-        className="relative z-20 w-full space-y-3 p-8 pb-12"
+        transition={{ duration: 1, delay: 0.3 }}
+        className="relative z-20 w-full px-8 pb-20"
       >
+        {/* Elegant Text Content */}
+        <div className="mb-12 text-center space-y-4">
+          <p className="text-white/80 text-sm leading-relaxed font-light">
+            Elevate your journey. Experience luxury chauffeur services crafted for those who value elegance and excellence.
+          </p>
+        </div>
+
+        {/* Elegant Button - Outline Style */}
         <button 
           onClick={onStart} 
-          className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-white/20"
+          className="w-full py-3 px-6 border border-white/40 text-white text-xs font-light uppercase tracking-[0.15em] rounded-sm hover:border-white/80 hover:bg-white/5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
         >
           Discover Urbont
+          <ArrowRight size={14} strokeWidth={1} />
         </button>
         
+        {/* Divider */}
+        <div className="my-6 h-px bg-white/10" />
+        
+        {/* Access Chauffeur - Elegant Link Style */}
         <button 
           onClick={onChauffeurStart} 
-          className="w-full py-3 text-white/60 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2 border-b border-white/20 pb-3"
+          className="w-full py-3 text-white/60 font-light uppercase tracking-[0.15em] text-xs hover:text-white transition-colors duration-300 flex items-center justify-center gap-2"
         >
-          Access Chauffeur <ArrowRight size={12} strokeWidth={1.5} />
+          Access Chauffeur
+          <ArrowRight size={12} strokeWidth={1} />
         </button>
       </motion.div>
     </motion.div>

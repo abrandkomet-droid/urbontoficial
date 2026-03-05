@@ -297,7 +297,8 @@ export default function App() {
             onContinue={(num) => {
               setPhoneNumber(num);
               navigate('auth-otp');
-            }} 
+            }}
+            onChauffeurStart={() => navigate('chauffeur-login')}
           />
         )}
         {currentScreen === 'country-selector' && (
@@ -956,7 +957,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string }) {
+function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, onChauffeurStart, countryCode }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, onChauffeurStart: () => void, countryCode: string }) {
   const [value, setValue] = useState('');
   
   const selectedCountry = COUNTRIES.find(c => c.code === countryCode) || { placeholder: '000 000 0000', maxLength: 10 };
@@ -1012,10 +1013,7 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
   {/* Access Chauffeur Link */}
   <div className="w-full py-6 border-t border-white/10 mt-8">
     <button 
-      onClick={() => {
-        onBack();
-        // La navegación a chauffeur-login ocurre desde el onClick de onChauffeurStart en la pantalla Welcome
-      }}
+      onClick={onChauffeurStart}
       className="w-full py-3 text-white/60 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2"
     >
       Access Chauffeur <ArrowRight size={12} strokeWidth={1.5} />

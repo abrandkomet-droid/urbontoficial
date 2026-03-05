@@ -56,6 +56,7 @@ import {
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
 import DriverDashboardMobile from './components/DriverDashboardMobile';
+import SuggestionsScreen from './components/SuggestionsScreen';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -237,6 +238,13 @@ export default function App() {
                     <div className="flex items-center gap-3">
                       <Gift size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
                       <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">GIFT A RIDE</span>
+                    </div>
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
+                  </button>
+                  <button onClick={() => navigate('suggestions', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
+                    <div className="flex items-center gap-3">
+                      <MessageSquare size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">SUGGESTIONS</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
@@ -450,6 +458,11 @@ export default function App() {
           <ScheduleRideScreen 
             onBack={handleBack} 
             isLoaded={isLoaded}
+          />
+        )}
+        {currentScreen === 'suggestions' && (
+          <SuggestionsScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'settings' && (

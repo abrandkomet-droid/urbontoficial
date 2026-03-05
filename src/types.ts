@@ -1,4 +1,4 @@
-export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health' | 'schedule-ride' | 'trip-completed';
+export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health' | 'schedule-ride' | 'trip-completed' | 'suggestions';
 
 export interface Vehicle {
   id: string;

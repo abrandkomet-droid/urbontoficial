@@ -51,10 +51,12 @@ import {
   Building2,
   UserPlus,
   Calendar,
+  Heart,
 } from 'lucide-react';
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
 import DriverDashboardMobile from './components/DriverDashboardMobile';
+import RatingBox from './components/RatingBox';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -239,6 +241,13 @@ export default function App() {
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
+                  <button onClick={() => navigate('news', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
+                    <div className="flex items-center gap-3">
+                      <Bell size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">NEWS & UPDATES</span>
+                    </div>
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
+                  </button>
                   <button onClick={() => navigate('gift-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Gift size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
@@ -374,12 +383,18 @@ export default function App() {
             }}
           />
         )}
-        {currentScreen === 'trip-completed' && (
-          <TripCompletedScreen 
-            onBack={() => navigate('booking')} 
-          />
-        )}
-        {currentScreen === 'profile' && (
+  {currentScreen === 'trip-completed' && (
+  <TripCompletedScreen
+  onBack={() => navigate('booking')}
+  />
+  )}
+  {currentScreen === 'news' && (
+  <NewsScreen
+  onBack={() => navigate('booking')}
+  onOpenMenu={toggleMenu}
+  />
+  )}
+  {currentScreen === 'profile' && (
           <ProfileScreen 
             key="profile-screen" 
             userProfile={userProfile}
@@ -473,20 +488,7 @@ export default function App() {
 }
 
 function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onChauffeurStart: () => void }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = [
-    "Excellence in Motion",
-    "Your Private Journey",
-    "Unmatched Comfort",
-    "Professional Chauffeurs"
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   return (
     <motion.div 
@@ -494,63 +496,69 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
-      className="relative h-full w-full flex flex-col justify-between p-8 overflow-hidden navy-gradient-bg"
+      className="relative h-full w-full flex flex-col justify-between overflow-hidden"
     >
-      {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} 
-      />
+      {/* Video Background */}
+      <div className="absolute inset-0">
+        <video
+          autoPlay
+          muted
+          playsInline
+          loop
+          onLoadedData={() => setVideoLoaded(true)}
+          className="w-full h-full object-cover"
+        >
+          <source src="https://drive.google.com/uc?export=download&id=1m2u9FjvWRRxn_yVXowV0vIVCWtI0CuEq" type="video/mp4" />
+        </video>
+        {/* Overlay Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+      </div>
 
-      {/* Content */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-12">
+      {/* Content - Logo and Description */}
+      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-8 px-8">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="flex flex-col items-center"
+          className="flex flex-col items-center text-center"
         >
           <img 
             src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
             alt="URBONT Logo" 
-            className="h-40 object-contain drop-shadow-2xl brightness-0 invert mb-8"
+            className="h-32 object-contain drop-shadow-2xl brightness-0 invert mb-6"
             referrerPolicy="no-referrer"
           />
           
-          <div className="h-12 overflow-hidden relative w-full flex justify-center">
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={currentSlide}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-white/60 text-sm uppercase tracking-[0.3em] font-light absolute text-center w-full"
-              >
-                {slides[currentSlide]}
-              </motion.p>
-            </AnimatePresence>
+          <div className="space-y-4">
+            <h1 className="text-white text-4xl font-light tracking-tight leading-tight">
+              Excellence in Motion
+            </h1>
+            <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+              Experience luxury chauffeur services with professional drivers, premium vehicles, and unmatched comfort.
+            </p>
           </div>
         </motion.div>
       </div>
 
+      {/* Bottom Action Buttons */}
       <motion.div 
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 1.2 }}
-        className="relative z-20 w-full space-y-4 mb-12 pb-6"
+        className="relative z-20 w-full space-y-3 p-8 pb-12"
       >
         <button 
           onClick={onStart} 
-          className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-white/10"
+          className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-white/20"
         >
-          Get Started
+          Discover Urbont
         </button>
         
         <button 
           onClick={onChauffeurStart} 
-          className="w-full py-3 text-white/40 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 text-white/60 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2 border-b border-white/20 pb-3"
         >
-          Chauffeur Login <ArrowRight size={12} strokeWidth={1.5} />
+          Access Chauffeur <ArrowRight size={12} strokeWidth={1.5} />
         </button>
       </motion.div>
     </motion.div>
@@ -2457,74 +2465,230 @@ function ConfirmedScreen({ onContinue }: { onContinue: () => void }) {
 }
 
 function TripCompletedScreen({ onBack }: { onBack: () => void }) {
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
+  const [showRating, setShowRating] = useState(true);
+
+  const handleRatingSubmit = (rating: number, comment: string, isFavorite: boolean) => {
+    console.log('Rating submitted:', { rating, comment, isFavorite });
+    // Aquí irían acciones para guardar la calificación
+    setTimeout(() => setShowRating(false), 500);
+  };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
+      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-y-auto"
     >
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+      <div className="flex-1 flex flex-col items-center justify-start p-6 text-center pt-8">
+        {/* Success Header */}
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6"
+        >
           <CheckCircle2 size={40} className="text-emerald-600" />
-        </div>
+        </motion.div>
         
-        <h2 className="text-2xl font-light text-[#001F3F] mb-2">Trip Completed</h2>
+        <h2 className="text-3xl font-light text-[#001F3F] mb-2">Trip Completed</h2>
         <p className="text-sm text-gray-500 mb-8">Your ride has been successfully completed.</p>
 
-        <div className="w-full bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+        {/* Trip Summary */}
+        <div className="w-full mb-8 space-y-4 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 shadow-sm flex-shrink-0">
               <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
-            <div className="text-left">
+            <div className="flex-1 text-left">
               <h4 className="font-bold text-[#001F3F] text-lg">{CHAUFFEUR.name}</h4>
-              <p className="text-xs text-gray-500">URB-2026 • Black</p>
+              <p className="text-xs text-gray-500">URB-2026 • Black Mercedes</p>
+              <div className="flex items-center gap-1 mt-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={14} className={i < 4 ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                ))}
+                <span className="text-xs text-gray-600 ml-1">4.98</span>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2 mb-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Rate your experience</p>
-            <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button 
-                  key={star}
-                  onClick={() => setRating(star)}
-                  className="p-1 transition-transform active:scale-90"
-                >
-                  <Star 
-                    size={32} 
-                    className={`${rating >= star ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} transition-colors`} 
-                  />
-                </button>
-              ))}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Distance</span>
+              <span className="font-semibold text-[#001F3F]">8.5 km</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Duration</span>
+              <span className="font-semibold text-[#001F3F]">22 minutes</span>
+            </div>
+            <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+              <span className="text-sm font-semibold text-gray-700">Total Fare</span>
+              <span className="text-2xl font-bold text-[#001F3F]">$85.00</span>
             </div>
           </div>
-
-          <textarea
-            placeholder="Add a comment (optional)..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#001F3F] transition-colors resize-none h-24"
-          />
         </div>
 
-        <div className="w-full space-y-4">
-          <div className="flex justify-between items-center px-4">
-            <span className="text-sm text-gray-500">Total Fare</span>
-            <span className="text-xl font-bold text-[#001F3F]">$85.00</span>
-          </div>
-          
-          <button 
-            onClick={onBack}
-            className="w-full py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all"
+        {/* Rating Box Component */}
+        {showRating && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full"
           >
-            Done
-          </button>
+            <RatingBox
+              driverName={CHAUFFEUR.name}
+              driverImage={CHAUFFEUR.portrait}
+              vehicleInfo="URB-2026 • Black Mercedes"
+              fare="$85.00"
+              onSubmit={handleRatingSubmit}
+            />
+          </motion.div>
+        )}
+
+        {/* Done Button - Shows after rating */}
+        {!showRating && (
+          <motion.button 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={onBack}
+            className="w-full mt-6 py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all"
+          >
+            Return to Home
+          </motion.button>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function NewsScreen({ onBack, onOpenMenu }: { onBack: () => void, onOpenMenu: () => void }) {
+  const newsArticles = [
+    {
+      id: 1,
+      title: "Summer Promotion: 20% Off Your First 5 Rides",
+      category: "Promotion",
+      date: "March 5, 2024",
+      image: "/images/news-hero.jpg",
+      excerpt: "Enjoy exclusive discounts on our premium services this summer. Limited time offer for new and existing members.",
+      featured: true
+    },
+    {
+      id: 2,
+      title: "New Eco-Friendly Vehicle Fleet Now Available",
+      category: "Fleet Update",
+      date: "March 3, 2024",
+      image: "https://images.unsplash.com/photo-1569163139394-de4798aa62b5?q=80&w=1000&auto=format&fit=crop",
+      excerpt: "We're proud to introduce our new electric vehicle fleet with zero emissions.",
+      featured: false
+    },
+    {
+      id: 3,
+      title: "Enhanced Safety Features Deployed",
+      category: "Safety",
+      date: "March 1, 2024",
+      image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1000&auto=format&fit=crop",
+      excerpt: "Real-time tracking and emergency response features for your peace of mind.",
+      featured: false
+    },
+    {
+      id: 4,
+      title: "Business Account Benefits Now Available",
+      category: "Services",
+      date: "February 28, 2024",
+      image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=1000&auto=format&fit=crop",
+      excerpt: "Corporate accounts now offer exclusive benefits and dedicated support.",
+      featured: false
+    }
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div>
+          <h1 className="text-2xl font-light">News & Updates</h1>
+          <p className="text-sm text-gray-500">Stay informed about Urbont</p>
         </div>
+        <button 
+          onClick={onOpenMenu}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <Menu size={24} />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto space-y-6 p-6 pb-24">
+        {/* Featured Article */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition-shadow cursor-pointer h-64"
+        >
+          <img 
+            src={newsArticles[0].image} 
+            alt={newsArticles[0].title}
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+            <span className="inline-block bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-3">
+              {newsArticles[0].category}
+            </span>
+            <h3 className="text-lg font-semibold leading-tight mb-2">{newsArticles[0].title}</h3>
+            <p className="text-sm text-white/80">{newsArticles[0].date}</p>
+          </div>
+        </motion.div>
+
+        {/* Article Grid */}
+        <div className="space-y-4">
+          {newsArticles.slice(1).map((article, index) => (
+            <motion.div
+              key={article.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 + index * 0.05 }}
+              className="flex gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:bg-gray-100 transition-colors cursor-pointer"
+            >
+              <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                <img 
+                  src={article.image} 
+                  alt={article.title}
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-xs font-bold text-[#001F3F] uppercase tracking-widest">
+                    {article.category}
+                  </span>
+                </div>
+                <h4 className="text-sm font-semibold text-[#001F3F] mb-1 line-clamp-2">
+                  {article.title}
+                </h4>
+                <p className="text-xs text-gray-500">{article.date}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Back Button */}
+      <div className="fixed bottom-8 left-6 right-6">
+        <button 
+          onClick={onBack}
+          className="w-full py-3 bg-gray-100 text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-gray-200 active:scale-[0.98] transition-all"
+        >
+          Back
+        </button>
       </div>
     </motion.div>
   );

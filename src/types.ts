@@ -1,4 +1,4 @@
-export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health' | 'schedule-ride' | 'trip-completed';
+export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health' | 'schedule-ride' | 'trip-completed' | 'news';
 
 export interface Vehicle {
   id: string;
@@ -56,6 +56,21 @@ export const VEHICLES: Vehicle[] = [
     image: 'https://lh3.googleusercontent.com/d/1k3AWFoBkRZmHFaVHN_0Kqq2j0-t0bqOm'
   }
 ];
+
+export interface RideRating {
+  rideId: string;
+  rating: number;
+  comment: string;
+  isFavorite: boolean;
+  timestamp: string;
+}
+
+export interface FavoriteDriver {
+  driverId: string;
+  name: string;
+  portrait: string;
+  addedAt: string;
+}
 
 export const CHAUFFEUR: Chauffeur = {
   name: 'Alexander Sterling',

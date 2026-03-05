@@ -296,6 +296,7 @@ export default function App() {
               setPhoneNumber(num);
               navigate('auth-otp');
             }} 
+            onChauffeurStart={() => navigate('chauffeur-login')}
           />
         )}
         {currentScreen === 'country-selector' && (
@@ -473,84 +474,66 @@ export default function App() {
 }
 
 function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onChauffeurStart: () => void }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = [
-    "Excellence in Motion",
-    "Your Private Journey",
-    "Unmatched Comfort",
-    "Professional Chauffeurs"
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
-      className="relative h-full w-full flex flex-col justify-between p-8 overflow-hidden navy-gradient-bg"
+      className="relative h-full w-full flex flex-col p-8 overflow-hidden bg-black"
     >
-      {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} 
-      />
-
-      {/* Content */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-12">
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="flex flex-col items-center"
+      {/* Background Video */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-50"
         >
-          <img 
-            src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
-            alt="URBONT Logo" 
-            className="h-40 object-contain drop-shadow-2xl brightness-0 invert mb-8"
-            referrerPolicy="no-referrer"
-          />
-          
-          <div className="h-12 overflow-hidden relative w-full flex justify-center">
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={currentSlide}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-white/60 text-sm uppercase tracking-[0.3em] font-light absolute text-center w-full"
-              >
-                {slides[currentSlide]}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-        </motion.div>
+          <source src="https://lh3.googleusercontent.com/d/1m2u9FjvWRRxn_yVXowV0vIVCWtI0CuEq" type="video/mp4" />
+          <div className="w-full h-full bg-[#001F3F]" />
+        </video>
+        {/* Elegant Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90" />
       </div>
 
+      {/* Top Logo */}
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 1, delay: 0.5 }}
+        className="relative z-20 flex justify-center mt-12"
+      >
+        <img 
+          src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
+          alt="URBONT Logo" 
+          className="h-16 object-contain brightness-0 invert"
+          referrerPolicy="no-referrer"
+        />
+      </motion.div>
+
+      {/* Bottom Content */}
+      <div className="flex-1" />
+      
       <motion.div 
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 1.2 }}
-        className="relative z-20 w-full space-y-4 mb-12 pb-6"
+        className="relative z-20 w-full mb-16 flex flex-col items-center text-center space-y-8"
       >
+        <div className="space-y-2 px-4">
+          <h2 className="text-white text-2xl font-light tracking-[0.3em] uppercase">Urbont</h2>
+          <p className="text-white/60 text-[10px] font-light tracking-[0.4em] uppercase leading-relaxed">
+            Time Redefined. Excellence in Motion.
+          </p>
+        </div>
+
         <button 
           onClick={onStart} 
-          className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-white/10"
+          className="w-full max-w-[240px] h-12 bg-transparent border border-white/30 text-white text-[10px] font-bold uppercase tracking-[0.4em] rounded-full hover:bg-white hover:text-black transition-all duration-500 flex items-center justify-center backdrop-blur-sm"
         >
-          Get Started
-        </button>
-        
-        <button 
-          onClick={onChauffeurStart} 
-          className="w-full py-3 text-white/40 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2"
-        >
-          Chauffeur Login <ArrowRight size={12} strokeWidth={1.5} />
+          Discover Urbont
         </button>
       </motion.div>
     </motion.div>
@@ -961,7 +944,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string }) {
+function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode, onChauffeurStart }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string, onChauffeurStart: () => void }) {
   const [value, setValue] = useState('');
   
   const selectedCountry = COUNTRIES.find(c => c.code === countryCode) || { placeholder: '000 000 0000', maxLength: 10 };
@@ -1004,6 +987,14 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
         <p className="mt-4 text-[11px] text-center text-white/40 uppercase tracking-wider">
           By signing up, I agree to the <span className="underline cursor-pointer">Terms & Conditions</span> and <span className="underline cursor-pointer">Privacy Policy</span>.
         </p>
+
+        <button 
+          onClick={onChauffeurStart}
+          className="mt-12 group flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+        >
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Acces Chauffeur</span>
+          <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+        </button>
       </div>
 
       <button 
@@ -1877,6 +1868,20 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
         </div>
         
         <h2 className="font-sans text-4xl font-light uppercase tracking-widest text-[#001F3F] mb-8">News</h2>
+
+        {/* Featured Image */}
+        <div className="mb-8 rounded-2xl overflow-hidden shadow-xl border border-[#001F3F]/5">
+          <img 
+            src="https://lh3.googleusercontent.com/d/14ZMLRakA2dXBSPFta8mCM7iSa10UP3OH" 
+            alt="Urbont News" 
+            className="w-full h-48 object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div className="p-4 bg-white">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold mb-1">Featured</p>
+            <h3 className="text-sm font-medium text-[#001F3F]">The Future of Luxury Mobility</h3>
+          </div>
+        </div>
 
         {/* Tabs */}
         <div className="flex gap-8 border-b border-[#001F3F]/10">

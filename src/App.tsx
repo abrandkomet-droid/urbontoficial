@@ -1873,7 +1873,7 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
         {/* Featured News */}
         <div className="mb-10 group cursor-pointer relative overflow-hidden rounded-3xl">
           <img 
-            src="https://drive.google.com/uc?export=view&id=1z954RXBm5fUId9_zv-JN0Ftcc4pyhLVq" 
+            src="https://res.cloudinary.com/dgzysyl8g/image/upload/v1772700483/bc588d28-fb78-45c7-a380-faaf80c7e958_lqvzy9.png" 
             alt="Urbont News" 
             className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-105"
             referrerPolicy="no-referrer"
@@ -2247,33 +2247,19 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
         </div>
 
         {/* Summary Section */}
-        <div className="bg-gray-50 rounded-2xl p-6 space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-gray-200">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-2 shadow-sm">
-                <img src={vehicle.image} alt={vehicle.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-              </div>
-              <div>
-                <h3 className="font-bold">{vehicle.name}</h3>
-                <p className="text-xs text-gray-400">Premium Service</p>
-              </div>
-            </div>
-            <div className="text-lg font-bold">{vehicle.price}</div>
+        <div className="bg-[#F5F7FA] rounded-2xl p-6 space-y-6">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold uppercase tracking-widest text-[#001F3F]/40">Total Fare</span>
+            <span className="text-2xl font-light">{vehicle.price}</span>
           </div>
-
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Service Fee</span>
-              <span>$5.00</span>
+          <div className="border-t border-[#001F3F]/10 pt-6 space-y-4">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#001F3F]/60">Vehicle</span>
+              <span className="font-medium">{vehicle.name}</span>
             </div>
-            <div className="flex justify-between text-lg font-bold pt-4 border-t border-gray-200">
-              <span>Total</span>
-              <span>
-                {(() => {
-                  const priceNum = parseInt(vehicle.price.replace(/\D/g, '')) || 0;
-                  return `$${priceNum + 5}.00`;
-                })()}
-              </span>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-[#001F3F]/60">Service Fee</span>
+              <span className="font-medium">$5.00</span>
             </div>
           </div>
         </div>
@@ -2302,6 +2288,11 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
             </div>
           )}
         </div>
+
+        <div className="flex items-center justify-center gap-2 text-[#001F3F]/40">
+          <ShieldCheck size={16} />
+          <span className="text-xs font-bold uppercase tracking-widest">Secure Payment</span>
+        </div>
       </div>
 
       <div className="p-6 border-t border-gray-100">
@@ -2329,9 +2320,17 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
 }
 
 function SearchingScreen({ onFound }: { onFound: () => void }) {
+  const [status, setStatus] = useState('Connecting to elite fleet...');
+
   useEffect(() => {
-    const timer = setTimeout(onFound, 3000);
-    return () => clearTimeout(timer);
+    const timer1 = setTimeout(() => setStatus('Locating nearby chauffeurs...'), 1000);
+    const timer2 = setTimeout(() => setStatus('Securing your journey...'), 2000);
+    const timer3 = setTimeout(onFound, 3000);
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
   }, [onFound]);
 
   return (
@@ -2339,21 +2338,21 @@ function SearchingScreen({ onFound }: { onFound: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col items-center justify-center p-8 bg-white"
+      className="h-full w-full flex flex-col items-center justify-center p-8 bg-[#F5F7FA]"
     >
       <div className="relative mb-12">
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute inset-0 bg-[#001F3F]/5 rounded-full"
+          animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute inset-0 bg-[#001F3F] rounded-full"
         />
-        <div className="relative w-24 h-24 border border-navy/20 rounded-full flex items-center justify-center">
+        <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-lg border border-[#001F3F]/10">
           <Search size={32} className="text-[#001F3F] animate-pulse" />
         </div>
       </div>
-      <div className="text-center space-y-4">
-        <h2 className="font-sans text-3xl font-light uppercase">Finding your Chauffeur</h2>
-        <p className="text-xs text-[#001F3F]/70 tracking-widest uppercase font-medium">Connecting to elite fleet...</p>
+      <div className="text-center space-y-2">
+        <h2 className="font-sans text-2xl font-light uppercase tracking-wider">Finding your Chauffeur</h2>
+        <p className="text-xs text-[#001F3F]/60 tracking-[0.2em] uppercase font-bold">{status}</p>
       </div>
     </motion.div>
   );
@@ -2441,26 +2440,33 @@ function ChauffeurProfileScreen({ onBack, onConfirm }: { onBack: () => void, onC
 }
 
 function ConfirmedScreen({ onContinue }: { onContinue: () => void }) {
-  useEffect(() => {
-    const timer = setTimeout(onContinue, 3000);
-    return () => clearTimeout(timer);
-  }, [onContinue]);
-
   return (
     <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
       className="h-full w-full flex flex-col items-center justify-center p-8 bg-white text-[#001F3F]"
     >
-      <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-8">
+      <motion.div 
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', delay: 0.2, stiffness: 200 }}
+        className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-8"
+      >
         <Check size={48} className="text-emerald-500" />
-      </div>
+      </motion.div>
       
-      <div className="text-center space-y-3">
-        <h2 className="text-4xl font-bold">Journey Confirmed</h2>
-        <p className="text-base text-gray-500">Your chauffeur is on the way to your location.</p>
+      <div className="text-center space-y-3 mb-12">
+        <h2 className="text-4xl font-light uppercase tracking-widest">Journey Confirmed</h2>
+        <p className="text-sm text-[#001F3F]/60">Your chauffeur is on the way to your location.</p>
       </div>
+
+      <button 
+        onClick={onContinue}
+        className="w-full py-4 bg-[#001F3F] text-white font-bold rounded-xl shadow-lg hover:bg-navy-dark transition-all"
+      >
+        View Trip Details
+      </button>
     </motion.div>
   );
 }

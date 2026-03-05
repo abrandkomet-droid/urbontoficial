@@ -51,6 +51,7 @@ import {
   Building2,
   UserPlus,
   Calendar,
+  Heart,
 } from 'lucide-react';
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
@@ -154,7 +155,7 @@ export default function App() {
                     <img 
                       src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
                       alt="URBONT" 
-                      className="h-10 object-contain brightness-0"
+                      className="h-16 object-contain brightness-0"
                       referrerPolicy="no-referrer"
                     />
                   </div>
@@ -229,13 +230,6 @@ export default function App() {
                     <div className="flex items-center gap-3">
                       <CreditCard size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
                       <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">PAYMENT</span>
-                    </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
-                  </button>
-                  <button onClick={() => navigate('schedule-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
-                    <div className="flex items-center gap-3">
-                      <Calendar size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">SCHEDULE RIDE</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
@@ -438,6 +432,7 @@ export default function App() {
         {currentScreen === 'ride-history' && (
           <RideHistoryScreen 
             onBack={handleBack} 
+            onSchedule={() => navigate('schedule-ride', true)}
           />
         )}
         {currentScreen === 'payment-methods' && (
@@ -1875,17 +1870,17 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
         
         <h2 className="font-sans text-4xl font-light uppercase tracking-widest text-[#001F3F] mb-8">News</h2>
 
-        {/* Featured Image */}
-        <div className="mb-8 rounded-2xl overflow-hidden shadow-xl border border-[#001F3F]/5">
+        {/* Featured News */}
+        <div className="mb-10 group cursor-pointer relative overflow-hidden rounded-3xl">
           <img 
             src="https://drive.google.com/uc?export=view&id=1z954RXBm5fUId9_zv-JN0Ftcc4pyhLVq" 
             alt="Urbont News" 
-            className="w-full h-48 object-cover"
+            className="w-full h-64 object-cover transition-transform duration-700 group-hover:scale-105"
             referrerPolicy="no-referrer"
           />
-          <div className="p-4 bg-white">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold mb-1">Featured</p>
-            <h3 className="text-sm font-medium text-[#001F3F]">The Future of Luxury Mobility</h3>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#001F3F]/90 to-transparent flex flex-col justify-end p-6">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Featured Story</span>
+            <h3 className="text-xl font-light text-white leading-tight">The Future of Luxury Mobility</h3>
           </div>
         </div>
 
@@ -1926,31 +1921,31 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`py-6 group flex gap-4 ${!item.read ? 'bg-[#001F3F]/[0.02] -mx-6 px-6' : ''}`}
+                className={`py-6 group flex gap-4 items-start ${!item.read ? 'bg-[#001F3F]/[0.02] -mx-6 px-6' : ''}`}
               >
                 {/* Icon Column */}
                 <div className="pt-1">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center border ${
                     !item.read 
                       ? 'bg-[#001F3F] border-[#001F3F] text-white' 
-                      : 'bg-white border-[#001F3F]/20 text-[#001F3F]/60'
+                      : 'bg-white border-[#001F3F]/10 text-[#001F3F]/40'
                   }`}>
-                    {React.cloneElement(item.icon as React.ReactElement, { size: 14 })}
+                    {React.cloneElement(item.icon as React.ReactElement, { size: 18 })}
                   </div>
                 </div>
 
                 {/* Content Column */}
                 <div className="flex-1 space-y-1">
                   <div className="flex justify-between items-start">
-                    <h3 className={`text-sm uppercase tracking-wide ${!item.read ? 'font-medium text-[#001F3F]' : 'font-medium text-[#001F3F]/80'}`}>
+                    <h3 className={`text-sm tracking-wide ${!item.read ? 'font-bold text-[#001F3F]' : 'font-medium text-[#001F3F]/70'}`}>
                       {item.title}
                     </h3>
-                    <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/40 whitespace-nowrap ml-2 mt-0.5">
+                    <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/30 whitespace-nowrap ml-2 mt-0.5">
                       {item.time}
                     </span>
                   </div>
                   
-                  <p className="text-sm text-[#001F3F]/60 font-light leading-relaxed max-w-[90%]">
+                  <p className="text-sm text-[#001F3F]/60 font-light leading-relaxed">
                     {item.description}
                   </p>
                   
@@ -2385,6 +2380,9 @@ function ChauffeurProfileScreen({ onBack, onConfirm }: { onBack: () => void, onC
         <button onClick={onBack} className="absolute top-6 left-6 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-all">
           <ArrowLeft size={24} />
         </button>
+        <button className="absolute top-6 right-6 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-all">
+          <Heart size={24} />
+        </button>
 
         <div className="absolute bottom-6 left-6 right-6 text-white">
           <div className="flex items-center gap-2 mb-1">
@@ -2498,9 +2496,9 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
             </div>
             <button 
               onClick={() => setIsFavorite(!isFavorite)}
-              className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-amber-100 text-amber-500' : 'bg-white text-gray-300 hover:text-amber-400'}`}
+              className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-rose-100 text-rose-500' : 'bg-white text-gray-300 hover:text-rose-400'}`}
             >
-              <Star size={20} className={isFavorite ? 'fill-amber-500' : ''} />
+              <Heart size={20} className={isFavorite ? 'fill-rose-500' : ''} />
             </button>
           </div>
 
@@ -3253,7 +3251,7 @@ function ProfileScreen({
   );
 }
 
-function RideHistoryScreen({ onBack }: { onBack: () => void }) {
+function RideHistoryScreen({ onBack, onSchedule }: { onBack: () => void, onSchedule: () => void }) {
   const [selectedRide, setSelectedRide] = useState<any>(null);
   const history = [
     { id: 1, date: 'Oct 24, 2024', destination: 'JFK Airport, Terminal 4', vehicle: 'First Class', price: '$145.00', status: 'Completed' },
@@ -3272,6 +3270,9 @@ function RideHistoryScreen({ onBack }: { onBack: () => void }) {
       <div className="flex items-center p-6 gap-4">
         <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
+        </button>
+        <button onClick={onSchedule} className="ml-auto text-sm font-medium uppercase tracking-wider text-[#001F3F]/60 hover:text-[#001F3F] transition-colors">
+          Schedule Ride
         </button>
       </div>
 

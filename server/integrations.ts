@@ -1,7 +1,96 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
+import Stripe from 'stripe';
+import Groq from 'groq-sdk';
+
+// Lazy initialization for Stripe
+let stripeClient: Stripe | null = null;
+function getStripe() {
+  if (!stripeClient) {
+    const key = process.env.STRIPE_SECRET_KEY || process.env.EXPO_PUBLIC_STRIPE_SECRET_KEY;
+    if (!key) {
+      console.warn('STRIPE_SECRET_KEY is missing');
+      return null;
+    }
+    stripeClient = new Stripe(key);
+  }
+  return stripeClient;
+}
+
+// Lazy initialization for Groq
+let groqClient: Groq | null = null;
+function getGroq() {
+  if (!groqClient) {
+    const key = process.env.GROQ_API_KEY || process.env.EXPO_PUBLIC_GROQ_API_KEY;
+    if (!key) {
+      console.warn('GROQ_API_KEY is missing');
+      return null;
+    }
+    groqClient = new Groq({ apiKey: key });
+  }
+  return groqClient;
+}
 
 export const integrationsRouter = Router();
+
+// --- API Health Check ---
+integrationsRouter.get("/health-check", async (req: Request, res: Response) => {
+  const status = {
+    googleMaps: !!(process.env.VITE_GOOGLE_MAPS_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY),
+    stripe: !!(process.env.STRIPE_SECRET_KEY || process.env.EXPO_PUBLIC_STRIPE_SECRET_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY || process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY),
+    groq: !!(process.env.GROQ_API_KEY || process.env.EXPO_PUBLIC_GROQ_API_KEY),
+    cloudinary: !!process.env.CLOUDINARY_URL,
+    translation: !!process.env.VITE_GOOGLE_TRANSLATION_API_KEY,
+    speech: !!process.env.VITE_GOOGLE_SPEECH_API_KEY,
+    aviation: !!process.env.VITE_AVIATION_STACK_API_KEY,
+    freepik: !!process.env.VITE_FREEPIK_API_KEY
+  };
+  res.json(status);
+});
+
+// --- 0. Stripe & Groq (New) ---
+
+integrationsRouter.post("/stripe/create-payment-intent", async (req: Request, res: Response) => {
+  try {
+    const stripe = getStripe();
+    if (!stripe) return res.status(500).json({ error: 'Stripe not configured' });
+
+    const { amount, currency = 'usd' } = req.body;
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(amount * 100), // amount in cents
+      currency,
+      automatic_payment_methods: { enabled: true },
+    });
+
+    res.json({ clientSecret: paymentIntent.client_secret });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+integrationsRouter.post("/ai/refine-message", async (req: Request, res: Response) => {
+  try {
+    const groq = getGroq();
+    if (!groq) return res.status(500).json({ error: 'Groq not configured' });
+
+    const { text, context = 'chauffeur' } = req.body;
+    const systemPrompt = context === 'chauffeur' 
+      ? "You are an elite professional chauffeur. Refine the following message to be more professional, polite, and concise. Keep the original meaning."
+      : "You are a premium passenger. Refine the following message to be polite and clear.";
+
+    const completion = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: text },
+      ],
+      model: "mixtral-8x7b-32768",
+    });
+
+    res.json({ refinedText: completion.choices[0]?.message?.content || text });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // --- 1. Google Maps Enterprise (Advanced Markers & Real-time Traffic) ---
 
@@ -88,7 +177,42 @@ integrationsRouter.post("/webhooks/twilio/voice", (req: Request, res: Response) 
 });
 
 
-// --- 4. Checkr API (Background Checks) ---
+// --- 5. Freepik API Proxy ---
+integrationsRouter.get("/freepik/icon", async (req: Request, res: Response) => {
+  const apiKey = process.env.VITE_FREEPIK_API_KEY || 'FPSXd269abd3d8ed2d36624e2df72a1ba264';
+  if (!apiKey) return res.status(401).json({ error: "Missing Freepik API Key" });
+  
+  const { term } = req.query;
+  if (!term) return res.status(400).json({ error: "Missing search term" });
+
+  try {
+    const response = await fetch(`https://api.freepik.com/v1/icons?term=${term}&limit=1`, {
+      headers: {
+        'Accept-Language': 'en-US',
+        'Accept': 'application/json',
+        'x-freepik-api-key': apiKey
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Freepik API responded with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.data && data.data.length > 0) {
+      // Get the highest resolution thumbnail or the SVG if available
+      const icon = data.data[0];
+      const imageUrl = icon.thumbnails[0]?.url || '';
+      res.json({ url: imageUrl, name: icon.name });
+    } else {
+      res.status(404).json({ error: "Icon not found" });
+    }
+  } catch (error: any) {
+    console.error('[FREEPIK_API_ERROR]', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Webhook to receive report updates
 integrationsRouter.post("/webhooks/checkr", (req: Request, res: Response) => {

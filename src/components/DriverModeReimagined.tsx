@@ -18,8 +18,11 @@ import {
   MoreVertical,
   ArrowRight,
   CheckCircle2,
-  User
+  User,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
+import AnimatedChauffeurMarker from './AnimatedChauffeurMarker';
 
 // --- Types ---
 interface TripDetails {
@@ -50,100 +53,31 @@ const CENTER = {
   lng: -73.9855
 };
 
-// Clean, Light Map Style
-const LIGHT_MAP_STYLE = [
-  {
-    "elementType": "geometry",
-    "stylers": [{ "color": "#f5f5f5" }]
-  },
-  {
-    "elementType": "labels.icon",
-    "stylers": [{ "visibility": "off" }]
-  },
-  {
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#616161" }]
-  },
-  {
-    "elementType": "labels.text.stroke",
-    "stylers": [{ "color": "#f5f5f5" }]
-  },
-  {
-    "featureType": "administrative.land_parcel",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#bdbdbd" }]
-  },
-  {
-    "featureType": "poi",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#eeeeee" }]
-  },
-  {
-    "featureType": "poi",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#757575" }]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#e5e5e5" }]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#9e9e9e" }]
-  },
-  {
-    "featureType": "road",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#ffffff" }]
-  },
-  {
-    "featureType": "road.arterial",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#757575" }]
-  },
-  {
-    "featureType": "road.highway",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#dadada" }]
-  },
-  {
-    "featureType": "road.highway",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#616161" }]
-  },
-  {
-    "featureType": "road.local",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#9e9e9e" }]
-  },
-  {
-    "featureType": "transit.line",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#e5e5e5" }]
-  },
-  {
-    "featureType": "transit.station",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#eeeeee" }]
-  },
-  {
-    "featureType": "water",
-    "elementType": "geometry",
-    "stylers": [{ "color": "#c9c9c9" }]
-  },
-  {
-    "featureType": "water",
-    "elementType": "labels.text.fill",
-    "stylers": [{ "color": "#9e9e9e" }]
-  }
+// Navy & Silver Premium Map Style
+const NAVY_SILVER_STYLE = [
+  { "elementType": "geometry", "stylers": [{ "color": "#1a1c2c" }] },
+  { "elementType": "labels.text.fill", "stylers": [{ "color": "#8e9297" }] },
+  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#1a1c2c" }] },
+  { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#4b4e6d" }] },
+  { "featureType": "administrative.land_parcel", "elementType": "labels.text.fill", "stylers": [{ "color": "#6477b9" }] },
+  { "featureType": "landscape.man_made", "elementType": "geometry.stroke", "stylers": [{ "color": "#334e7c" }] },
+  { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#283d5a" }] },
+  { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#6f9ba5" }] },
+  { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#304a7d" }] },
+  { "featureType": "road", "elementType": "labels.text.fill", "stylers": [{ "color": "#98a5be" }] },
+  { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#2c4591" }] },
+  { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#1f2835" }] },
+  { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#b0d5ff" }] },
+  { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#2f3948" }] },
+  { "featureType": "transit.station", "elementType": "labels.text.fill", "stylers": [{ "color": "#d3d3d3" }] },
+  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0e1626" }] },
+  { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#4e6d70" }] }
 ];
 
 export default function DriverModeReimagined({ tripDetails, onComplete, onLogout }: DriverModeProps) {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -155,21 +89,34 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
   
   // Telemetry
   const [speed, setSpeed] = useState(0);
+  const [carPosition, setCarPosition] = useState(CENTER);
+  const [carHeading, setCarHeading] = useState(0);
+  const [isAutoCenter, setIsAutoCenter] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
+  const [isRefining, setIsRefining] = useState(false);
   const [chatHistory, setChatHistory] = useState([
     { role: 'passenger', text: 'I am waiting near the main entrance.' }
   ]);
   
-  // Simulate movement
+  // Simulate movement along the route
   useEffect(() => {
     const interval = setInterval(() => {
       setSpeed(prev => {
         const change = Math.random() * 4 - 2;
         return Math.max(0, Math.min(65, prev + change));
       });
-    }, 1000);
+
+      // Simulate small position changes
+      setCarPosition(prev => ({
+        lat: prev.lat + (Math.random() - 0.5) * 0.0005,
+        lng: prev.lng + (Math.random() - 0.5) * 0.0005,
+      }));
+
+      // Simulate heading changes
+      setCarHeading(prev => (prev + (Math.random() - 0.5) * 10) % 360);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -212,23 +159,24 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
     return 'Complete Trip';
   };
 
-  if (!isLoaded) return <div className="h-screen w-full bg-white flex items-center justify-center text-[#1A1A1A]">Loading Navigation...</div>;
+  if (!isLoaded) return <div className="h-[100dvh] w-full bg-white flex items-center justify-center text-[#001F3F]">Loading Navigation...</div>;
 
   return (
-    <div className="h-screen w-full bg-white relative overflow-hidden font-sans text-[#1A1A1A]">
+    <div className="h-[100dvh] w-full bg-white relative overflow-hidden font-sans text-[#001F3F]">
       
       {/* --- Map Layer --- */}
       <div className="absolute inset-0 z-0">
         <GoogleMap
           mapContainerStyle={MAP_CONTAINER_STYLE}
-          center={CENTER}
-          zoom={13}
+          center={carPosition}
+          zoom={16}
           options={{
-            styles: LIGHT_MAP_STYLE,
+            styles: NAVY_SILVER_STYLE,
             disableDefaultUI: true,
             zoomControl: false,
           }}
           onLoad={setMap}
+          onDragStart={() => setIsAutoCenter(false)}
         >
           {directionsResponse && (
             <DirectionsRenderer
@@ -236,26 +184,45 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               options={{
                 suppressMarkers: true,
                 polylineOptions: {
-                  strokeColor: '#001F3F',
-                  strokeWeight: 4,
+                  strokeColor: '#6477b9',
+                  strokeWeight: 6,
+                  strokeOpacity: 0.8,
                 },
               }}
             />
           )}
-          {/* Car Marker */}
-          <Marker
-            position={CENTER}
+          
+          {/* Animated Chauffeur Marker */}
+          <AnimatedChauffeurMarker 
+            position={carPosition}
+            heading={carHeading}
+            autoCenter={isAutoCenter}
+            map={map}
+          />
+
+          {/* Destination Marker */}
+          <Marker 
+            position={{ lat: 40.6413, lng: -73.7781 }}
             icon={{
-              path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-              scale: 6,
-              fillColor: '#001F3F',
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8,
+              fillColor: '#FFFFFF',
               fillOpacity: 1,
-              strokeWeight: 2,
-              strokeColor: '#FFFFFF',
-              rotation: 0,
+              strokeWeight: 4,
+              strokeColor: '#6477b9',
             }}
           />
         </GoogleMap>
+
+        {/* Recenter Button */}
+        {!isAutoCenter && (
+          <button 
+            onClick={() => setIsAutoCenter(true)}
+            className="absolute bottom-80 right-6 z-20 bg-white p-3 rounded-full shadow-lg text-[#001F3F] hover:bg-gray-50 transition-all active:scale-95"
+          >
+            <Navigation size={20} className="rotate-45" />
+          </button>
+        )}
       </div>
 
       {/* --- Top Telemetry Bar --- */}
@@ -279,23 +246,23 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               <Menu size={20} strokeWidth={1.5} />
             </button>
             <div className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 px-4 py-2 rounded-full shadow-sm">
-              <span className="text-2xl font-medium text-[#1A1A1A]">{Math.round(speed)}</span>
-              <span className="text-xs text-[#1A1A1A]/60 ml-1 font-medium">MPH</span>
+              <span className="text-2xl font-medium text-[#001F3F]">{Math.round(speed)}</span>
+              <span className="text-xs text-[#001F3F]/60 ml-1 font-medium">MPH</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* --- Bottom Action Panel --- */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 p-6 pb-10">
+      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 p-6 pb-12">
         <div className="w-12 h-1 bg-[#001F3F]/10 rounded-full mx-auto mb-6" />
         
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-medium text-[#1A1A1A] mb-1">
+            <h2 className="text-2xl font-medium text-[#001F3F] mb-1">
               {tripStage === 'PICKUP' ? 'Picking up Sarah' : 'Dropping off Sarah'}
             </h2>
-            <div className="flex items-center gap-2 text-[#1A1A1A]/60 text-sm">
+            <div className="flex items-center gap-2 text-[#001F3F]/60 text-sm">
               <Clock size={14} strokeWidth={1.5} />
               <span>{tripDetails.time} remaining</span>
               <span>•</span>
@@ -303,16 +270,16 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             </div>
           </div>
           <div className="flex gap-3">
-            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] hover:bg-[#001F3F]/10 transition-colors">
+            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors">
               <Phone size={20} strokeWidth={1.5} />
             </button>
             <button 
               onClick={() => setShowChat(true)}
-              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] hover:bg-[#001F3F]/10 transition-colors"
+              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
             >
               <MessageSquare size={20} strokeWidth={1.5} />
             </button>
-            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] hover:bg-[#001F3F]/10 transition-colors">
+            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors">
               <ShieldAlert size={20} strokeWidth={1.5} />
             </button>
           </div>
@@ -326,13 +293,13 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             <div className={`w-3 h-3 rounded-full ${tripStage === 'DROPOFF' ? 'bg-[#001F3F]' : 'border-2 border-[#001F3F]/20'}`} />
           </div>
           <div className="flex-1 space-y-6">
-            <div className={tripStage === 'PICKUP' ? 'opacity-100' : 'opacity-40'}>
-              <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/40 font-medium mb-1">Pickup</p>
-              <p className="text-lg font-medium text-[#1A1A1A]">{tripDetails.pickup}</p>
+            <div className={tripStage === 'PICKUP' ? 'opacity-100' : 'opacity-70'}>
+              <p className="text-xs uppercase tracking-widest text-[#001F3F]/90 font-medium mb-1">Pickup</p>
+              <p className="text-lg font-medium text-[#001F3F]">{tripDetails.pickup}</p>
             </div>
-            <div className={tripStage === 'DROPOFF' ? 'opacity-100' : 'opacity-40'}>
-              <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/40 font-medium mb-1">Dropoff</p>
-              <p className="text-lg font-medium text-[#1A1A1A]">{tripDetails.dropoff}</p>
+            <div className={tripStage === 'DROPOFF' ? 'opacity-100' : 'opacity-70'}>
+              <p className="text-xs uppercase tracking-widest text-[#001F3F]/90 font-medium mb-1">Dropoff</p>
+              <p className="text-lg font-medium text-[#001F3F]">{tripDetails.dropoff}</p>
             </div>
           </div>
         </div>
@@ -357,14 +324,14 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-50 bg-[#001F3F]/95 backdrop-blur-xl flex flex-col p-8 text-white"
           >
-            <div className="flex justify-between items-center mb-8 pt-8">
+            <div className="flex justify-between items-center mb-12 pt-8">
               <h2 className="text-3xl font-light uppercase tracking-widest">Trip Menu</h2>
               <button onClick={() => setShowMenu(false)} className="p-2 bg-white/10 rounded-full"><X size={24} /></button>
             </div>
             
             <div className="flex-1 space-y-4">
               <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#1A1A1A] transition-all">
+                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
                   <Maximize2 size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -374,7 +341,7 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               </button>
               
               <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#1A1A1A] transition-all">
+                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
                   <ShieldAlert size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -384,7 +351,7 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               </button>
 
               <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#1A1A1A] transition-all">
+                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
                   <X size={24} strokeWidth={1.5} />
                 </div>
                 <div>
@@ -412,12 +379,12 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
           >
             <div className="p-6 border-b border-[#001F3F]/5 flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A]">
+                <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
                   <User size={20} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-[#1A1A1A]">{tripDetails.passengerName}</p>
-                  <p className="text-[10px] text-emerald-600 font-medium uppercase tracking-widest">Online</p>
+                  <p className="text-sm font-medium text-[#001F3F]">{tripDetails.passengerName}</p>
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Online</p>
                 </div>
               </div>
               <button onClick={() => setShowChat(false)} className="p-2 bg-[#001F3F]/5 rounded-full"><X size={20} /></button>
@@ -426,38 +393,67 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {chatHistory.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'driver' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'driver' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#1A1A1A] rounded-tl-none'}`}>
+                  <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'driver' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#001F3F] rounded-tl-none'}`}>
                     {msg.text}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="p-6 border-t border-[#001F3F]/5 flex gap-3">
-              <input 
-                type="text" 
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 bg-[#001F3F]/5 rounded-xl px-4 py-3 text-sm outline-none"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && chatMessage.trim()) {
-                    setChatHistory([...chatHistory, { role: 'driver', text: chatMessage }]);
-                    setChatMessage('');
-                  }
-                }}
-              />
-              <button 
-                onClick={() => {
-                  if (chatMessage.trim()) {
-                    setChatHistory([...chatHistory, { role: 'driver', text: chatMessage }]);
-                    setChatMessage('');
-                  }
-                }}
-                className="p-3 bg-[#001F3F] text-white rounded-xl"
-              >
-                <ArrowRight size={20} />
-              </button>
+            <div className="p-6 border-t border-[#001F3F]/5 flex flex-col gap-3">
+              <div className="flex gap-3">
+                <input 
+                  type="text" 
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 bg-[#001F3F]/5 rounded-xl px-4 py-3 text-sm outline-none"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && chatMessage.trim()) {
+                      setChatHistory([...chatHistory, { role: 'driver', text: chatMessage }]);
+                      setChatMessage('');
+                    }
+                  }}
+                />
+                <button 
+                  onClick={async () => {
+                    if (!chatMessage.trim() || isRefining) return;
+                    setIsRefining(true);
+                    try {
+                      const res = await fetch('/api/ai/refine-message', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: chatMessage, context: 'chauffeur' })
+                      });
+                      const data = await res.json();
+                      if (data.refinedText) {
+                        setChatMessage(data.refinedText);
+                      }
+                    } catch (error) {
+                      console.error('AI Refinement failed', error);
+                    } finally {
+                      setIsRefining(false);
+                    }
+                  }}
+                  disabled={isRefining || !chatMessage.trim()}
+                  className="p-3 bg-[#001F3F]/5 text-[#001F3F] rounded-xl hover:bg-[#001F3F]/10 transition-colors disabled:opacity-50"
+                  title="AI Refine Message"
+                >
+                  {isRefining ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
+                </button>
+                <button 
+                  onClick={() => {
+                    if (chatMessage.trim()) {
+                      setChatHistory([...chatHistory, { role: 'driver', text: chatMessage }]);
+                      setChatMessage('');
+                    }
+                  }}
+                  className="p-3 bg-[#001F3F] text-white rounded-xl"
+                >
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+              <p className="text-[10px] text-[#001F3F]/40 text-center">AI Refinement powered by Groq</p>
             </div>
           </motion.div>
         )}

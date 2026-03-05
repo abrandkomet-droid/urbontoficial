@@ -1,16 +1,11 @@
 import { Router, Request, Response } from "express";
+import { GoogleGenAI, Modality } from "@google/genai";
 import crypto from "crypto";
 
 export const translationRouter = Router();
 
-// --- Gemini Initialization (lazy, only if API key is set) ---
-let ai: any = null;
-try {
-  if (process.env.GEMINI_API_KEY) {
-    const { GoogleGenAI } = await import("@google/genai");
-    ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  }
-} catch { /* optional service */ }
+// --- Gemini Initialization ---
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // --- Types ---
 interface TranslationRequest {
@@ -29,7 +24,7 @@ const conversations: any[] = [];
 // --- Helper: Transcribe & Translate (Gemini Multimodal) ---
 async function processInput(content: string, inputType: 'text' | 'audio', sourceLang: string, targetLang: string) {
   const model = "gemini-2.5-flash-latest"; // Using latest Flash model for speed/context
-
+  
   let prompt = "";
   let parts: any[] = [];
 
@@ -65,7 +60,7 @@ async function processInput(content: string, inputType: 'text' | 'audio', source
       contents: { parts },
       config: { responseMimeType: "application/json" }
     });
-
+    
     return JSON.parse(result.text || "{}");
   } catch (error) {
     console.error("Translation Error:", error);
@@ -76,10 +71,10 @@ async function processInput(content: string, inputType: 'text' | 'audio', source
 // --- Helper: Text-to-Speech (Gemini TTS) ---
 async function generateSpeech(text: string, language: string) {
   const model = "gemini-2.5-flash-preview-tts";
-
+  
   // Voice Selection: 'Kore' (Female/Soft) or 'Fenrir' (Male/Deep)
   // Mapping 'Journey'/'Studio' request to available Gemini voices
-  const voiceName = language === 'en' ? 'Fenrir' : 'Kore';
+  const voiceName = language === 'en' ? 'Fenrir' : 'Kore'; 
 
   try {
     const response = await ai.models.generateContent({
@@ -97,7 +92,7 @@ async function generateSpeech(text: string, language: string) {
 
     const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     if (!audioData) throw new Error("No audio generated");
-
+    
     return audioData; // Base64
   } catch (error) {
     console.error("TTS Error:", error);
@@ -114,7 +109,7 @@ translationRouter.post("/speak", async (req: Request, res: Response) => {
 
     // 1. Process Input (Transcribe + Translate)
     const { original, translated } = await processInput(content, inputType, sourceLang, targetLang);
-
+    
     if (!translated) {
       throw new Error("Translation failed to produce output.");
     }

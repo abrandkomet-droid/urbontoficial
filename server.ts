@@ -8,7 +8,6 @@ import { productRouter } from "./server/product";
 import { urbontCoreRouter } from "./server/urbont_core";
 import { integrationsRouter } from "./server/integrations";
 import { translationRouter } from "./server/translation";
-import { groqChatRouter } from "./server/groq_chat";
 import { startCronJobs } from "./server/cron";
 
 async function startServer() {
@@ -27,7 +26,6 @@ async function startServer() {
   app.use("/api/urbont", urbontCoreRouter);
   app.use("/api/integrations", integrationsRouter);
   app.use("/api/translation", translationRouter);
-  app.use("/api/groq-chat", groqChatRouter);
 
   // Health Check
   app.get("/api/health", (req, res) => {
@@ -38,13 +36,11 @@ async function startServer() {
   startCronJobs();
 
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  }
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: "spa",
+  });
+  app.use(vite.middlewares);
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);

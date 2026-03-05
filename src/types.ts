@@ -1,4 +1,4 @@
-export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration';
+export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health';
 
 export interface Vehicle {
   id: string;
@@ -13,16 +13,8 @@ export interface Chauffeur {
   name: string;
   portrait: string;
   experience: string;
-  yearsExperience: number;
   languages: string[];
   rating: number;
-  vehicle: string;
-  vehicleImage: string;
-  vehicleColor: string;
-  licensePlate: string;
-  certifications: string[];
-  reviews: { text: string; author: string; rating: number }[];
-  phone: string;
 }
 
 export interface UserProfile {
@@ -69,18 +61,6 @@ export const CHAUFFEUR: Chauffeur = {
   name: 'Alexander Sterling',
   portrait: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
   experience: '12 Years',
-  yearsExperience: 12,
   languages: ['English', 'French', 'German'],
-  rating: 4.98,
-  vehicle: 'Chevrolet Suburban • Silver',
-  vehicleImage: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=1000&auto=format&fit=crop',
-  vehicleColor: 'Silver',
-  licensePlate: 'NY-782-K9',
-  certifications: ['CDL Class B', 'Defensive Driving', 'First Aid Certified', 'VIP Protocol Training'],
-  reviews: [
-    { text: 'Impeccable service. Alexander made our anniversary celebration truly special.', author: 'Sarah M.', rating: 5 },
-    { text: 'Professional, punctual, and incredibly knowledgeable about the city.', author: 'James R.', rating: 5 },
-    { text: 'The best chauffeur experience I have had in New York.', author: 'David L.', rating: 5 },
-  ],
-  phone: '+15550001111',
+  rating: 4.98
 };

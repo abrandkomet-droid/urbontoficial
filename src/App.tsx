@@ -1,58 +1,68 @@
-// Version: 1.0.1 - UI Improvements Deployment
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-
-import {
-  Train, MessageCircle, Crown, Zap, Bell, ArrowRight, Gift, Percent,
-  CheckCheck, BellOff, Share2, Smartphone, Check, FileText, Mail,
-  AlertTriangle, Search, ArrowLeft, ShieldCheck, MapPin, Star, Phone,
-  X, CheckCircle2, User, CreditCard, Clock, Settings, LogOut, Heart,
-  HelpCircle, Shield, ChevronRight, Menu, Map as MapIcon, Calendar,
-  Info, Layers, Compass, Loader2, Briefcase, Camera, Plus, Music,
-  Sun, DoorOpen, Plane, History, Navigation, Users
+import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { 
+  MapPin, 
+  Clock, 
+  ArrowLeft, 
+  Star, 
+  ShieldCheck, 
+  Navigation,
+  Menu,
+  User,
+  Phone,
+  Search,
+  History,
+  CreditCard,
+  Settings,
+  LogOut,
+  Users,
+  Briefcase,
+  CheckCircle2,
+  X,
+  ChevronRight,
+  Camera,
+  Home,
+  Plus,
+  Music,
+  Sun,
+  DoorOpen,
+  Info,
+  Plane,
+  Train,
+  MessageCircle,
+  Crown,
+  Zap,
+  Bell,
+  ArrowRight,
+  Gift,
+  Percent,
+  CheckCheck,
+  BellOff,
+  Share2,
+  Smartphone,
+  Check,
+  FileText,
+  Mail,
+  AlertTriangle,
+  MessageSquare,
+  Building2
 } from 'lucide-react';
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
-
-// --- Animated Premium Icon Component ---
-const AnimatedIcon = ({ icon: Icon, size = 20, color = 'currentColor', animation = 'pulse' as 'pulse' | 'spin' | 'float' | 'ping' }) => {
-  const animations = {
-    pulse: { scale: [1, 1.05, 1], opacity: [0.9, 1, 0.9] },
-    spin: { rotate: 360 },
-    float: { y: [0, -3, 0] },
-    ping: { scale: [1, 1.1], opacity: [1, 0] }
-  };
-
-  return (
-    <motion.div
-      animate={animations[animation]}
-      transition={{
-        duration: animation === 'spin' ? 2 : 2.5,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }}
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-    >
-      <Icon size={size} color={color} />
-    </motion.div>
-  );
-};
-import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile, Chauffeur } from './types';
+import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
 import DriverDashboardMobile from './components/DriverDashboardMobile';
-import ChatRoom from './components/ChatRoom';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 export default function App() {
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['places'] as any[]
-  });
   const [currentScreen, setCurrentScreen] = useState<Screen>('welcome');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [countryCode, setCountryCode] = useState('+58');
+  const [countryCode, setCountryCode] = useState('+1');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  
   const [userProfile, setUserProfile] = useState<UserProfile>({
     firstName: 'Angel',
     lastName: 'Boyer',
@@ -61,9 +71,10 @@ export default function App() {
     accountType: 'personal',
     otherAddresses: []
   });
-
+  
   const [editingAddressType, setEditingAddressType] = useState<'home' | 'work' | 'other' | null>(null);
   const [returnToMenu, setReturnToMenu] = useState(false);
+  const [activeTrip, setActiveTrip] = useState(false);
 
   const navigate = (screen: Screen, fromMenu = false) => {
     setCurrentScreen(screen);
@@ -96,44 +107,45 @@ export default function App() {
     } else if (editingAddressType === 'work') {
       setUserProfile(prev => ({ ...prev, workAddress: address }));
     } else if (editingAddressType === 'other') {
-      setUserProfile(prev => ({
-        ...prev,
-        otherAddresses: [...prev.otherAddresses, { id: Date.now().toString(), label: 'Other', address }]
+      setUserProfile(prev => ({ 
+        ...prev, 
+        otherAddresses: [...prev.otherAddresses, { id: Date.now().toString(), label: 'Other', address }] 
       }));
     }
     navigate('profile');
   };
 
   return (
-    <div className="app-container">
+    <Elements stripe={stripePromise}>
+      <div className="app-container">
       {/* Side Menu Drawer */}
       <AnimatePresence>
         {isMenuOpen && (
           <>
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm z-40"
             />
-            <motion.div
+            <motion.div 
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 1 }}
-              className="absolute inset-y-0 left-0 w-full bg-[#FFFFFF] z-50 flex flex-col text-[#1A1A1A] shadow-2xl overflow-hidden"
+              className="absolute inset-y-0 left-0 w-full bg-[#FFFFFF] z-50 flex flex-col text-[#001F3F] shadow-2xl overflow-hidden"
             >
-              <div className="flex flex-col h-full overflow-y-auto px-4 py-10 scrollbar-hide">
+              <div className="flex flex-col h-full overflow-y-auto px-6 py-10 scrollbar-hide">
                 {/* Header with Close Button and Large Logo */}
                 <div className="flex justify-between items-center mb-10 shrink-0 relative">
                   <button onClick={() => setIsMenuOpen(false)} className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors z-10">
                     <X size={28} strokeWidth={1.5} />
                   </button>
                   <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
-                    <img
-                      src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_"
-                      alt="URBONT"
+                    <img 
+                      src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
+                      alt="URBONT" 
                       className="h-10 object-contain brightness-0"
                       referrerPolicy="no-referrer"
                     />
@@ -141,7 +153,7 @@ export default function App() {
                 </div>
 
                 {/* Greeting */}
-                <div className="mb-8 px-2">
+                <div className="mb-12 px-2">
                   <div className="flex items-center gap-3 mb-2">
                     {userProfile.accountType === 'business' && (
                       <span className="px-2 py-1 bg-[#001F3F] text-white text-[10px] font-medium uppercase tracking-widest rounded-md flex items-center gap-1">
@@ -150,17 +162,17 @@ export default function App() {
                       </span>
                     )}
                   </div>
-                  <h2 className="font-sans text-3xl font-light text-[#1A1A1A] leading-tight">
+                  <h2 className="font-sans text-3xl font-light text-[#001F3F] leading-tight">
                     {(() => {
                       const hour = new Date().getHours();
                       let greeting = 'Good Morning';
                       if (hour >= 12) greeting = 'Good Afternoon';
                       if (hour >= 18) greeting = 'Good Evening';
-
-                      const nameDisplay = userProfile.lastName
-                        ? `${userProfile.title || ''} ${userProfile.lastName}`.trim()
+                      
+                      const nameDisplay = userProfile.lastName 
+                        ? `${userProfile.title || ''} ${userProfile.lastName}`.trim() 
                         : '';
-
+                      
                       return nameDisplay ? `${greeting}, ${nameDisplay}` : greeting;
                     })()}
                   </h2>
@@ -169,13 +181,13 @@ export default function App() {
                 {/* Main Navigation */}
                 <div className="flex-1 flex flex-col justify-center space-y-8 mb-20 px-2">
                   <button onClick={() => navigate('services', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#1A1A1A] group-hover:text-[#1A1A1A]/80 transition-colors">SIGNATURE</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">SIGNATURE</span>
                   </button>
                   <button onClick={() => navigate('membership', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#1A1A1A] group-hover:text-[#1A1A1A]/80 transition-colors">ACCESS</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">ACCESS</span>
                   </button>
                   <button onClick={() => navigate('customer-service', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#1A1A1A] group-hover:text-[#1A1A1A]/80 transition-colors">HELP CENTER</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">HELP CENTER</span>
                   </button>
                 </div>
 
@@ -183,48 +195,48 @@ export default function App() {
                 <div className="border-t border-[#001F3F]/20 pt-2 shrink-0">
                   <button onClick={() => navigate('profile', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <User size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">MY INFO</span>
+                      <User size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY INFO</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="font-sans text-sm font-normal text-[#1A1A1A]/80">Angel Boyer</span>
-                      <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
+                      <span className="font-sans text-sm font-normal text-[#001F3F]/80">Angel Boyer</span>
+                      <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                     </div>
                   </button>
                   <button onClick={() => navigate('preferences', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <Settings size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">MY PREFERENCES</span>
+                      <Settings size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY PREFERENCES</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('ride-history', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <Clock size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">MY JOURNEY HISTORY</span>
+                      <Clock size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY JOURNEY HISTORY</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('payment-methods', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <CreditCard size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">PAYMENT</span>
+                      <CreditCard size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">PAYMENT</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('gift-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
-                      <Gift size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#1A1A1A]">GIFT A RIDE</span>
+                      <Gift size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">GIFT A RIDE</span>
                     </div>
-                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#1A1A1A]/80" />
+                    <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                 </div>
 
                 {/* Footer */}
-                <div className="mt-12 flex justify-between items-center font-sans text-[10px] uppercase tracking-[0.1em] font-medium shrink-0 pb-4 text-[#1A1A1A]/80">
+                <div className="mt-12 flex justify-between items-center font-sans text-[10px] uppercase tracking-[0.1em] font-medium shrink-0 pb-4 text-[#001F3F]/80">
                   <span>© 2026 URBONT</span>
-                  <button onClick={() => navigate('booking')} className="flex items-center gap-1 hover:text-[#1A1A1A] transition-colors">
+                  <button onClick={() => navigate('booking')} className="flex items-center gap-1 hover:text-[#001F3F] transition-colors">
                     <span>TIME REDEFINED</span>
                     <ChevronRight size={10} />
                   </button>
@@ -237,48 +249,42 @@ export default function App() {
 
       <AnimatePresence mode="wait">
         {currentScreen === 'welcome' && (
-          <WelcomeScreen
-            key="welcome"
-            onStart={() => navigate('auth-phone')}
+          <WelcomeScreen 
+            onStart={() => navigate('auth-phone')} 
             onChauffeurStart={() => navigate('chauffeur-login')}
           />
         )}
         {currentScreen === 'chauffeur-login' && (
-          <ChauffeurLoginScreen
-            key="chauffeur-login"
+          <ChauffeurLoginScreen 
             onBack={() => navigate('welcome')}
             onLogin={() => navigate('chauffeur-dashboard')}
             onRegister={() => navigate('chauffeur-registration')}
           />
         )}
         {currentScreen === 'chauffeur-registration' && (
-          <ChauffeurRegistrationScreen
-            key="chauffeur-registration"
+          <ChauffeurRegistrationScreen 
             onBack={() => navigate('chauffeur-login')}
             onComplete={() => navigate('chauffeur-login')}
           />
         )}
         {currentScreen === 'chauffeur-dashboard' && (
-          <DriverDashboardMobile
-            key="chauffeur-dashboard"
+          <DriverDashboardMobile 
             onLogout={() => navigate('welcome')}
           />
         )}
         {currentScreen === 'auth-phone' && (
-          <PhoneAuthScreen
-            key="auth-phone"
+          <PhoneAuthScreen 
             countryCode={countryCode}
             onBack={() => navigate('welcome')}
             onSelectCountry={() => navigate('country-selector')}
             onContinue={(num) => {
               setPhoneNumber(num);
               navigate('auth-otp');
-            }}
+            }} 
           />
         )}
         {currentScreen === 'country-selector' && (
-          <CountrySelectorScreen
-            key="country-selector"
+          <CountrySelectorScreen 
             onBack={() => navigate('auth-phone')}
             onSelect={(code) => {
               setCountryCode(code);
@@ -287,32 +293,29 @@ export default function App() {
           />
         )}
         {currentScreen === 'auth-otp' && (
-          <OtpScreen
-            key="auth-otp"
+          <OtpScreen 
             phoneNumber={phoneNumber}
             onBack={() => navigate('auth-phone')}
-            onVerify={() => navigate('booking')}
+            onVerify={() => navigate('booking')} 
           />
         )}
         {currentScreen === 'booking' && (
-          <BookingScreen
-            key="booking"
-            isLoaded={isLoaded}
+          <BookingScreen 
             onOpenMenu={() => setIsMenuOpen(true)}
-            onSelectVehicle={() => navigate('vehicle-selection')}
+            onSelectVehicle={() => navigate('vehicle-selection')} 
             onNotifications={() => navigate('notifications')}
             onPaymentMethods={() => navigate('payment-methods')}
+            activeTrip={activeTrip}
+            onReturnToTrip={() => navigate('tracking')}
           />
         )}
         {currentScreen === 'notifications' && (
-          <NotificationsScreen
-            key="notifications"
-            onBack={() => navigate('booking')}
+          <NotificationsScreen 
+            onBack={() => navigate('booking')} 
           />
         )}
         {currentScreen === 'vehicle-selection' && (
-          <VehicleSelectionScreen
-            key="vehicle"
+          <VehicleSelectionScreen 
             onBack={() => navigate('booking')}
             onConfirm={(v) => {
               setSelectedVehicle(v);
@@ -321,45 +324,40 @@ export default function App() {
           />
         )}
         {currentScreen === 'payment-confirmation' && (
-          <PaymentConfirmationScreen
-            key="payment-confirmation"
+          <PaymentConfirmationScreen 
             vehicle={selectedVehicle || VEHICLES[1]}
             onBack={() => navigate('vehicle-selection')}
             onConfirm={() => navigate('searching')}
           />
         )}
         {currentScreen === 'searching' && (
-          <SearchingScreen
-            key="searching"
-            onFound={() => navigate('chauffeur-profile')}
-          />
-        )}
-        {currentScreen === 'chauffeur-profile' && (
-          <ChauffeurProfileScreen
-            key="profile"
-            onBack={() => navigate('vehicle-selection')}
-            onConfirm={() => navigate('confirmed')}
+          <SearchingScreen 
+            onFound={() => {
+              setActiveTrip(true);
+              navigate('confirmed');
+            }} 
           />
         )}
         {currentScreen === 'confirmed' && (
-          <ConfirmedScreen
-            key="confirmed"
-            onContinue={() => navigate('tracking')}
+          <ConfirmedScreen 
+            onContinue={() => navigate('tracking')} 
           />
         )}
         {currentScreen === 'tracking' && (
-          <TrackingScreen
-            key="tracking"
-            isLoaded={isLoaded}
+          <TrackingScreen 
             vehicle={selectedVehicle || VEHICLES[1]}
             onBack={() => navigate('booking')}
+            onEndTrip={() => {
+              setActiveTrip(false);
+              navigate('booking');
+            }}
           />
         )}
         {currentScreen === 'profile' && (
-          <ProfileScreen
-            key="profile-screen"
+          <ProfileScreen 
+            key="profile-screen" 
             userProfile={userProfile}
-            onBack={handleBack}
+            onBack={handleBack} 
             onEditProfile={() => navigate('edit-profile', returnToMenu)}
             onEditAddress={(type) => {
               setEditingAddressType(type);
@@ -367,85 +365,81 @@ export default function App() {
             }}
             onSignOut={() => navigate('welcome')}
             onLegal={() => navigate('legal', returnToMenu)}
+            onApiHealth={() => navigate('api-health', returnToMenu)}
             onUpdateProfile={(updated) => setUserProfile(prev => ({ ...prev, ...updated }))}
           />
         )}
         {currentScreen === 'edit-profile' && (
-          <EditProfileScreen
-            key="edit-profile-screen"
+          <EditProfileScreen 
             userProfile={userProfile}
             onBack={() => navigate('profile', true)}
             onSave={(updated) => handleUpdateProfile(updated)}
           />
         )}
         {currentScreen === 'address-edit' && (
-          <AddressEditScreen
-            key="address-edit-screen"
+          <AddressEditScreen 
             type={editingAddressType || 'other'}
             onBack={() => navigate('profile', true)}
             onSave={(addr) => handleUpdateAddress(addr)}
           />
         )}
         {currentScreen === 'legal' && (
-          <LegalScreen
-            key="legal-screen"
+          <LegalScreen 
             onBack={() => navigate('profile', true)}
           />
         )}
         {currentScreen === 'preferences' && (
-          <MyPreferencesScreen
-            key="preferences-screen"
-            onBack={handleBack}
+          <MyPreferencesScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'customer-service' && (
-          <CustomerServiceScreen
-            key="customer-service-screen"
-            onBack={handleBack}
+          <CustomerServiceScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'services' && (
-          <ServicesScreen
-            key="services-screen"
-            onBack={handleBack}
+          <ServicesScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'membership' && (
-          <MembershipScreen
-            key="membership-screen"
-            onBack={handleBack}
+          <MembershipScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'ride-history' && (
-          <RideHistoryScreen
-            key="history-screen"
-            onBack={handleBack}
+          <RideHistoryScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'payment-methods' && (
-          <PaymentMethodsScreen
-            key="payment-screen"
-            onBack={handleBack}
+          <PaymentMethodsScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'gift-ride' && (
-          <GiftRideScreen
-            key="gift-ride-screen"
-            onBack={handleBack}
+          <GiftRideScreen 
+            onBack={handleBack} 
           />
         )}
         {currentScreen === 'settings' && (
-          <SettingsScreen
-            key="settings-screen"
-            onBack={handleBack}
+          <SettingsScreen 
+            onBack={handleBack} 
+          />
+        )}
+        {currentScreen === 'api-health' && (
+          <ApiHealthScreen 
+            onBack={handleBack} 
           />
         )}
       </AnimatePresence>
     </div>
+    </Elements>
   );
 }
 
-function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void, onChauffeurStart: () => void, key?: string }) {
+function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onChauffeurStart: () => void }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const slides = [
     "Excellence in Motion",
@@ -462,34 +456,34 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
   }, []);
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
-      className="relative h-full w-full flex flex-col justify-between p-6 overflow-hidden navy-gradient-bg"
+      className="relative h-full w-full flex flex-col justify-between p-8 overflow-hidden navy-gradient-bg"
     >
       {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} 
       />
 
       {/* Content */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-8">
+      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-12">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
           className="flex flex-col items-center"
         >
-          <img
-            src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_"
-            alt="URBONT Logo"
-            className="h-32 object-contain drop-shadow-2xl brightness-0 invert mb-8"
+          <img 
+            src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
+            alt="URBONT Logo" 
+            className="h-40 object-contain drop-shadow-2xl brightness-0 invert mb-8"
             referrerPolicy="no-referrer"
           />
-
-          <div className="h-8 overflow-hidden relative w-full flex justify-center">
+          
+          <div className="h-12 overflow-hidden relative w-full flex justify-center">
             <AnimatePresence mode="wait">
               <motion.p
                 key={currentSlide}
@@ -497,7 +491,7 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -20, opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                className="text-white/95 text-[11px] uppercase tracking-[0.2em] font-medium absolute text-center w-full px-4"
+                className="text-white/60 text-sm uppercase tracking-[0.3em] font-light absolute text-center w-full"
               >
                 {slides[currentSlide]}
               </motion.p>
@@ -506,22 +500,22 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
         </motion.div>
       </div>
 
-      <motion.div
+      <motion.div 
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 1.2 }}
-        className="relative z-20 w-full space-y-4 mb-8"
+        className="relative z-20 w-full space-y-4 mb-12 pb-6"
       >
-        <button
-          onClick={onStart}
-          className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.1em] hover:bg-white/90 transition-all rounded-full flex items-center justify-center gap-3 shadow-[0_0_40px_rgba(255,255,255,0.1)] active:scale-[0.98] text-[13px]"
+        <button 
+          onClick={onStart} 
+          className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-white/10"
         >
           Get Started
         </button>
-
-        <button
-          onClick={onChauffeurStart}
-          className="w-full py-4 text-white/90 font-medium uppercase tracking-[0.1em] text-[11px] hover:text-white transition-all flex items-center justify-center gap-2"
+        
+        <button 
+          onClick={onChauffeurStart} 
+          className="w-full py-3 text-white/40 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2"
         >
           Chauffeur Login <ArrowRight size={12} strokeWidth={1.5} />
         </button>
@@ -530,49 +524,49 @@ function WelcomeScreen({ onStart, onChauffeurStart, key }: { onStart: () => void
   );
 }
 
-function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => void, onLogin: () => void, onRegister: () => void, key?: string }) {
+function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => void, onLogin: () => void, onRegister: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col p-6 pt-8 navy-gradient-bg text-white relative"
+      className="h-full w-full flex flex-col p-8 pt-24 navy-gradient-bg text-white relative"
     >
       <button onClick={onBack} className="absolute top-8 left-6 p-2 text-white hover:bg-white/10 rounded-full transition-colors">
         <ArrowLeft size={24} />
       </button>
 
       <div className="flex-1 flex flex-col items-center">
-        <img
-          src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_"
-          alt="URBONT Logo"
-          className="h-16 object-contain mb-8 brightness-0 invert"
+        <img 
+          src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
+          alt="URBONT Logo" 
+          className="h-16 object-contain mb-12 brightness-0 invert"
           referrerPolicy="no-referrer"
         />
-
-        <h1 className="font-sans text-3xl font-light uppercase tracking-widest mb-8 text-center text-white">
+        
+        <h1 className="font-sans text-3xl font-light uppercase tracking-widest mb-12 text-center text-white">
           Chauffeur Portal
         </h1>
 
         <div className="w-full space-y-6">
           <div className="space-y-2">
-            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-medium">Email ID</label>
-            <input
-              type="email"
+            <label className="font-sans text-[10px] text-white/40 uppercase tracking-[0.3em] font-bold">Email ID</label>
+            <input 
+              type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full py-3 bg-transparent border-b border-white/10 outline-none text-white focus:border-white transition-colors text-lg font-light"
               placeholder="Enter your ID"
             />
           </div>
-
+          
           <div className="space-y-2">
-            <label className="font-sans text-[11px] text-white/70 uppercase tracking-[0.2em] font-medium">Password</label>
-            <input
-              type="password"
+            <label className="font-sans text-[10px] text-white/40 uppercase tracking-[0.3em] font-bold">Password</label>
+            <input 
+              type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full py-3 bg-transparent border-b border-white/10 outline-none text-white focus:border-white transition-colors text-lg font-light"
@@ -586,14 +580,14 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
         </button>
       </div>
 
-      <button
+      <button 
         disabled={!email || !password}
-        onClick={onLogin}
-        className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 text-xs"
+        onClick={onLogin} 
+        className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-20 hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/10"
       >
         Login
       </button>
-
+      
       <div className="mt-6 text-center">
         <span className="text-white/60 text-xs uppercase tracking-widest">Not a chauffeur yet? </span>
         <button onClick={onRegister} className="text-white text-xs font-medium uppercase tracking-widest hover:underline">
@@ -604,23 +598,22 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
   );
 }
 
-function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => void, onComplete: () => void, key?: string }) {
+function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => void, onComplete: () => void }) {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    firstName: '', lastName: '', email: '', phone: '', dob: '', address: '', city: '', zip: '',
-    make: '', model: '', year: '', color: '', plate: '', vin: '',
-    bankName: '', accountNumber: '', routingNumber: ''
-  });
   const [documents, setDocuments] = useState<Record<string, string | null>>({});
 
   const REQUIRED_DOCS = [
-    { id: 'license', label: 'Chauffeur License' },
     { id: 'limoPermit', label: 'Miami Dade County Limo Permit' },
     { id: 'airportPermit', label: 'Miami Airport Permit' },
     { id: 'inspection', label: 'Miami Dade Inspection' },
+    { id: 'portPermit', label: 'Port of Miami Permit' },
     { id: 'insurance', label: 'Commercial Insurance' },
-    { id: 'registration', label: 'Vehicle Registration' },
-    { id: 'photo', label: 'Professional Photo', isPhoto: true }
+    { id: 'registration', label: 'CAR, SUV, or VAN Registration' },
+    { id: 'corpFiles', label: 'Corporations Files' },
+    { id: 'w9', label: 'W-9 Form' },
+    { id: 'taxId', label: 'Tax ID' },
+    { id: 'license', label: 'Chauffeur License' },
+    { id: 'photo', label: 'Professional Photo (Black suit, black tie, white shirt)', isPhoto: true }
   ];
 
   const handleFileUpload = (id: string, file: File) => {
@@ -628,172 +621,143 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
     setDocuments(prev => ({ ...prev, [id]: url }));
   };
 
-  const InputField = ({ label, value, onChange, placeholder, type = "text" }: any) => (
-    <div className="space-y-1">
-      <label className="text-[11px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full p-3 bg-white border border-black/10 rounded-lg text-base text-[#1A1A1A] placeholder:text-[#1A1A1A]/30 focus:outline-none focus:border-[#001F3F] transition-colors"
-      />
-    </div>
-  );
+  const allDocsUploaded = REQUIRED_DOCS.every(doc => documents[doc.id]);
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-[#F5F7FA] text-[#1A1A1A] relative"
+      className="h-full w-full flex flex-col bg-[#F5F7FA] text-[#001F3F] relative"
     >
-      <div className="bg-[#001F3F] text-white p-6 pt-8 pb-8 rounded-b-[2rem] shadow-xl z-10 shrink-0">
+      <div className="bg-[#001F3F] text-white p-6 pt-12 pb-8 rounded-b-[2rem] shadow-xl z-10 shrink-0">
         <div className="flex items-center gap-4">
           <button onClick={step === 1 ? onBack : () => setStep(step - 1)} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors">
             <ArrowLeft size={24} />
           </button>
-          <div className="flex-1">
-            <h2 className="font-sans text-xl font-light uppercase tracking-widest">
-              {step === 1 ? 'Personal Info' :
-                step === 2 ? 'Vehicle Info' :
-                  step === 3 ? 'Documents' :
-                    step === 4 ? 'Banking' : 'Complete'}
-            </h2>
-            <div className="flex gap-1 mt-2">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-white' : 'bg-white/20'}`} />
-              ))}
-            </div>
-          </div>
+          <h2 className="font-sans text-xl font-light uppercase tracking-widest">
+            {step === 1 ? 'Create Account' : step === 2 ? 'Upload Documents' : 'Application Sent'}
+          </h2>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 pb-24">
+      <div className="flex-1 overflow-y-auto p-6">
         {step === 1 && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <InputField label="First Name" value={formData.firstName} onChange={(v: string) => setFormData({ ...formData, firstName: v })} placeholder="John" />
-              <InputField label="Last Name" value={formData.lastName} onChange={(v: string) => setFormData({ ...formData, lastName: v })} placeholder="Doe" />
-            </div>
-            <InputField label="Email" value={formData.email} onChange={(v: string) => setFormData({ ...formData, email: v })} placeholder="john@example.com" type="email" />
-            <InputField label="Phone" value={formData.phone} onChange={(v: string) => setFormData({ ...formData, phone: v })} placeholder="+1 (555) 000-0000" type="tel" />
-            <InputField label="Date of Birth" value={formData.dob} onChange={(v: string) => setFormData({ ...formData, dob: v })} placeholder="MM/DD/YYYY" />
-            <InputField label="Address" value={formData.address} onChange={(v: string) => setFormData({ ...formData, address: v })} placeholder="123 Main St" />
-            <div className="grid grid-cols-2 gap-4">
-              <InputField label="City" value={formData.city} onChange={(v: string) => setFormData({ ...formData, city: v })} placeholder="Miami" />
-              <InputField label="ZIP Code" value={formData.zip} onChange={(v: string) => setFormData({ ...formData, zip: v })} placeholder="33101" />
+          <div className="flex flex-col items-center justify-center h-full space-y-8">
+            <div className="text-center space-y-4">
+              <h3 className="text-2xl font-light">Join URBONT</h3>
+              <p className="text-sm opacity-60 max-w-xs mx-auto">
+                Sign up with your Google account to start your application process as a professional chauffeur.
+              </p>
             </div>
 
-            <button
+            <button 
               onClick={() => setStep(2)}
-              className="w-full py-4 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl mt-8"
+              className="w-full max-w-sm py-4 bg-white border border-black/10 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-black/5 transition-colors"
             >
-              Next Step
+              <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">G</div>
+              <span className="font-medium">Continue with Google (Gmail)</span>
             </button>
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-6">
-            <InputField label="Vehicle Make" value={formData.make} onChange={(v: string) => setFormData({ ...formData, make: v })} placeholder="Mercedes-Benz" />
-            <InputField label="Vehicle Model" value={formData.model} onChange={(v: string) => setFormData({ ...formData, model: v })} placeholder="S-Class" />
-            <div className="grid grid-cols-2 gap-4">
-              <InputField label="Year" value={formData.year} onChange={(v: string) => setFormData({ ...formData, year: v })} placeholder="2024" />
-              <InputField label="Color" value={formData.color} onChange={(v: string) => setFormData({ ...formData, color: v })} placeholder="Black" />
-            </div>
-            <InputField label="License Plate" value={formData.plate} onChange={(v: string) => setFormData({ ...formData, plate: v })} placeholder="ABC 123" />
-            <InputField label="VIN" value={formData.vin} onChange={(v: string) => setFormData({ ...formData, vin: v })} placeholder="Vehicle Identification Number" />
+          <div className="space-y-6 pb-24">
+            <p className="text-sm opacity-80">
+              Please upload clear, legible copies of the following required documents. Your application will be reviewed once all documents are submitted.
+            </p>
 
-            <button
-              onClick={() => setStep(3)}
-              className="w-full py-4 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl mt-8"
-            >
-              Next Step
-            </button>
+            <div className="space-y-4">
+              {REQUIRED_DOCS.map(doc => (
+                <div key={doc.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${documents[doc.id] ? 'bg-green-100 text-green-600' : 'bg-[#001F3F]/5 text-[#001F3F]/40'}`}>
+                      {documents[doc.id] ? <CheckCircle2 size={20} /> : (doc.isPhoto ? <Camera size={20} /> : <FileText size={20} />)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{doc.label}</p>
+                      {documents[doc.id] && <p className="text-[10px] text-green-600 uppercase tracking-widest mt-1">Uploaded</p>}
+                    </div>
+                  </div>
+                  
+                  <div className="relative shrink-0">
+                    <input 
+                      type="file" 
+                      accept={doc.isPhoto ? "image/*" : "image/*,.pdf"}
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          handleFileUpload(doc.id, e.target.files[0]);
+                        }
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div className={`px-4 py-2 rounded-lg text-xs font-medium uppercase tracking-widest transition-colors ${documents[doc.id] ? 'bg-black/5 text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
+                      {documents[doc.id] ? 'Replace' : 'Upload'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="space-y-4">
-            <p className="text-sm text-[#1A1A1A] font-medium mb-4">
-              Please upload clear, legible copies of the following required documents.
+          <div className="flex flex-col items-center justify-center h-full space-y-6 text-center">
+            <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle2 size={48} />
+            </div>
+            <h3 className="text-2xl font-light">Application Submitted</h3>
+            <p className="text-sm opacity-60 max-w-xs">
+              Thank you for applying. Our team will review your documents and contact you within 2-3 business days.
             </p>
-            {REQUIRED_DOCS.map(doc => (
-              <div key={doc.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${documents[doc.id] ? 'bg-green-100 text-green-600' : 'bg-[#001F3F]/5 text-[#1A1A1A]/70'}`}>
-                    {documents[doc.id] ? <CheckCircle2 size={20} /> : (doc.isPhoto ? <Camera size={20} /> : <FileText size={20} />)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{doc.label}</p>
-                    {documents[doc.id] && <p className="text-[10px] text-green-600 uppercase tracking-widest mt-1">Uploaded</p>}
-                  </div>
-                </div>
-                <div className="relative shrink-0">
-                  <input
-                    type="file"
-                    accept={doc.isPhoto ? "image/*" : "image/*,.pdf"}
-                    onChange={(e) => {
-                      if (e.target.files?.[0]) handleFileUpload(doc.id, e.target.files[0]);
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <div className="px-4 py-2 bg-[#001F3F]/5 text-[#1A1A1A] text-[10px] font-medium uppercase tracking-widest rounded-lg">
-                    {documents[doc.id] ? 'Change' : 'Upload'}
-                  </div>
-                </div>
-              </div>
-            ))}
-            <button
-              onClick={() => setStep(4)}
-              className="w-full py-4 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl mt-8"
-            >
-              Next Step
-            </button>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="space-y-6">
-            <p className="text-sm text-[#1A1A1A] font-medium mb-4">
-              Enter your banking information for weekly payouts.
-            </p>
-            <InputField label="Bank Name" value={formData.bankName} onChange={(v: string) => setFormData({ ...formData, bankName: v })} placeholder="Chase" />
-            <InputField label="Account Number" value={formData.accountNumber} onChange={(v: string) => setFormData({ ...formData, accountNumber: v })} placeholder="0000000000" />
-            <InputField label="Routing Number" value={formData.routingNumber} onChange={(v: string) => setFormData({ ...formData, routingNumber: v })} placeholder="000000000" />
-
-            <button
-              onClick={onComplete}
-              className="w-full py-4 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl mt-8"
-            >
-              Submit Application
-            </button>
           </div>
         )}
       </div>
+
+      {step === 2 && (
+        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent">
+          <button 
+            disabled={!allDocsUploaded}
+            onClick={() => setStep(3)}
+            className="w-full py-5 bg-[#001F3F] text-white font-medium uppercase tracking-[0.2em] rounded-full shadow-xl disabled:opacity-50 transition-all text-xs"
+          >
+            Submit Application
+          </button>
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <button 
+            onClick={onComplete}
+            className="w-full py-5 bg-[#001F3F] text-white font-medium uppercase tracking-[0.2em] rounded-full shadow-xl transition-all text-xs"
+          >
+            Return to Login
+          </button>
+        </div>
+      )}
     </motion.div>
   );
 }
 
-function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: string }) {
+function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void }) {
   const [isOnline, setIsOnline] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [name, setName] = useState('Alexander Sterling');
   const [photo, setPhoto] = useState<string | null>(null);
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="h-full w-full flex flex-col bg-[#001F3F]"
     >
       {/* Header */}
-      <div className="bg-[#001F3F] text-white p-6 pb-8 rounded-b-[2rem] shadow-xl z-10">
+      <div className="bg-[#001F3F] text-white p-6 pb-12 rounded-b-[2rem] shadow-xl z-10">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
-            <button
+            <button 
               onClick={() => setShowEditProfile(true)}
               className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20 overflow-hidden relative group"
             >
@@ -808,8 +772,8 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
             </button>
             <div onClick={() => setShowEditProfile(true)} className="cursor-pointer">
               <h2 className="text-sm font-medium">{name}</h2>
-              <div className="flex items-center gap-1 text-[11px] text-white/90 font-medium uppercase tracking-widest mt-1">
-                <Star size={10} fill="white" className="text-white" />
+              <div className="flex items-center gap-1 text-xs text-[#001F3F]/60">
+                <Star size={10} className="fill-white text-white" />
                 <span>4.98 Rating</span>
               </div>
             </div>
@@ -821,10 +785,10 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
 
         <div className="flex justify-between items-end">
           <div>
-            <div className="text-[11px] text-white/90 uppercase tracking-[0.2em] font-medium mb-1">Today's Earnings</div>
+            <div className="text-xs text-[#001F3F]/60 uppercase tracking-widest mb-1">Today's Earnings</div>
             <div className="text-3xl font-light">$245.50</div>
           </div>
-          <div className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest ${isOnline ? 'bg-white text-[#1A1A1A]' : 'bg-[#001F3F] text-white'}`}>
+          <div className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest ${isOnline ? 'bg-white text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
             {isOnline ? 'Online' : 'Offline'}
           </div>
         </div>
@@ -833,12 +797,13 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 -mt-6 pt-10 space-y-6">
         {/* Toggle Online */}
-        <button
+        <button 
           onClick={() => setIsOnline(!isOnline)}
-          className={`w-full py-6 rounded-xl shadow-sm border flex items-center justify-center gap-3 transition-all ${isOnline
-            ? 'bg-black\/10 border-black\/20 text-[#1A1A1A]'
-            : 'bg-white\/10 border-white\/20 text-white'
-            }`}
+          className={`w-full py-6 rounded-xl shadow-sm border flex items-center justify-center gap-3 transition-all ${
+            isOnline 
+              ? 'bg-black/10 border-black/20 text-[#001F3F]' 
+              : 'bg-white/10 border-white/20 text-white'
+          }`}
         >
           <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-black' : 'bg-white'}`} />
           <span className="font-medium uppercase tracking-widest text-sm">
@@ -849,48 +814,48 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm">
-            <div className="opacity-80 mb-2"><Clock size={20} /></div>
+            <div className="opacity-60 mb-2"><Clock size={20} /></div>
             <div className="text-2xl font-light mb-1">6.5h</div>
-            <div className="text-[11px] text-[#1A1A1A] uppercase tracking-widest font-medium">Online Hours</div>
+            <div className="text-[10px] text-[#001F3F]/60 uppercase tracking-widest">Online Hours</div>
           </div>
           <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm">
-            <div className="opacity-80 mb-2"><Navigation size={20} /></div>
+            <div className="opacity-60 mb-2"><Navigation size={20} /></div>
             <div className="text-2xl font-light mb-1">12</div>
-            <div className="text-[11px] text-[#1A1A1A] uppercase tracking-widest font-medium">Trips</div>
+            <div className="text-[10px] text-[#001F3F]/60 uppercase tracking-widest">Trips</div>
           </div>
         </div>
 
         {/* Recent Activity */}
         <div className="space-y-4">
-          <h3 className="text-sm font-medium uppercase tracking-widest opacity-80">Recent Trips</h3>
-
+          <h3 className="text-sm font-medium uppercase tracking-widest opacity-60">Recent Trips</h3>
+          
           <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm space-y-3">
             <div className="flex justify-between items-start">
               <div className="text-sm font-medium">JFK Airport Transfer</div>
               <div className="text-sm font-medium text-white">$85.00</div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-[#1A1A1A]/80">
+            <div className="flex items-center gap-2 text-xs text-[#001F3F]/60">
               <Clock size={12} />
               <span>10:30 AM - 11:15 AM</span>
             </div>
             <div className="pt-3 border-t border-black/[0.04] flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-widest bg-white\/10 px-2 py-1 rounded">Completed</span>
-              <ChevronRight size={14} className="opacity-80" />
+              <span className="text-[10px] uppercase tracking-widest bg-white/10 px-2 py-1 rounded">Completed</span>
+              <ChevronRight size={14} className="opacity-60" />
             </div>
           </div>
 
-          <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm space-y-3 opacity-80">
+          <div className="bg-white p-4 rounded-xl border border-black/[0.04] shadow-sm space-y-3 opacity-60">
             <div className="flex justify-between items-start">
               <div className="text-sm font-medium">Downtown to Brooklyn</div>
               <div className="text-sm font-medium text-white">$45.00</div>
             </div>
-            <div className="flex items-center gap-2 text-xs text-[#1A1A1A]/80">
+            <div className="flex items-center gap-2 text-xs text-[#001F3F]/60">
               <Clock size={12} />
               <span>08:45 AM - 09:15 AM</span>
             </div>
             <div className="pt-3 border-t border-black/[0.04] flex items-center justify-between">
-              <span className="text-[10px] uppercase tracking-widest bg-white\/10 px-2 py-1 rounded">Completed</span>
-              <ChevronRight size={14} className="opacity-80" />
+              <span className="text-[10px] uppercase tracking-widest bg-white/10 px-2 py-1 rounded">Completed</span>
+              <ChevronRight size={14} className="opacity-60" />
             </div>
           </div>
         </div>
@@ -899,13 +864,13 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
       {/* Edit Profile Modal */}
       <AnimatePresence>
         {showEditProfile && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
           >
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -913,8 +878,8 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#1A1A1A]">Edit Profile</h3>
-                <button onClick={() => setShowEditProfile(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
+                <h3 className="text-2xl font-light text-[#001F3F]">Edit Profile</h3>
+                <button onClick={() => setShowEditProfile(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
                   <X size={20} />
                 </button>
               </div>
@@ -926,8 +891,8 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
                     ) : (
                       <User size={40} className="text-black/20" />
                     )}
-                    <input
-                      type="file"
+                    <input 
+                      type="file" 
                       accept="image/*"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
@@ -940,15 +905,15 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                   </div>
-                  <span className="text-xs text-[#1A1A1A]/80 uppercase tracking-widest">Change Photo</span>
+                  <span className="text-xs text-[#001F3F]/60 uppercase tracking-widest">Change Photo</span>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[12px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium">Full Name</label>
-                  <input
-                    type="text"
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/60 font-medium">Full Name</label>
+                  <input 
+                    type="text" 
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none" 
                   />
                 </div>
               </div>
@@ -963,33 +928,33 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void, key?: st
   );
 }
 
-function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string, key?: string }) {
+function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string }) {
   const [value, setValue] = useState('');
-
+  
   const selectedCountry = COUNTRIES.find(c => c.code === countryCode) || { placeholder: '000 000 0000', maxLength: 10 };
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="h-full w-full flex flex-col p-8 pt-24 navy-gradient-bg text-white relative"
     >
-      <div className="flex-1 flex flex-col items-center">
-        <h1 className="text-3xl font-medium text-center leading-tight mb-8 max-w-[280px] uppercase tracking-widest text-white">
+      <div className="flex-1 flex flex-col items-center overflow-y-auto w-full px-2 no-scrollbar">
+        <h1 className="text-3xl font-medium text-center leading-tight mb-16 max-w-[280px] uppercase tracking-widest text-white mt-12">
           SIGN IN OR CREATE YOUR ACCOUNT
         </h1>
 
         <div className="w-full flex items-center border border-white/10 p-4 bg-white/5 rounded-xl">
-          <button
+          <button 
             onClick={onSelectCountry}
             className="flex items-center gap-2 pr-4 border-r border-white/10 mr-4 text-white"
           >
             <span className="text-lg font-medium">{countryCode}</span>
             <ChevronRight size={16} className="rotate-90 text-white/60" />
           </button>
-          <input
-            type="tel"
+          <input 
+            type="tel" 
             placeholder={selectedCountry.placeholder}
             autoFocus
             value={value}
@@ -1008,10 +973,10 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
         </p>
       </div>
 
-      <button
+      <button 
         disabled={value.length < 5}
-        onClick={() => onContinue(value)}
-        className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 mt-8 text-xs"
+        onClick={() => onContinue(value)} 
+        className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-20 hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/10 mt-8 mb-20"
       >
         CONTINUE
       </button>
@@ -1019,7 +984,7 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
   );
 }
 
-function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onBack: () => void, onVerify: () => void, key?: string }) {
+function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onBack: () => void, onVerify: () => void }) {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
@@ -1043,19 +1008,19 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
   };
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="h-full w-full flex flex-col p-6 pt-8 navy-gradient-bg text-white"
+      className="h-full w-full flex flex-col p-8 pt-20 navy-gradient-bg text-white"
     >
       <button onClick={onBack} className="p-2 -ml-2 mb-8 text-white hover:bg-white/10 rounded-full transition-colors w-fit">
         <ArrowLeft size={24} />
       </button>
 
-      <div className="space-y-8">
+      <div className="flex-1 p-8 space-y-12 overflow-y-auto pb-24 no-scrollbar">
         <div className="space-y-2">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-white/70 font-medium">Verification</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">Verification</span>
           <h2 className="font-sans text-4xl font-light uppercase tracking-tight text-white">Enter Code</h2>
           <p className="text-xs text-white/60 leading-relaxed font-medium">
             Sent to {phoneNumber}
@@ -1063,10 +1028,12 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
         </div>
 
         <div className="flex gap-4">
-          <input
-            type="text"
+          <input 
+            type="tel" 
+            inputMode="numeric"
+            pattern="[0-9]*"
             maxLength={6}
-            placeholder="000000"
+            placeholder="000000" 
             autoFocus
             value={otp}
             onChange={(e) => {
@@ -1082,23 +1049,23 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
 
         <div className="text-center">
           {canResend ? (
-            <button
+            <button 
               onClick={handleResend}
-              className="text-xs font-medium uppercase tracking-widest text-white border-b border-white pb-1"
+              className="text-xs font-bold uppercase tracking-widest text-white border-b border-white pb-1"
             >
               Resend Code
             </button>
           ) : (
-            <p className="text-xs text-white/70 font-medium uppercase tracking-widest">
+            <p className="text-xs text-white/40 font-medium uppercase tracking-widest">
               Resend code in {timer}s
             </p>
           )}
         </div>
 
-        <button
+        <button 
           onClick={onVerify}
           disabled={otp.length !== 6}
-          className="w-full py-5 bg-white text-[#1A1A1A] font-medium uppercase tracking-[0.2em] disabled:opacity-20 hover:bg-white/90 transition-all rounded-full shadow-xl shadow-white/10 text-xs"
+          className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-20 hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/10"
         >
           Verify Code
         </button>
@@ -1107,71 +1074,13 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
   );
 }
 
-function AirportPickupScreen({ onBack, onFlightFound, onSkip }: { onBack: () => void, onFlightFound: (flight: string) => void, onSkip: () => void, key?: string }) {
-  const [flightNumber, setFlightNumber] = useState('');
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: '100%' }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: '100%' }}
-      className="fixed inset-0 bg-white z-[200] flex flex-col"
-    >
-      <div className="px-4 py-4 flex items-center">
-        <button onClick={onBack} className="p-2 -ml-2">
-          <X size={24} className="text-[#1A1A1A]" />
-        </button>
-      </div>
-
-      <div className="flex-1 px-4 flex flex-col items-center justify-center -mt-20">
-        <h2 className="text-2xl font-sans font-light text-[#1A1A1A] mb-4">Enter Flight Number</h2>
-        <p className="text-sm text-[#1A1A1A]/60 text-center mb-8 leading-relaxed max-w-xs">
-          Your flight will be tracked automatically so the chauffeur will meet you at exactly the right time and place.
-        </p>
-
-        <div className="w-full max-w-xs relative mb-8">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1A1A1A]/40">
-            <Plane size={20} className="rotate-45" />
-          </div>
-          <input
-            type="text"
-            value={flightNumber}
-            onChange={(e) => setFlightNumber(e.target.value.toUpperCase())}
-            placeholder="AA1234"
-            className="w-full h-14 pl-12 pr-4 border border-[#001F3F]/20 rounded-none text-xl font-light text-[#1A1A1A] placeholder:text-[#1A1A1A]/20 focus:outline-none focus:border-[#001F3F] transition-colors text-center uppercase tracking-widest"
-          />
-          <div className="absolute left-10 top-1/2 -translate-y-1/2 w-[1px] h-6 bg-[#001F3F]/20" />
-        </div>
-      </div>
-
-      <div className="px-4 pb-8 space-y-4">
-        <button
-          onClick={() => onFlightFound(flightNumber)}
-          disabled={!flightNumber}
-          className="w-full py-4 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Find Flight
-        </button>
-
-        <button
-          onClick={onSkip}
-          className="w-full py-4 text-[#1A1A1A]/60 text-xs uppercase tracking-widest hover:text-[#1A1A1A] transition-colors"
-        >
-          Book without Flight Number
-        </button>
-      </div>
-    </motion.div>
-  );
-}
-
-function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, isLoaded }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, isLoaded: boolean, key?: string }) {
+function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, activeTrip, onReturnToTrip }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, activeTrip: boolean, onReturnToTrip: () => void }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showAirportPickup, setShowAirportPickup] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showHourlyModal, setShowHourlyModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [comment, setComment] = useState('');
-  const [scheduledTime, setScheduledTime] = useState<{ date: string, time: string } | null>(null);
+  const [scheduledTime, setScheduledTime] = useState<{date: string, time: string} | null>(null);
   const [hourlyDuration, setHourlyDuration] = useState<number | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [center, setCenter] = useState({ lat: 40.7128, lng: -74.0060 });
@@ -1187,6 +1096,12 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
+    libraries: ['places']
+  });
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -1204,20 +1119,20 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
     }
   }, [map]);
 
-  // if (loadError) {
-  //   return (
-  //     <div className="h-full w-full flex flex-col items-center justify-center bg-white text-[#1A1A1A] p-8 text-center space-y-4">
-  //       <div className="p-4 bg-red-50 rounded-full text-red-500">
-  //         <MapPin size={32} />
-  //       </div>
-  //       <h3 className="text-xl font-medium">Map Error</h3>
-  //       <p className="text-sm opacity-80 max-w-xs">{loadError.message}</p>
-  //       <p className="text-xs opacity-80 max-w-xs">
-  //         Please ensure your Google Maps API Key is valid and has the "Maps JavaScript API" and "Places API" enabled in the Google Cloud Console.
-  //       </p>
-  //     </div>
-  //   );
-  // }
+  if (loadError) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center bg-white text-[#001F3F] p-8 text-center space-y-4">
+        <div className="p-4 bg-red-50 rounded-full text-red-500">
+          <MapPin size={32} />
+        </div>
+        <h3 className="text-xl font-medium">Map Error</h3>
+        <p className="text-sm opacity-80 max-w-xs">{loadError.message}</p>
+        <p className="text-xs opacity-60 max-w-xs">
+          Please ensure your Google Maps API Key is valid and has the "Maps JavaScript API" and "Places API" enabled in the Google Cloud Console.
+        </p>
+      </div>
+    );
+  }
 
   const onLoad = (map: google.maps.Map) => {
     setMap(map);
@@ -1241,14 +1156,105 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
     setExtraDestinations(newStops);
   };
 
-  const mapStyles = []; // Revert to real Google Map styles
+  const mapStyles = [
+    {
+      "featureType": "all",
+      "elementType": "geometry",
+      "stylers": [{"color": "#f5f5f5"}]
+    },
+    {
+      "featureType": "all",
+      "elementType": "labels.icon",
+      "stylers": [{"visibility": "off"}]
+    },
+    {
+      "featureType": "all",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#616161"}]
+    },
+    {
+      "featureType": "all",
+      "elementType": "labels.text.stroke",
+      "stylers": [{"color": "#f5f5f5"}]
+    },
+    {
+      "featureType": "administrative.land_parcel",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#bdbdbd"}]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "geometry",
+      "stylers": [{"color": "#eeeeee"}]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#757575"}]
+    },
+    {
+      "featureType": "poi.park",
+      "elementType": "geometry",
+      "stylers": [{"color": "#e5e5e5"}]
+    },
+    {
+      "featureType": "poi.park",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#9e9e9e"}]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry",
+      "stylers": [{"color": "#ffffff"}]
+    },
+    {
+      "featureType": "road.arterial",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#757575"}]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "geometry",
+      "stylers": [{"color": "#dadada"}]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#616161"}]
+    },
+    {
+      "featureType": "road.local",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#9e9e9e"}]
+    },
+    {
+      "featureType": "transit.line",
+      "elementType": "geometry",
+      "stylers": [{"color": "#e5e5e5"}]
+    },
+    {
+      "featureType": "transit.station",
+      "elementType": "geometry",
+      "stylers": [{"color": "#eeeeee"}]
+    },
+    {
+      "featureType": "water",
+      "elementType": "geometry",
+      "stylers": [{"color": "#c9c9c9"}]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#9e9e9e"}]
+    }
+  ];
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-white overflow-y-auto scrollbar-hide"
+      className="h-full w-full flex flex-col bg-white overflow-hidden"
     >
       {/* Custom Styles for Map & Autocomplete */}
       <style>{`
@@ -1258,23 +1264,36 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       `}</style>
 
       {/* Header */}
-      <div className="relative flex items-center justify-between px-4 py-4 bg-white z-20 shrink-0">
+      <div className="relative flex items-center justify-between px-6 py-4 bg-white z-20">
         <button onClick={onOpenMenu} className="flex flex-col gap-1.5 p-2 -ml-2">
           <div className="w-6 h-[1.5px] bg-black" />
           <div className="w-6 h-[1.5px] bg-black" />
         </button>
-        <img
-          src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_"
-          alt="URBONT"
-          className="h-20 object-contain"
+        
+        {activeTrip && (
+          <motion.button
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={onReturnToTrip}
+            className="absolute left-1/2 -translate-x-1/2 bg-[#001F3F] text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center gap-2"
+          >
+            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+            Active Trip
+          </motion.button>
+        )}
+
+        <img 
+          src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
+          alt="URBONT" 
+          className="h-24 object-contain"
           referrerPolicy="no-referrer"
         />
         <button onClick={onNotifications} className="p-2 -mr-2 relative group flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors">
           <motion.div
-            animate={{
+            animate={{ 
               rotate: [0, -10, 10, -10, 10, 0],
             }}
-            transition={{
+            transition={{ 
               duration: 1.5,
               repeat: Infinity,
               repeatDelay: 4,
@@ -1282,7 +1301,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
             }}
             style={{ originX: 0.5, originY: 0.2 }}
           >
-            <Bell size={22} strokeWidth={1.5} className="text-[#1A1A1A] transition-transform group-hover:scale-110" />
+            <Bell size={22} strokeWidth={1.5} className="text-[#001F3F] transition-transform group-hover:scale-110" />
           </motion.div>
           <div className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-[#001F3F] rounded-full border-[1.5px] border-white z-10 shadow-sm" />
           <div className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-[#001F3F] rounded-full animate-ping opacity-75" />
@@ -1292,45 +1311,45 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       {/* Schedule Modal */}
       <AnimatePresence>
         {showScheduleModal && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
           >
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="bg-white rounded-t-[32px] p-6 pb-12 space-y-6 max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#1A1A1A]">Schedule Journey</h3>
-                <button onClick={() => setShowScheduleModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
+                <h3 className="text-2xl font-light text-[#001F3F]">Schedule Journey</h3>
+                <button onClick={() => setShowScheduleModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Date</label>
-                  <input
-                    type="date"
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
+                  <label className="text-xs uppercase tracking-widest text-[#001F3F]/80">Date</label>
+                  <input 
+                    type="date" 
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none" 
                     onChange={(e) => setScheduledTime(prev => ({ ...prev, date: e.target.value, time: prev?.time || '' }))}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Time</label>
-                  <input
-                    type="time"
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
+                  <label className="text-xs uppercase tracking-widest text-[#001F3F]/80">Time</label>
+                  <input 
+                    type="time" 
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none" 
                     onChange={(e) => setScheduledTime(prev => ({ ...prev, time: e.target.value, date: prev?.date || '' }))}
                   />
                 </div>
               </div>
-              <button
-                onClick={() => setShowScheduleModal(false)}
+              <button 
+                onClick={() => setShowScheduleModal(false)} 
                 className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all"
               >
                 Confirm Schedule
@@ -1343,30 +1362,30 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       {/* Hourly Modal */}
       <AnimatePresence>
         {showHourlyModal && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
           >
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="bg-white rounded-t-[32px] p-6 pb-12 space-y-6 max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#1A1A1A]">Hourly Booking</h3>
-                <button onClick={() => setShowHourlyModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
+                <h3 className="text-2xl font-light text-[#001F3F]">Hourly Booking</h3>
+                <button onClick={() => setShowHourlyModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
                   <X size={20} />
                 </button>
               </div>
-              <p className="text-sm text-[#1A1A1A]/80">Keep a chauffeur at your disposal for multiple stops or errands.</p>
+              <p className="text-sm text-[#001F3F]/80">Keep a chauffeur at your disposal for multiple stops or errands.</p>
               <div className="space-y-2">
-                <label className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Duration (Hours)</label>
-                <select
-                  className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none"
+                <label className="text-xs uppercase tracking-widest text-[#001F3F]/80">Duration (Hours)</label>
+                <select 
+                  className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none"
                   onChange={(e) => setHourlyDuration(parseInt(e.target.value))}
                 >
                   {[2, 3, 4, 5, 6, 8, 12, 24].map(h => (
@@ -1385,31 +1404,31 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       {/* Comment Modal */}
       <AnimatePresence>
         {showCommentModal && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
           >
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-              className="bg-white rounded-t-[32px] p-6 pb-12 space-y-6 max-h-[90vh] overflow-y-auto"
+              className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#1A1A1A]">Add Comment</h3>
-                <button onClick={() => setShowCommentModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
+                <h3 className="text-2xl font-light text-[#001F3F]">Add Comment</h3>
+                <button onClick={() => setShowCommentModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
                   <X size={20} />
                 </button>
               </div>
-              <p className="text-sm text-[#1A1A1A]/80">Leave a note for your chauffeur.</p>
-              <textarea
+              <p className="text-sm text-[#001F3F]/80">Leave a note for your chauffeur (e.g., flight number, gate, special requests).</p>
+              <textarea 
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Type your message here..."
-                className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none min-h-[120px] resize-none"
+                className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none min-h-[120px] resize-none" 
               />
               <button onClick={() => setShowCommentModal(false)} className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
                 Save Comment
@@ -1420,32 +1439,34 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       </AnimatePresence>
 
       {/* Map Area */}
-      <div className="flex-1 min-h-[300px] bg-[#FFFFFF] overflow-hidden relative">
-        {isLoaded ? (
-          <GoogleMap
-            mapContainerStyle={{ width: '100%', height: '100%' }}
-            center={center}
-            zoom={15}
-            onLoad={onLoad}
-            options={{
-              disableDefaultUI: true,
-              styles: mapStyles,
-            }}
-          >
-            <Marker position={center} />
-          </GoogleMap>
-        ) : (
-          <div className="absolute inset-0">
-            <div className="w-full h-full bg-[#E5E3DF] flex items-center justify-center">
-              <MapPin size={48} className="text-[#1A1A1A]/20" />
-            </div>
-          </div>
-        )}
-
+      <div className="absolute inset-0 bg-[#FFFFFF] overflow-hidden">
+        <div className="absolute inset-0">
+          {isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={{ width: '100%', height: '100%' }}
+              center={center}
+              zoom={15}
+              onLoad={onLoad}
+              options={{
+                disableDefaultUI: true,
+                styles: mapStyles,
+                zoomControl: false,
+                streetViewControl: false,
+                mapTypeControl: false,
+                fullscreenControl: false,
+                clickableIcons: false,
+              }}
+            >
+            </GoogleMap>
+          ) : (
+            <div className="w-full h-full bg-[#FFFFFF] animate-pulse" />
+          )}
+        </div>
+        
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-white/80 via-white/20 to-transparent pointer-events-none z-10" />
 
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10" style={{ marginTop: '-40px' }}>
-          <motion.div
+          <motion.div 
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -1456,7 +1477,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               <div className="w-16 h-16 bg-[#001F3F]/10 rounded-full animate-pulse absolute -top-3 flex items-center justify-center">
                 <div className="w-12 h-12 bg-[#001F3F]/20 rounded-full" />
               </div>
-
+              
               {/* Main Pin Body */}
               <div className="relative z-20 w-10 h-10 bg-[#001F3F] rounded-xl rotate-45 flex items-center justify-center shadow-[0_12px_30px_rgba(0,31,63,0.4)] border-[1.5px] border-white overflow-hidden">
                 {/* Inner reflection */}
@@ -1464,10 +1485,10 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                 {/* Center dot */}
                 <div className="w-2.5 h-2.5 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.9)] -rotate-45" />
               </div>
-
+              
               {/* Stem */}
               <div className="w-[1.5px] h-8 bg-gradient-to-b from-[#001F3F] to-transparent z-10 -mt-2" />
-
+              
               {/* Base shadow/dot */}
               <div className="w-5 h-1.5 bg-black/20 rounded-[100%] blur-[1px] -mt-1" />
             </div>
@@ -1476,36 +1497,36 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       </div>
 
       {/* Floating Bottom Content */}
-      <div className={`shrink-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[32px] z-20 transition-all duration-500 overflow-y-auto ${destination ? 'max-h-[70vh]' : 'p-4 pb-12'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.05)] rounded-t-[32px] z-20 transition-all duration-500 flex flex-col ${destination ? 'h-[55%] max-h-[65vh]' : 'h-auto p-6 pb-8'}`}>
         {!destination ? (
-          <div className="space-y-6">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-light text-[#1A1A1A]">Where to next?</h2>
-              <p className="text-sm text-[#1A1A1A]/80 font-light">Enter your destination to see available rides</p>
+          <div className="space-y-4 overflow-y-auto no-scrollbar max-h-[35vh]">
+            <div className="space-y-1 px-1">
+              <h2 className="text-2xl font-light text-[#001F3F]">Where to next?</h2>
+              <p className="text-sm text-[#001F3F] font-light">Enter your destination to see available rides</p>
             </div>
 
             <div className="space-y-0 border-t border-black/[0.04] pt-2">
-              <div
+              <div 
                 onClick={() => { setDestination('Heathrow Airport'); }}
                 className="flex items-center gap-4 w-full py-5 border-b border-black/[0.04] cursor-pointer hover:bg-black/[0.02] rounded-xl px-2 transition-colors -mx-2 group"
               >
-                <div className="w-8 h-8 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
-                  <Plane size={14} />
+                <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                  <Plane size={16} />
                 </div>
                 <div className="flex-1">
-                  <span className="text-base font-light text-[#1A1A1A]/80">Airport Pickup</span>
+                  <span className="text-base font-light text-[#001F3F]">Airport Pickup</span>
                 </div>
-                <ChevronRight size={16} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
+                <ChevronRight size={18} className="text-[#001F3F] group-hover:text-[#001F3F] transition-colors" />
               </div>
 
-              <div
+              <div 
                 onClick={() => setIsSearchOpen(true)}
                 className="flex items-center gap-4 w-full py-5 border-b border-black/[0.04] cursor-pointer hover:bg-black/[0.02] rounded-xl px-2 transition-colors -mx-2"
               >
-                <div className="w-8 h-8 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
-                  <Search size={14} />
+                <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                  <Search size={16} />
                 </div>
-                <div className="flex items-center gap-1 text-base font-light text-[#1A1A1A]/80">
+                <div className="flex items-center gap-2 text-base font-light text-[#001F3F]">
                   <span>Search</span>
                   <AnimatePresence mode="wait">
                     <motion.span
@@ -1514,7 +1535,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -5 }}
                       transition={{ duration: 0.5 }}
-                      className="text-[#1A1A1A]/80"
+                      className="text-[#001F3F]"
                     >
                       {places[placeholderIndex]}...
                     </motion.span>
@@ -1524,10 +1545,10 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
             </div>
           </div>
         ) : (
-          <div className="h-full flex flex-col">
+          <div className="h-full flex flex-col overflow-y-auto no-scrollbar pb-8">
             {/* Address Section */}
-            <div className="px-4 pt-8 pb-6 border-b border-black/[0.03]">
-              <div className="space-y-6">
+            <div className="px-6 pt-6 pb-4 border-b border-black/[0.03]">
+              <div className="space-y-4">
                 <div className="flex items-start gap-4">
                   <div className="mt-1.5">
                     <div className="w-2.5 h-2.5 rounded-full border-2 border-black flex items-center justify-center">
@@ -1535,17 +1556,17 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                     </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-base font-medium text-[#1A1A1A]">{pickup}</p>
-                    <p className="text-xs text-[#1A1A1A]/80 mt-0.5">Current Location</p>
+                    <p className="text-base font-medium text-[#001F3F]">{pickup}</p>
+                    <p className="text-xs text-[#001F3F] mt-0.5">Current Location</p>
                   </div>
                 </div>
 
                 {/* Extra Stops */}
                 {extraDestinations.map((stop, index) => (
-                  <motion.div
+                  <motion.div 
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    key={index}
+                    key={index} 
                     className="flex items-start gap-4"
                   >
                     <div className="mt-1.5">
@@ -1554,12 +1575,12 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                       </div>
                     </div>
                     <div className="flex-1">
-                      <input
+                      <input 
                         type="text"
                         value={stop}
                         onChange={(e) => handleUpdateStop(index, e.target.value)}
                         placeholder="Add stop..."
-                        className="text-base font-medium text-[#1A1A1A] bg-transparent outline-none w-full border-b border-black/5 pb-1"
+                        className="text-base font-medium text-[#001F3F] bg-transparent outline-none w-full border-b border-black/5 pb-1"
                       />
                     </div>
                     <button onClick={() => handleRemoveStop(index)} className="p-1 text-red-400">
@@ -1573,15 +1594,15 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                     <div className="w-2.5 h-2.5 rounded-full bg-black" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-base font-medium text-[#1A1A1A]">{destination}</p>
-                    <p className="text-xs text-[#1A1A1A]/80 mt-0.5">Destination Address</p>
+                    <p className="text-base font-medium text-[#001F3F]">{destination}</p>
+                    <p className="text-xs text-[#001F3F] mt-0.5">Destination Address</p>
                   </div>
                   <div className="flex gap-2">
                     <button onClick={handleAddStop} className="p-1 hover:bg-black/5 rounded-full transition-colors">
-                      <Plus size={20} className="text-[#1A1A1A]/80" />
+                      <Plus size={20} className="text-[#001F3F]/80" />
                     </button>
                     <button onClick={() => { setDestination(''); setExtraDestinations([]); }} className="p-1 hover:bg-black/5 rounded-full transition-colors">
-                      <X size={20} className="text-[#1A1A1A]/80" />
+                      <X size={20} className="text-[#001F3F]/80" />
                     </button>
                   </div>
                 </div>
@@ -1589,48 +1610,48 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
             </div>
 
             {/* Options Section */}
-            <div className="py-6 border-b border-black/[0.03]">
-              <div className="px-4 flex items-center justify-between mb-4">
-                <span className="text-[11px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium">Options</span>
-                <button className="text-[11px] uppercase tracking-[0.1em] text-[#1A1A1A] font-medium">See All</button>
+            <div className="py-4 border-b border-black/[0.03]">
+              <div className="px-6 flex items-center justify-between mb-3">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">Options</span>
+                <button className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/80 font-medium">See All</button>
               </div>
-              <div className="flex gap-3 overflow-x-auto px-4 no-scrollbar">
-                <button onClick={() => setShowScheduleModal(true)} className="shrink-0 px-4 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-black/10 transition-colors">
+              <div className="flex gap-3 overflow-x-auto px-6 no-scrollbar">
+                <button onClick={() => setShowScheduleModal(true)} className="shrink-0 px-4 py-2 bg-[#001F3F]/5 rounded-lg text-xs font-medium text-[#001F3F] hover:bg-black/10 transition-colors">
                   Schedule a Journey
                 </button>
-                <button onClick={() => setShowHourlyModal(true)} className="shrink-0 px-4 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-black/10 transition-colors">
+                <button onClick={() => setShowHourlyModal(true)} className="shrink-0 px-4 py-2 bg-[#001F3F]/5 rounded-lg text-xs font-medium text-[#001F3F] hover:bg-black/10 transition-colors">
                   Hourly Booking
                 </button>
-                <button onClick={() => setShowCommentModal(true)} className="shrink-0 px-4 py-3 bg-[#001F3F]/5 rounded-xl text-sm font-medium text-[#1A1A1A] hover:bg-black/10 transition-colors">
+                <button onClick={() => setShowCommentModal(true)} className="shrink-0 px-4 py-2 bg-[#001F3F]/5 rounded-lg text-xs font-medium text-[#001F3F] hover:bg-black/10 transition-colors">
                   Add a Comment
                 </button>
               </div>
             </div>
 
             {/* Class & Payment Section */}
-            <div className="px-4 py-6 space-y-6">
-              <button
-                onClick={onSelectVehicle}
-                className="w-full flex items-center justify-between group"
-              >
+            <div className="px-6 py-4 pb-8 space-y-4">
+              <div className="flex items-center justify-between">
                 <div className="flex flex-col items-start">
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-medium uppercase tracking-widest text-[#1A1A1A]">Business Class</span>
-                    <ChevronRight size={14} className="text-[#1A1A1A]" />
+                    <span className="text-sm font-medium uppercase tracking-widest text-[#001F3F]">Business Class</span>
+                    <ChevronRight size={14} className="text-[#001F3F]" />
                   </div>
-                  <span className="text-xs text-[#1A1A1A]/80 mt-1">$85–$120</span>
+                  <span className="text-xs text-[#001F3F]/80 mt-1">$85–$120</span>
                 </div>
-                <div className="flex items-center gap-3" onClick={(e) => { e.stopPropagation(); onPaymentMethods(); }}>
-                  <div className="w-10 h-10 rounded-xl border border-dashed border-black/20 flex items-center justify-center">
-                    <Plus size={16} className="text-[#1A1A1A]/80" />
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onPaymentMethods(); }}
+                  className="flex items-center gap-2 px-3 py-2 bg-[#001F3F]/5 rounded-lg hover:bg-[#001F3F]/10 transition-colors"
+                >
+                  <div className="w-6 h-6 rounded-md border border-dashed border-black/20 flex items-center justify-center">
+                    <Plus size={12} className="text-[#001F3F]/80" />
                   </div>
-                  <span className="text-xs font-medium text-[#1A1A1A]">Add Card</span>
-                </div>
-              </button>
+                  <span className="text-[10px] font-medium text-[#001F3F]/80 uppercase tracking-wider">Add Card</span>
+                </button>
+              </div>
 
-              <button
+              <button 
                 onClick={onSelectVehicle}
-                className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl shadow-xl shadow-black/10 active:scale-[0.98] transition-all"
+                className="w-full h-14 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#001F3F]/10"
               >
                 Request a Chauffeur
               </button>
@@ -1639,29 +1660,10 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
         )}
       </div>
 
-      <AnimatePresence>
-        {showAirportPickup && (
-          <AirportPickupScreen
-            onBack={() => setShowAirportPickup(false)}
-            onFlightFound={(flight) => {
-              setShowAirportPickup(false);
-              setIsSearchOpen(false);
-              setPickup(`LHR • ${flight}`);
-              // Reset destination if needed or keep as is
-            }}
-            onSkip={() => {
-              setShowAirportPickup(false);
-              setIsSearchOpen(false);
-              setPickup('Heathrow Airport (LHR)');
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Address Search Modal */}
       <AnimatePresence>
         {isSearchOpen && (
-          <motion.div
+          <motion.div 
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -1669,7 +1671,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
             className="absolute inset-0 bg-white z-[100] flex flex-col"
           >
             {/* Modal Header */}
-            <div className="px-4 pt-8 pb-6 shrink-0 bg-white">
+            <div className="px-6 pt-12 pb-6 shrink-0 bg-white">
               <div className="flex items-center gap-4 mb-6">
                 <button onClick={() => setIsSearchOpen(false)} className="p-2 -ml-2">
                   <X size={24} />
@@ -1679,13 +1681,13 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
               <div className="space-y-2">
                 {/* Pickup Input */}
                 <div className="flex items-center gap-4 bg-[#FFFFFF] p-4 rounded-xl border border-black/[0.03]">
-                  <MapPin size={20} className="text-[#1A1A1A]" />
-                  <input
-                    type="text"
+                  <MapPin size={20} className="text-[#001F3F]" />
+                  <input 
+                    type="text" 
                     value={pickup}
                     onChange={(e) => setPickup(e.target.value)}
                     placeholder="Pickup"
-                    className="flex-1 bg-transparent outline-none text-base font-light text-[#1A1A1A] placeholder:text-[#1A1A1A]/80"
+                    className="flex-1 bg-transparent outline-none text-base font-light text-[#001F3F] placeholder:text-[#001F3F]/80"
                   />
                 </div>
 
@@ -1694,55 +1696,56 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                   <div className="w-5 h-5 rounded-full border-2 border-black flex items-center justify-center">
                     <div className="w-1.5 h-1.5 rounded-full bg-black" />
                   </div>
-                  <div className="flex-1">
-                    <input
-                      type="text"
+                  <Autocomplete
+                    onLoad={(ac) => {}}
+                    onPlaceChanged={() => {
+                      setIsSearchOpen(false);
+                      setDestination('Selected Address');
+                    }}
+                    className="flex-1"
+                  >
+                    <input 
+                      type="text" 
                       autoFocus
                       placeholder="Where To"
-                      className="w-full bg-transparent outline-none text-base font-light text-[#1A1A1A] placeholder:text-[#1A1A1A]/80"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          setIsSearchOpen(false);
-                          setDestination('Selected Address');
-                        }
-                      }}
+                      className="w-full bg-transparent outline-none text-base font-light text-[#001F3F] placeholder:text-[#001F3F]/80"
                     />
-                  </div>
+                  </Autocomplete>
                   <button onClick={handleAddStop} className="p-1 hover:bg-black/5 rounded-full transition-colors">
-                    <Plus size={20} className="text-[#1A1A1A]/80" />
+                    <Plus size={20} className="text-[#001F3F]/80" />
                   </button>
                 </div>
               </div>
 
               {/* Quick Actions */}
               <div className="flex justify-center gap-16 py-8 border-b border-black/[0.03]">
-                <button
+                <button 
                   onClick={() => {
-                    // setIsSearchOpen(false);
-                    setShowAirportPickup(true);
+                    setIsSearchOpen(false);
+                    setDestination('Heathrow Airport');
                   }}
                   className="flex flex-col items-center gap-2 group"
                 >
-                  <Plane size={32} className="text-[#1A1A1A]" />
-                  <span className="text-[11px] font-medium text-center text-[#1A1A1A]">Airport<br />Pickup</span>
+                  <Plane size={32} className="text-[#001F3F]" />
+                  <span className="text-[11px] font-medium text-center text-[#001F3F]">Airport<br/>Pickup</span>
                 </button>
 
-                <button
+                <button 
                   onClick={() => {
                     setIsSearchOpen(false);
                     setDestination('Paddington Station');
                   }}
                   className="flex flex-col items-center gap-2 group"
                 >
-                  <Train size={32} className="text-[#1A1A1A]" />
-                  <span className="text-[11px] font-medium text-center text-[#1A1A1A]">Railway<br />Stations</span>
+                  <Train size={32} className="text-[#001F3F]" />
+                  <span className="text-[11px] font-medium text-center text-[#001F3F]">Railway<br/>Stations</span>
                 </button>
               </div>
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 px-4 py-12 flex flex-col items-center justify-start">
-              <p className="text-sm text-[#1A1A1A]/80 font-light text-center max-w-[280px]">
+            <div className="flex-1 px-6 py-12 flex flex-col items-center justify-start">
+              <p className="text-sm text-[#001F3F]/80 font-light text-center max-w-[280px]">
                 Previous and favorite addresses will appear here.
               </p>
             </div>
@@ -1753,7 +1756,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
   );
 }
 
-function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
+function NotificationsScreen({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState('All');
 
   const notifications = [
@@ -1795,36 +1798,28 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
     }
   ];
 
-  const filteredNotifications = activeTab === 'All'
-    ? notifications
-    : activeTab === 'Offers'
+  const filteredNotifications = activeTab === 'All' 
+    ? notifications 
+    : activeTab === 'Offers' 
       ? notifications.filter(n => n.type === 'promo')
       : notifications.filter(n => n.type !== 'promo');
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full bg-white text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#F5F7FA] text-[#001F3F] flex flex-col"
     >
       {/* Header */}
-      <div className="px-4 pt-8 pb-6 z-10 bg-white">
+      <div className="px-6 pt-12 pb-6 z-10 bg-[#F5F7FA]">
         <div className="flex items-center justify-between mb-8">
           <button onClick={onBack} className="p-2 -ml-2 hover:bg-[#001F3F]/5 rounded-full transition-colors">
-            <ArrowLeft size={24} className="text-[#1A1A1A]" />
+            <ArrowLeft size={24} className="text-[#001F3F]" />
           </button>
-          <div className="flex items-center gap-2">
-            <button className="p-2 text-[#1A1A1A]/80 hover:text-[#1A1A1A] transition-colors">
-              <CheckCheck size={20} />
-            </button>
-            <button className="p-2 text-[#1A1A1A]/80 hover:text-[#1A1A1A] transition-colors">
-              <Settings size={20} />
-            </button>
-          </div>
         </div>
-
-        <h2 className="font-sans text-3xl font-light uppercase tracking-widest text-[#1A1A1A] mb-8">Inbox</h2>
+        
+        <h2 className="font-sans text-4xl font-light uppercase tracking-widest text-[#001F3F] mb-8">News</h2>
 
         {/* Tabs */}
         <div className="flex gap-8 border-b border-[#001F3F]/10">
@@ -1832,12 +1827,13 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-4 text-xs font-medium uppercase tracking-widest transition-all relative ${activeTab === tab ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/70 hover:text-[#1A1A1A]/80'
-                }`}
+              className={`pb-4 text-sm font-medium uppercase tracking-widest transition-all relative ${
+                activeTab === tab ? 'text-[#001F3F]' : 'text-[#001F3F]/40 hover:text-[#001F3F]/60'
+              }`}
             >
               {tab}
               {activeTab === tab && (
-                <motion.div
+                <motion.div 
                   layoutId="activeTab"
                   className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#001F3F]"
                 />
@@ -1848,9 +1844,9 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-6">
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         {filteredNotifications.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-[#1A1A1A]/70 space-y-4">
+          <div className="h-full flex flex-col items-center justify-center text-[#001F3F]/40 space-y-4">
             <BellOff size={48} strokeWidth={1} />
             <p className="text-sm font-medium uppercase tracking-widest">No notifications yet</p>
           </div>
@@ -1862,14 +1858,15 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={`py-6 group flex gap-4 ${!item.read ? 'bg-[#001F3F]/[0.02] -mx-6 px-4' : ''}`}
+                className={`py-6 group flex gap-4 ${!item.read ? 'bg-[#001F3F]/[0.02] -mx-6 px-6' : ''}`}
               >
                 {/* Icon Column */}
                 <div className="pt-1">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${!item.read
-                    ? 'bg-[#001F3F] border-[#001F3F] text-white'
-                    : 'bg-white border-[#001F3F]/20 text-[#1A1A1A]/80'
-                    }`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+                    !item.read 
+                      ? 'bg-[#001F3F] border-[#001F3F] text-white' 
+                      : 'bg-white border-[#001F3F]/20 text-[#001F3F]/60'
+                  }`}>
                     {React.cloneElement(item.icon as React.ReactElement, { size: 14 })}
                   </div>
                 </div>
@@ -1877,21 +1874,21 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
                 {/* Content Column */}
                 <div className="flex-1 space-y-1">
                   <div className="flex justify-between items-start">
-                    <h3 className={`text-sm uppercase tracking-wide ${!item.read ? 'font-medium text-[#1A1A1A]' : 'font-medium text-[#1A1A1A]/80'}`}>
+                    <h3 className={`text-sm uppercase tracking-wide ${!item.read ? 'font-medium text-[#001F3F]' : 'font-medium text-[#001F3F]/80'}`}>
                       {item.title}
                     </h3>
-                    <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 whitespace-nowrap ml-2 mt-0.5">
+                    <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/40 whitespace-nowrap ml-2 mt-0.5">
                       {item.time}
                     </span>
                   </div>
-
-                  <p className="text-sm text-[#1A1A1A]/80 font-light leading-relaxed max-w-[90%]">
+                  
+                  <p className="text-sm text-[#001F3F]/60 font-light leading-relaxed max-w-[90%]">
                     {item.description}
                   </p>
-
+                  
                   {item.type === 'promo' && (
                     <div className="pt-3">
-                      <button className="text-[10px] font-medium uppercase tracking-widest text-[#1A1A1A] border-b border-[#001F3F] pb-0.5 hover:opacity-70 transition-opacity">
+                      <button className="text-[10px] font-medium uppercase tracking-widest text-[#001F3F] border-b border-[#001F3F] pb-0.5 hover:opacity-70 transition-opacity">
                         View Offer
                       </button>
                     </div>
@@ -1909,8 +1906,8 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
           </div>
         )}
 
-        <div className="pt-8 pb-8 text-center">
-          <p className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/20">
+        <div className="pt-12 pb-8 text-center">
+          <p className="text-[10px] uppercase tracking-widest text-[#001F3F]/20">
             End of list
           </p>
         </div>
@@ -1919,7 +1916,7 @@ function NotificationsScreen({ onBack }: { onBack: () => void, key?: string }) {
   );
 }
 
-function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onConfirm: (v: Vehicle) => void, key?: string }) {
+function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onConfirm: (v: Vehicle) => void }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [preferences, setPreferences] = useState({
     climate: '72°F',
@@ -1935,156 +1932,148 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
   };
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="h-full w-full bg-white flex flex-col overflow-hidden"
+      className="h-full w-full bg-white flex flex-col"
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-6 pb-2 shrink-0 border-b border-black/[0.03]">
+      <div className="flex items-center justify-between px-6 pt-12 pb-4 shrink-0">
         <button onClick={onBack} className="p-2 -ml-2">
-          <X size={24} className="text-[#1A1A1A]" />
+          <X size={24} className="text-[#001F3F]" />
         </button>
-        <h2 className="text-sm font-medium uppercase tracking-[0.2em] text-[#1A1A1A]">
+        <h2 className="text-sm font-medium uppercase tracking-[0.2em] text-[#001F3F]">
           {vehicle.name.toUpperCase()}
         </h2>
         <div className="w-10" /> {/* Spacer */}
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto scrollbar-hide">
+      <div className="flex-1 overflow-y-auto no-scrollbar">
         {/* Vehicle Image */}
-        <div className="w-full aspect-video relative overflow-hidden bg-black/[0.02]">
-          <img
-            src={vehicle.image}
-            alt={vehicle.name}
-            className="w-full h-full object-contain"
+        <div className="w-full aspect-[21/9] relative overflow-hidden bg-black/5">
+          <img 
+            src={vehicle.image} 
+            alt={vehicle.name} 
+            className="w-full h-full object-cover"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1">
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
             {VEHICLES.map((_, i) => (
-              <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === selectedIdx ? 'bg-[#001F3F]' : 'bg-[#001F3F]/20'}`} />
+              <div key={i} className={`w-1 h-1 rounded-full ${i === selectedIdx ? 'bg-white' : 'bg-white/40'}`} />
             ))}
           </div>
         </div>
 
-        <div className="px-4 py-6 space-y-6">
+        <div className="px-6 py-4 space-y-4">
           {/* Title & Description */}
-          <div className="text-center space-y-2">
-            <h3 className="text-2xl font-light text-[#1A1A1A]">{vehicle.name}</h3>
-            <p className="text-sm text-[#1A1A1A]/80 font-light">{vehicle.description}</p>
+          <div className="text-center space-y-0.5">
+            <h3 className="text-2xl font-light text-[#001F3F]">{vehicle.name}</h3>
+            <p className="text-sm text-[#001F3F]/60 font-light">{vehicle.description}</p>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-4 text-xs font-medium text-[#1A1A1A] uppercase tracking-widest">
+          <div className="flex items-center justify-center gap-4 text-sm font-medium text-[#001F3F]">
             <span>From {vehicle.price}</span>
-            <span className="w-1 h-1 rounded-full bg-black/20" />
-            <span className="flex items-center gap-1.5"><Users size={14} /> 4</span>
-            <span className="w-1 h-1 rounded-full bg-black/20" />
-            <span className="flex items-center gap-1.5"><Briefcase size={14} /> 1–3</span>
+            <span className="w-0.5 h-0.5 rounded-full bg-black/20" />
+            <span className="flex items-center gap-1"><Users size={16} /> 4</span>
+            <span className="w-0.5 h-0.5 rounded-full bg-black/20" />
+            <span className="flex items-center gap-1"><Briefcase size={16} /> 1–3</span>
           </div>
 
           {/* Price Comparison */}
           {vehicle.competitorPrice && (
-            <div className="bg-[#001F3F]/5 rounded-xl p-4 flex items-center justify-between border border-[#001F3F]/10">
+            <div className="bg-[#001F3F]/5 rounded-xl p-2.5 flex items-center justify-between border border-[#001F3F]/10">
               <div className="flex flex-col">
-                <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">Urbont</span>
-                <span className="text-lg font-medium text-[#1A1A1A]">{vehicle.price}</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/60 font-medium">Urbont</span>
+                <span className="text-base font-medium text-[#001F3F]">{vehicle.price}</span>
               </div>
               <div className="h-8 w-px bg-[#001F3F]/10" />
               <div className="flex flex-col text-right">
-                <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/80 font-medium">Others</span>
-                <span className="text-lg font-light text-[#1A1A1A]/80 line-through decoration-red-500/50">{vehicle.competitorPrice}</span>
+                <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/60 font-medium">Competitors</span>
+                <span className="text-base font-light text-[#001F3F]/60 line-through decoration-red-500/50">{vehicle.competitorPrice}</span>
               </div>
             </div>
           )}
 
-          {/* Details List */}
-          <div className="space-y-0 border-t border-black/[0.03] pt-4">
-            {/* Ride Preferences Section */}
-            <div className="py-2 space-y-6">
-              <h4 className="text-[11px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium text-center">Preferences</h4>
+          <p className="text-sm text-[#001F3F] font-light text-center leading-relaxed">
+            An elevated, professional service for all your business needs. Finely crafted interiors and exquisite personal service.
+          </p>
 
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-3">
-                  <p className="text-[10px] font-medium text-[#1A1A1A]/60 uppercase tracking-widest text-center">Climate Control</p>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar justify-center">
-                    {PREF_OPTIONS.climate.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => setPreferences({ ...preferences, climate: opt })}
-                        className={`px-4 py-2 rounded-full text-[11px] transition-all border shrink-0 ${preferences.climate === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10'}`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
+          {/* Amenities */}
+          <div className="py-6 border-t border-black/[0.03]">
+            <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#001F3F]/40 mb-4">Amenities</h4>
+            <div className="grid grid-cols-2 gap-3">
+              {['Fiji Water', 'Vintage Wine', 'WiFi', 'Tablet'].map(amenity => (
+                <div key={amenity} className="flex items-center gap-3 p-3 rounded-xl bg-[#001F3F]/[0.02] border border-[#001F3F]/5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#001F3F]/20" />
+                  <span className="text-sm font-medium text-[#001F3F]">{amenity}</span>
                 </div>
-
-                <div className="space-y-3">
-                  <p className="text-[10px] font-medium text-[#1A1A1A]/60 uppercase tracking-widest text-center">Music Genre</p>
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar justify-center">
-                    {PREF_OPTIONS.music.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => setPreferences({ ...preferences, music: opt })}
-                        className={`px-4 py-2 rounded-full text-[11px] transition-all border shrink-0 ${preferences.music === opt ? 'bg-[#001F3F] text-white border-[#001F3F]' : 'bg-white text-[#1A1A1A]/80 border-[#001F3F]/10'}`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              ))}
             </div>
+          </div>
 
-            <div className="flex items-center justify-between py-4 border-b border-black/[0.03]">
-              <span className="text-sm font-normal text-[#1A1A1A]">Capacity</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-[#1A1A1A]/80">4 Pax • 3 Bags</span>
-              </div>
+          {/* Climate Control - Modern Selector */}
+          <div className="py-6 border-t border-black/[0.03]">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-[#001F3F]/40">Climate</h4>
+              <span className="text-2xl font-light text-[#001F3F]">{preferences.climate}</span>
             </div>
-
-            <div className="py-4">
-              <span className="text-sm font-normal text-[#1A1A1A] block mb-2">Amenities</span>
-              <p className="text-sm text-[#1A1A1A]/60 font-light leading-relaxed">
-                Water, phone charger, tissues, and premium sanitising wipes included.
-              </p>
+            <div className="relative h-12 bg-[#001F3F]/[0.03] rounded-2xl p-1 flex items-center justify-between">
+              {PREF_OPTIONS.climate.map(opt => (
+                <button 
+                  key={opt}
+                  onClick={() => setPreferences({...preferences, climate: opt})}
+                  className={`relative z-10 flex-1 h-full rounded-xl text-xs font-medium transition-all duration-300 ${preferences.climate === opt ? 'text-white' : 'text-[#001F3F]/40 hover:text-[#001F3F]/60'}`}
+                >
+                  {opt.replace('°F', '')}°
+                </button>
+              ))}
+              <motion.div 
+                className="absolute top-1 bottom-1 bg-[#001F3F] rounded-xl shadow-sm"
+                layoutId="climate-indicator"
+                initial={false}
+                animate={{
+                  left: `${(PREF_OPTIONS.climate.indexOf(preferences.climate) / PREF_OPTIONS.climate.length) * 100}%`,
+                  width: `${100 / PREF_OPTIONS.climate.length}%`,
+                  x: 4 // small offset for padding
+                }}
+                style={{ width: `calc(${100 / PREF_OPTIONS.climate.length}% - 8px)` }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              />
             </div>
           </div>
         </div>
       </div>
 
       {/* Footer Selector */}
-      <div className="shrink-0 bg-white border-t border-black/[0.03] pb-8 pt-4">
-        <div className="flex gap-6 overflow-x-auto px-4 py-4 no-scrollbar justify-start sm:justify-center mb-2">
+      <div className="shrink-0 bg-white border-t border-black/[0.03] pb-10">
+        <div className="flex gap-8 overflow-x-auto px-6 py-4 no-scrollbar justify-center">
           {VEHICLES.map((v, i) => (
-            <button
+            <button 
               key={v.id}
               onClick={() => setSelectedIdx(i)}
-              className="flex flex-col items-center gap-1.5 shrink-0"
+              className="flex flex-col items-center gap-2 shrink-0"
             >
-              <span className={`text-[11px] font-medium uppercase tracking-[0.1em] transition-colors ${i === selectedIdx ? 'text-[#1A1A1A]' : 'text-[#1A1A1A]/40'}`}>
+              <span className={`text-[10px] font-medium uppercase tracking-[0.2em] transition-colors ${i === selectedIdx ? 'text-[#001F3F]' : 'text-[#001F3F]/40'}`}>
                 {v.id.toUpperCase()}
               </span>
-              {i === selectedIdx ? (
+              {i === selectedIdx && (
                 <div className="w-1 h-1 rounded-full bg-[#001F3F]" />
-              ) : (
-                <div className="w-1 h-1 rounded-full bg-transparent" />
               )}
             </button>
           ))}
         </div>
 
-        <div className="px-4 space-y-3">
-          <button
+        <div className="px-6 pb-6 pt-2">
+          <button 
             onClick={() => onConfirm(vehicle)}
-            className="w-full py-4 bg-[#001F3F] text-white rounded-xl flex flex-col items-center justify-center gap-0.5 active:scale-[0.98] transition-all shadow-lg shadow-[#001F3F]/10"
+            className="w-full h-14 bg-[#001F3F] text-white rounded-xl flex flex-col items-center justify-center active:scale-[0.98] transition-all shadow-lg shadow-[#001F3F]/10"
           >
-            <span className="text-sm font-medium uppercase tracking-[0.2em]">Select {vehicle.id.toUpperCase()}</span>
-            <span className="text-[10px] text-white/70 font-medium uppercase tracking-[0.1em]">{vehicle.price} • ETA 3 min</span>
+            <span className="text-sm font-bold uppercase tracking-widest">Select {vehicle.id.toUpperCase()}</span>
+            <span className="text-[10px] text-white/60 font-medium uppercase tracking-widest">3 min away</span>
           </button>
         </div>
       </div>
@@ -2092,769 +2081,745 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
   );
 }
 
-function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Vehicle, onBack: () => void, onConfirm: () => void, key?: string }) {
+function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Vehicle, onBack: () => void, onConfirm: () => void }) {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const stripe = useStripe();
+  const elements = useElements();
 
-  const priceNum = parseInt(vehicle.price.replace(/\D/g, '')) || 0;
-  const taxesFees = 5.00;
-  const total = priceNum + taxesFees;
+  useEffect(() => {
+    const priceNum = parseInt(vehicle.price.replace(/\D/g, '')) || 0;
+    const totalAmount = priceNum + 5;
 
-  const handlePay = () => {
+    fetch('/api/stripe/create-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: totalAmount })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.clientSecret) {
+          setClientSecret(data.clientSecret);
+        } else {
+          setClientSecret('mock_secret_' + Math.random().toString(36).substring(7));
+        }
+      })
+      .catch(() => {
+        setClientSecret('mock_secret_' + Math.random().toString(36).substring(7));
+      });
+  }, [vehicle.price]);
+
+  const handlePay = async () => {
+    if (!clientSecret) return;
     setIsProcessing(true);
-    setTimeout(() => {
-      setPaymentSuccess(true);
+    
+    if (clientSecret.startsWith('mock_')) {
       setTimeout(() => {
         setIsProcessing(false);
-        setPaymentSuccess(false);
         onConfirm();
-      }, 800);
-    }, 2000);
+      }, 2000);
+      return;
+    }
+
+    if (!stripe || !elements) {
+      setIsProcessing(false);
+      return;
+    }
+
+    try {
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: window.location.origin },
+        redirect: 'if_required'
+      });
+
+      if (error) {
+        setIsProcessing(false);
+      } else {
+        onConfirm();
+      }
+    } catch (e) {
+      setIsProcessing(false);
+    }
   };
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="h-full w-full bg-white flex flex-col font-sans overflow-hidden"
+      className="h-full w-full bg-white text-[#001F3F] flex flex-col"
     >
-      {/* Header */}
-      <div className="flex items-center gap-4 px-4 pt-6 pb-4 border-b border-black/[0.03] shrink-0">
-        <button onClick={onBack} className="p-2 -ml-2 hover:bg-black/5 rounded-full transition-colors text-[#1A1A1A]">
+      <div className="flex items-center px-6 py-4 border-b border-gray-100 shrink-0">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-gray-100 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-sm font-medium uppercase tracking-[0.2em] text-[#1A1A1A]">Confirm Payment</h2>
+        <h2 className="ml-4 text-lg font-semibold">Payment Confirmation</h2>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-8 space-y-8 scrollbar-hide">
-        {/* Vehicle Summary Card */}
-        <div className="bg-[#FAFAFA] rounded-2xl p-6 border border-black/[0.04] space-y-6">
-          <div className="flex gap-4 items-center">
-            <div className="w-20 h-14 rounded-xl overflow-hidden bg-white border border-black/[0.05] shrink-0">
-              <img src={vehicle.image} alt={vehicle.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-xl font-medium text-[#1A1A1A] leading-tight">{vehicle.name}</h3>
-              <p className="text-sm text-[#1A1A1A]/50 font-light">One-way service</p>
-            </div>
-          </div>
-
-          <div className="border-t border-black/[0.05] pt-6 space-y-3">
-            <div className="flex justify-between items-center text-sm font-light text-[#1A1A1A]/70 uppercase tracking-widest">
-              <span>Base Fare</span>
-              <span className="font-medium text-[#1A1A1A]">{vehicle.price}.00</span>
-            </div>
-            <div className="flex justify-between items-center text-sm font-light text-[#1A1A1A]/70 uppercase tracking-widest">
-              <span>Taxes & Fees</span>
-              <span className="font-medium text-[#1A1A1A]">${taxesFees.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between items-center pt-4 border-t border-black/[0.05]">
-              <span className="text-lg font-medium text-[#1A1A1A] uppercase tracking-widest">Total</span>
-              <span className="text-2xl font-medium text-[#001F3F]">${total.toFixed(2)}</span>
-            </div>
-          </div>
+      <div className="flex-1 px-6 py-6 space-y-8 overflow-y-auto no-scrollbar">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">Journey Summary</h1>
+          <p className="text-base text-gray-500">Review the details before confirming.</p>
         </div>
 
-        {/* Payment Method Section */}
-        <div className="space-y-4">
-          <h3 className="text-[11px] font-medium uppercase tracking-[0.2em] text-[#1A1A1A]/60">Payment Method</h3>
-
-          <div className="flex items-center justify-between p-5 rounded-xl border-2 border-[#001F3F] bg-[#001F3F]/[0.02]">
+        {/* Summary Section */}
+        <div className="bg-gray-50 rounded-2xl p-6 space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-200">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-8 bg-[#001F3F] rounded-lg flex items-center justify-center text-white text-[10px] font-medium tracking-widest">
-                VISA
+              <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center p-2 shadow-sm">
+                <img src={vehicle.image} alt={vehicle.name} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
               </div>
-              <div className="space-y-0.5">
-                <div className="text-base font-medium text-[#1A1A1A]">•••• 4242</div>
-                <div className="text-xs text-[#1A1A1A]/40 font-light uppercase tracking-widest">Expires 12/28</div>
+              <div>
+                <h3 className="font-bold">{vehicle.name}</h3>
+                <p className="text-xs text-gray-400">Premium Service</p>
               </div>
             </div>
-            <CheckCircle2 size={22} className="text-[#001F3F]" />
+            <div className="text-lg font-bold">{vehicle.price}</div>
           </div>
 
-          <button className="w-full py-4 rounded-xl border border-black/[0.1] bg-white text-sm font-medium text-[#001F3F] flex items-center justify-center gap-2 hover:bg-black/[0.02] transition-colors uppercase tracking-[0.1em]">
-            <Plus size={16} />
-            Add New Card
-          </button>
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Service Fee</span>
+              <span>$5.00</span>
+            </div>
+            <div className="flex justify-between text-lg font-bold pt-4 border-t border-gray-200">
+              <span>Total</span>
+              <span>
+                {(() => {
+                  const priceNum = parseInt(vehicle.price.replace(/\D/g, '')) || 0;
+                  return `$${priceNum + 5}.00`;
+                })()}
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Security Info */}
-        <div className="flex items-start gap-4 p-5 bg-[#001F3F]/[0.02] rounded-xl border border-black/[0.03]">
-          <ShieldCheck size={20} className="text-[#001F3F] mt-0.5 shrink-0" />
-          <p className="text-sm text-[#1A1A1A]/80 font-light leading-relaxed">
-            Your payment is processed securely by <span className="font-medium">Stripe</span>. End-to-end encryption active.
-          </p>
+        {/* Payment Method */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Payment Method</h3>
+            <button className="text-sm font-bold text-[#001F3F]">Change</button>
+          </div>
+          
+          {clientSecret && !clientSecret.startsWith('mock_') ? (
+            <div className="p-1">
+              <PaymentElement options={{ layout: 'tabs' }} />
+            </div>
+          ) : (
+            <div className="p-4 bg-white border border-gray-200 rounded-xl flex items-center gap-4">
+              <div className="w-10 h-10 bg-[#001F3F] rounded-lg flex items-center justify-center text-white">
+                <CreditCard size={18} />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Visa ending in 4242</p>
+                <p className="text-xs text-gray-400">Expires 12/28</p>
+              </div>
+              <Check size={16} className="text-emerald-500" />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Pay Button Footer */}
-      <div className="px-4 pb-10 pt-4 border-t border-black/[0.03] bg-white shrink-0">
-        <button
+      <div className="p-6 border-t border-gray-100">
+        <button 
           onClick={handlePay}
-          disabled={isProcessing}
-          className={`
-            w-full py-5 rounded-xl text-white font-medium uppercase tracking-[0.2em] text-sm
-            flex items-center justify-center gap-3 transition-all duration-300 shadow-xl
-            ${paymentSuccess ? 'bg-green-600' : 'bg-[#001F3F] active:scale-[0.98] shadow-[#001F3F]/20'}
-            ${isProcessing && !paymentSuccess ? 'opacity-80' : ''}
-          `}
+          disabled={isProcessing || !clientSecret}
+          className="w-full h-14 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#001F3F]/10 disabled:opacity-70"
         >
-          {paymentSuccess ? (
+          {isProcessing ? (
             <>
-              <CheckCircle2 size={20} />
-              Confirmed
-            </>
-          ) : isProcessing ? (
-            <>
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Allocating Chauffeur...
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Processing...</span>
             </>
           ) : (
             <>
-              <ShieldCheck size={18} />
-              Confirm ${total.toFixed(2)}
+              <ShieldCheck size={20} />
+              <span>Confirm & Pay</span>
             </>
           )}
         </button>
+        <p className="text-center text-[10px] text-gray-400 mt-4 uppercase tracking-widest">Secure & Encrypted Transaction</p>
       </div>
     </motion.div>
   );
 }
 
-function SearchingScreen({ onFound }: { onFound: () => void, key?: string }) {
+function SearchingScreen({ onFound }: { onFound: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onFound, 4000);
+    const timer = setTimeout(onFound, 3000);
     return () => clearTimeout(timer);
   }, [onFound]);
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{
-        height: '100%', width: '100%', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', padding: 32,
-        background: 'linear-gradient(170deg, #0A2540 0%, #0D1F3A 55%, #0A2540 100%)',
-        fontFamily: "'Barlow Condensed', sans-serif"
-      }}
+      className="h-full w-full flex flex-col items-center justify-center p-8 bg-white"
     >
-      <div style={{ position: 'relative', marginBottom: 48 }}>
-        <motion.div
-          animate={{ scale: [1, 2.2], opacity: [0.3, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
-          style={{ position: 'absolute', inset: -20, borderRadius: '50%', border: '1px solid rgba(192,192,192,0.3)' }}
+      <div className="relative mb-12">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute inset-0 bg-[#001F3F]/5 rounded-full"
         />
-        <motion.div
-          animate={{ scale: [1, 2.5], opacity: [0.2, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeOut', delay: 0.5 }}
-          style={{ position: 'absolute', inset: -20, borderRadius: '50%', border: '1px solid rgba(192,192,192,0.2)' }}
-        />
-        <div style={{
-          position: 'relative', width: 100, height: 100, borderRadius: '50%',
-          border: '1px solid rgba(192,192,192,0.2)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)',
-          boxShadow: '0 0 40px rgba(0,0,0,0.3)'
-        }}>
-          <AnimatedIcon icon={Compass} size={40} color="#C0C0C0" animation="spin" />
+        <div className="relative w-24 h-24 border border-navy/20 rounded-full flex items-center justify-center">
+          <Search size={32} className="text-[#001F3F] animate-pulse" />
         </div>
       </div>
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 300, textTransform: 'uppercase' as const, letterSpacing: '0.15em', color: '#FFFFFF', margin: 0, lineHeight: 1.3 }}>
-          Searching for Excellence
-        </h2>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <Loader2 size={16} className="animate-spin text-[#C0C0C0]" />
-          <p style={{ fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase' as const, fontWeight: 500, color: '#C0C0C0', margin: 0 }}>
-            Contacting elite chauffeurs
-          </p>
-        </div>
+      <div className="text-center space-y-4">
+        <h2 className="font-sans text-3xl font-light uppercase">Finding your Chauffeur</h2>
+        <p className="text-xs text-[#001F3F]/70 tracking-widest uppercase font-medium">Connecting to elite fleet...</p>
       </div>
     </motion.div>
   );
 }
 
-function ChauffeurProfileScreen({ onBack, onConfirm }: { onBack: () => void, onConfirm: () => void, key?: string }) {
-  const [showFullProfile, setShowFullProfile] = useState(false);
-
+function ChauffeurProfileScreen({ onBack, onConfirm }: { onBack: () => void, onConfirm: () => void }) {
   return (
-    <motion.div
+    <motion.div 
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      style={{ height: '100%', width: '100%', background: '#FFFFFF', display: 'flex', flexDirection: 'column', fontFamily: "'Barlow Condensed', sans-serif", position: 'relative' }}
+      transition={{ type: 'spring', damping: 30, stiffness: 200 }}
+      className="h-full w-full bg-white text-[#001F3F] flex flex-col overflow-hidden"
     >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '48px 20px 16px', borderBottom: '1px solid rgba(0,0,0,0.04)', flexShrink: 0 }}>
-        <button onClick={onBack} style={{ padding: 8, marginLeft: -8, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%', color: '#1A1A1A' }}>
+      <div className="relative h-2/5 shrink-0">
+        <img 
+          src={CHAUFFEUR.portrait} 
+          alt={CHAUFFEUR.name} 
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        
+        <button onClick={onBack} className="absolute top-6 left-6 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-all">
           <ArrowLeft size={24} />
         </button>
-        <h2 style={{ fontSize: 14, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase' as const, color: '#1A1A1A', margin: 0, opacity: 0.6 }}>Your Chauffeur</h2>
+
+        <div className="absolute bottom-6 left-6 right-6 text-white">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-emerald-400 rounded-full" />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Available Now</span>
+          </div>
+          <h2 className="text-3xl font-bold">{CHAUFFEUR.name}</h2>
+          <p className="text-xs opacity-80">Elite Chauffeur • {CHAUFFEUR.experience} experience</p>
+        </div>
       </div>
 
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Chauffeur Photo + Name + Rating */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            width: 120, height: 120, borderRadius: '50%', overflow: 'hidden',
-            border: '3px solid #0A2540', boxShadow: '0 8px 32px rgba(10,37,64,0.15)'
-          }}>
-            <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
-          </div>
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 600, color: '#1A1A1A', margin: 0, lineHeight: 1.5 }}>{CHAUFFEUR.name}</h2>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-              <Star size={16} fill="#FFC107" color="#FFC107" />
-              <span style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.5 }}>{CHAUFFEUR.rating}</span>
-              <span style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.5, lineHeight: 1.5 }}>• Certified Chauffeur</span>
+      <div className="flex-1 p-6 flex flex-col justify-between">
+        <div className="space-y-6">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="p-4 bg-gray-50 rounded-xl text-center">
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Rating</div>
+              <div className="text-lg font-bold flex items-center justify-center gap-1">
+                {CHAUFFEUR.rating} <Star size={14} className="fill-[#001F3F] text-[#001F3F]" />
+              </div>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-xl text-center">
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Trips</div>
+              <div className="text-lg font-bold">2.4k+</div>
+            </div>
+            <div className="p-4 bg-gray-50 rounded-xl text-center">
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Safety</div>
+              <div className="text-lg font-bold">100%</div>
             </div>
           </div>
-        </div>
 
-        {/* Vehicle Photo + Info */}
-        <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.06)', background: '#FAFAFA' }}>
-          <div style={{ width: '100%', height: 160, overflow: 'hidden', background: '#F0F0F0' }}>
-            <img src={CHAUFFEUR.vehicleImage} alt={CHAUFFEUR.vehicle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
+          <div className="space-y-3">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Languages</h4>
+            <div className="flex flex-wrap gap-2">
+              {CHAUFFEUR.languages.map(lang => (
+                <span key={lang} className="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold">{lang}</span>
+              ))}
+            </div>
           </div>
-          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.5 }}>{CHAUFFEUR.vehicle}</span>
-            <span style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.5, lineHeight: 1.5 }}>Plate: {CHAUFFEUR.licensePlate}</span>
-          </div>
-        </div>
 
-        {/* Status: Chauffeur on the way */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12, padding: 16,
-          background: 'rgba(10,37,64,0.03)', borderRadius: 12, border: '1px solid rgba(10,37,64,0.06)'
-        }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: '50%', background: '#0A2540',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-          }}>
-            <Clock size={18} color="#FFFFFF" />
-          </div>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', lineHeight: 1.5, display: 'block' }}>Your chauffeur is on the way</span>
-            <span style={{ fontSize: 14, color: '#0A2540', fontWeight: 500, lineHeight: 1.5, display: 'block', marginTop: 2 }}>
-              Estimated arrival: 8 min
-            </span>
+          <div className="p-4 bg-gray-50 rounded-xl border-l-4 border-[#001F3F]">
+            <p className="text-sm text-gray-600 italic">
+              "My commitment is to provide you with a safe, punctual, and discreet journey. It will be a pleasure to serve you."
+            </p>
           </div>
         </div>
 
-        {/* View Full Profile Button */}
-        <button
-          onClick={() => setShowFullProfile(true)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 14, fontWeight: 500, color: '#0066CC',
-            textDecoration: 'underline', textUnderlineOffset: '3px',
-            textAlign: 'center', padding: 8, fontFamily: "'Barlow Condensed', sans-serif", lineHeight: 1.5
-          }}
+        <button 
+          onClick={onConfirm} 
+          className="w-full py-4 bg-[#001F3F] text-white font-bold rounded-xl shadow-lg hover:bg-navy-dark transition-all mt-6"
         >
-          View full profile
-        </button>
-      </div>
-
-      {/* Confirm Button */}
-      <div style={{ padding: '16px 20px 40px', borderTop: '1px solid rgba(0,0,0,0.04)', flexShrink: 0 }}>
-        <button
-          onClick={onConfirm}
-          style={{
-            width: '100%', padding: 18, borderRadius: 14, border: 'none',
-            background: '#0A2540', color: '#FFFFFF', fontSize: 16, fontWeight: 600,
-            letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-            cursor: 'pointer', fontFamily: "'Barlow Condensed', sans-serif",
-            boxShadow: '0 4px 24px rgba(10,37,64,0.2)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
-          }}
-        >
-          <CheckCircle2 size={18} />
           Confirm Chauffeur
         </button>
       </div>
-
-      {/* Full Profile Modal */}
-      <AnimatePresence>
-        {showFullProfile && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowFullProfile(false)}
-              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 50 }}
-            />
-            <motion.div
-              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                background: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-                maxHeight: '85%', overflowY: 'auto', zIndex: 51, padding: '24px 20px 40px'
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-                <button onClick={() => setShowFullProfile(false)} style={{ width: 36, height: 36, borderRadius: '50%', background: '#F0F0F0', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={18} color="#1A1A1A" />
-                </button>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-                <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', border: '2px solid #0A2540', flexShrink: 0 }}>
-                  <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: 20, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>{CHAUFFEUR.name}</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                    <Star size={14} fill="#FFC107" color="#FFC107" />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>{CHAUFFEUR.rating}</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
-                <div style={{ background: '#FAFAFA', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: '#0A2540' }}>{CHAUFFEUR.yearsExperience}</div>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: '#1A1A1A', opacity: 0.5, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>Years Exp.</div>
-                </div>
-                <div style={{ background: '#FAFAFA', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: '#0A2540' }}>{CHAUFFEUR.rating}</div>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: '#1A1A1A', opacity: 0.5, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>Rating</div>
-                </div>
-                <div style={{ background: '#FAFAFA', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: '#0A2540' }}>{CHAUFFEUR.languages.length}</div>
-                  <div style={{ fontSize: 12, fontWeight: 500, color: '#1A1A1A', opacity: 0.5, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>Languages</div>
-                </div>
-              </div>
-              <div style={{ marginBottom: 24 }}>
-                <h4 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#1A1A1A', opacity: 0.6, marginBottom: 12 }}>Certifications</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 8 }}>
-                  {CHAUFFEUR.certifications.map((cert, i) => (
-                    <span key={i} style={{ padding: '6px 12px', borderRadius: 20, fontSize: 13, fontWeight: 500, background: 'rgba(10,37,64,0.06)', color: '#0A2540' }}>{cert}</span>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom: 24 }}>
-                <h4 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#1A1A1A', opacity: 0.6, marginBottom: 12 }}>Languages</h4>
-                <p style={{ fontSize: 16, color: '#1A1A1A', margin: 0 }}>{CHAUFFEUR.languages.join(', ')}</p>
-              </div>
-              <div>
-                <h4 style={{ fontSize: 14, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#1A1A1A', opacity: 0.6, marginBottom: 12 }}>Featured Reviews</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {CHAUFFEUR.reviews.map((review, i) => (
-                    <div key={i} style={{ padding: 16, background: '#FAFAFA', borderRadius: 12, border: '1px solid rgba(0,0,0,0.04)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
-                        {Array.from({ length: review.rating }).map((_, j) => (
-                          <Star key={j} size={12} fill="#FFC107" color="#FFC107" />
-                        ))}
-                      </div>
-                      <p style={{ fontSize: 14, color: '#1A1A1A', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>"{review.text}"</p>
-                      <span style={{ fontSize: 13, color: '#1A1A1A', opacity: 0.5, fontWeight: 500 }}>— {review.author}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
 
-function ConfirmedScreen({ onContinue }: { onContinue: () => void, key?: string }) {
+function ConfirmedScreen({ onContinue }: { onContinue: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onContinue, 2500);
+    const timer = setTimeout(onContinue, 3000);
     return () => clearTimeout(timer);
   }, [onContinue]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.1 }}
-      style={{
-        height: '100%', width: '100%', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', padding: 32,
-        background: 'linear-gradient(170deg, #0A2540 0%, #0D1F3A 55%, #0A2540 100%)',
-        fontFamily: "'Barlow Condensed', sans-serif"
-      }}
-    >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', damping: 12, stiffness: 200, delay: 0.2 }}
-        style={{ marginBottom: 32 }}
-      >
-        <div style={{
-          width: 96, height: 96, borderRadius: '50%', background: 'rgba(192,192,192,0.1)',
-          border: '2px solid rgba(192,192,192,0.3)', display: 'flex',
-          alignItems: 'center', justifyContent: 'center'
-        }}>
-          <CheckCircle2 size={48} color="#FFFFFF" strokeWidth={1.5} />
-        </div>
-      </motion.div>
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <h2 style={{ fontSize: 28, fontWeight: 300, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: '#FFFFFF', margin: 0 }}>
-          Journey Confirmed
-        </h2>
-        <p style={{ fontSize: 14, letterSpacing: '0.15em', textTransform: 'uppercase' as const, fontWeight: 500, color: '#C0C0C0', margin: 0 }}>
-          Your chauffeur is on the way
-        </p>
-      </div>
-    </motion.div>
-  );
-}
-
-function TrackingScreen({ vehicle, onBack, isLoaded }: { vehicle: Vehicle, onBack: () => void, isLoaded: boolean, key?: string }) {
-  const [showChat, setShowChat] = useState(false);
-  const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [showFullProfile, setShowFullProfile] = useState(false);
-  const [tripStatus, setTripStatus] = useState<'IN_PROGRESS' | 'ARRIVED' | 'COMPLETED'>('IN_PROGRESS');
-  const [etaMinutes, setEtaMinutes] = useState(8);
-  const rideId = React.useRef(`ride_${Date.now()}`).current;
-
-  useEffect(() => {
-    const t1 = setTimeout(() => setTripStatus('ARRIVED'), 30000);
-    return () => clearTimeout(t1);
-  }, []);
-
-  useEffect(() => {
-    if (etaMinutes <= 0) return;
-    const interval = setInterval(() => {
-      setEtaMinutes(prev => Math.max(prev - 1, 0));
-    }, 15000);
-    return () => clearInterval(interval);
-  }, [etaMinutes]);
-
-  const handleTripCompleted = () => {
-    setTripStatus('COMPLETED');
-    setShowChat(false);
-    onBack();
-  };
-
-  const handleCancelConfirm = () => {
-    setShowCancelDialog(false);
-    onBack();
-  };
-
-  return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      style={{
-        height: '100%', width: '100%', display: 'flex', flexDirection: 'column',
-        background: '#FFFFFF', position: 'relative', fontFamily: "'Barlow Condensed', sans-serif"
-      }}
+      className="h-full w-full flex flex-col items-center justify-center p-8 bg-white text-[#001F3F]"
     >
-      {/* Top Bar — Chauffeur Mini Info */}
-      <div className="h-[75px] flex items-center justify-between px-4 bg-white shadow-sm z-50 shrink-0 pt-6 border-b border-black/[0.03]">
-        <div className="flex items-center gap-3">
-          <button onClick={onBack} className="p-2 hover:bg-black/5 rounded-full text-[#1A1A1A] transition-colors">
+      <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-8">
+        <Check size={48} className="text-emerald-500" />
+      </div>
+      
+      <div className="text-center space-y-3">
+        <h2 className="text-4xl font-bold">Journey Confirmed</h2>
+        <p className="text-base text-gray-500">Your chauffeur is on the way to your location.</p>
+      </div>
+    </motion.div>
+  );
+}
+
+function TrackingScreen({ vehicle, onBack, onEndTrip }: { vehicle: Vehicle, onBack: () => void, onEndTrip: () => void }) {
+  const [isPanelExpanded, setIsPanelExpanded] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [showSOS, setShowSOS] = useState(false);
+  const [showCall, setShowCall] = useState(false);
+  const [notification, setNotification] = useState<string | null>(null);
+  const [chatMessage, setChatMessage] = useState('');
+  const [messages, setMessages] = useState([
+    { id: 1, text: "Hello! I am 5 minutes away from your location.", sender: 'chauffeur' }
+  ]);
+
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  const handleSendMessage = () => {
+    if (!chatMessage.trim()) return;
+    const newMessage = { id: Date.now(), text: chatMessage, sender: 'user' };
+    setMessages([...messages, newMessage]);
+    setChatMessage('');
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
+    >
+      {/* Map Area */}
+      <div className="flex-1 relative bg-gray-100">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="w-full h-full bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i14!2i4093!3i6151!2m3!1e0!2sm!3i6151!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!5f2!23i1301875')] bg-repeat" />
+        </div>
+
+        {/* Top Controls */}
+        <div className="absolute top-10 left-6 right-6 flex justify-between items-center z-20">
+          <button onClick={onBack} className="p-3 bg-white rounded-full shadow-lg text-[#001F3F] hover:bg-gray-50 transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-[#001F3F] shrink-0">
-            <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <div className="bg-[#001F3F] px-4 py-2 rounded-full shadow-lg">
+            <span className="text-xs font-bold text-white uppercase tracking-wider">En Route</span>
           </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-[#1A1A1A] leading-tight">{CHAUFFEUR.name}</span>
-            <div className="flex items-center gap-1">
-              <Star size={10} className="fill-[#FFC107] text-[#FFC107]" />
-              <span className="text-[10px] font-medium text-[#1A1A1A]/50">{CHAUFFEUR.rating} • {vehicle.id.toUpperCase()}</span>
-            </div>
-          </div>
+          <button 
+            onClick={() => setShowSOS(true)}
+            className="p-3 bg-red-600 rounded-full shadow-lg text-white hover:bg-red-700 active:scale-95 transition-all flex items-center justify-center"
+          >
+            <AlertTriangle size={20} />
+          </button>
         </div>
-        <button
-          onClick={() => setShowFullProfile(true)}
-          className="px-3 py-1.5 rounded-full bg-[#001F3F]/05 text-[#001F3F] text-[10px] font-medium uppercase tracking-widest border border-[#001F3F]/10 active:bg-[#001F3F]/10 transition-colors"
+
+        {/* Animated Car Marker */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <motion.div 
+            animate={{ 
+              x: [0, -20, 10, 0],
+              y: [0, 30, -10, 0],
+              rotate: [0, 10, -5, 0]
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+            className="w-8 h-12 bg-[#001F3F] rounded-md shadow-xl border-2 border-white flex flex-col items-center justify-between p-1"
+          >
+            <div className="w-full h-2 bg-white/20 rounded-sm" />
+            <div className="w-full h-1 bg-white/20 rounded-sm" />
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Bottom Panel */}
+      <motion.div 
+        animate={{ height: isPanelExpanded ? '85%' : '280px' }}
+        className="bg-white rounded-t-[40px] shadow-2xl border-t border-gray-100 z-30 relative overflow-hidden flex flex-col"
+      >
+        {/* Drag Handle */}
+        <div 
+          className="w-full py-4 flex justify-center cursor-pointer"
+          onClick={() => setIsPanelExpanded(!isPanelExpanded)}
         >
-          View profile
-        </button>
-      </div>
+          <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+        </div>
 
-      {/* Map Area (85% of remaining height) */}
-      <div style={{ flex: 1, position: 'relative', background: '#F5F7FA', overflow: 'hidden' }}>
-        {isLoaded ? (
-          <GoogleMap
-            mapContainerStyle={{ width: '100%', height: '100%' }}
-            center={{ lat: 40.7128, lng: -74.0060 }}
-            zoom={15}
-            options={{
-              disableDefaultUI: true,
-              styles: [], // Real map
-            }}
-          >
-            {/* Vehicle marker */}
-            <Marker
-              position={{ lat: 40.7145, lng: -74.0030 }}
-              icon={{
-                url: "https://lh3.googleusercontent.com/d/1C4YlX4-q-p7mQJ9_Z2tW8-iL2-Y4A2W_", // Use a real car icon if available, or fallback
-                scaledSize: new google.maps.Size(40, 40)
-              }}
-            />
-            {/* Destination marker */}
-            <Marker position={{ lat: 40.7128, lng: -74.0060 }} />
-          </GoogleMap>
-        ) : (
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(circle at 60% 40%, rgba(26,58,92,0.6) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(26,58,92,0.4) 0%, transparent 40%), linear-gradient(170deg, #0A2540 0%, #0D1F3A 50%, #071B30 100%)'
-          }}>
-            {/* Simulated fallback */}
-            <div style={{ position: 'absolute', top: '35%', left: '55%' }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: '50%', background: '#0A2540',
-                border: '3px solid #C0C0C0', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', boxShadow: '0 0 20px rgba(192,192,192,0.3)'
-              }}>
-                <Navigation size={20} color="#C0C0C0" style={{ transform: 'rotate(45deg)' }} />
+        <div className="flex-1 overflow-y-auto px-6 pb-8 scrollbar-hide">
+          {/* Quick Info Row */}
+          <div className="flex justify-between items-end mb-6">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Estimated Arrival</p>
+              <h3 className="text-4xl font-light text-[#001F3F]">8 <span className="text-lg font-normal text-gray-400">min</span></h3>
+            </div>
+            <div className="text-right space-y-1">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Distance</p>
+              <h3 className="text-2xl font-light text-[#001F3F]">2.4 <span className="text-sm font-normal text-gray-400">km</span></h3>
+            </div>
+          </div>
+
+          {/* Chauffeur Card */}
+          <div className="flex items-center gap-4 p-5 bg-gray-50 rounded-[24px] border border-gray-100 mb-6">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+              <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            </div>
+            <div className="flex-1">
+              <h4 className="font-bold text-[#001F3F] text-lg">{CHAUFFEUR.name}</h4>
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center gap-1 bg-[#001F3F]/5 px-2 py-0.5 rounded-full">
+                  <Star size={10} className="fill-[#001F3F] text-[#001F3F]" />
+                  <span className="text-[10px] font-bold text-[#001F3F]">{CHAUFFEUR.rating}</span>
+                </div>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">URB-2026 • Black</span>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowChat(true)}
+                className="w-12 h-12 flex items-center justify-center bg-[#001F3F] text-white rounded-2xl shadow-lg hover:bg-[#001F3F]/90 active:scale-95 transition-all"
+              >
+                <MessageSquare size={20} />
+              </button>
+              <button 
+                onClick={() => setShowCall(true)}
+                className="w-12 h-12 flex items-center justify-center bg-white text-[#001F3F] rounded-2xl border border-gray-200 shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+              >
+                <Phone size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* Trip Timeline (Always visible if space allows, or at least top of expanded) */}
+          <div className="mb-6">
+            <div className="flex justify-between mb-4">
+              <div className="flex flex-col items-center gap-1 flex-1">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="h-0.5 w-full bg-emerald-500" />
+                <span className="text-[8px] font-bold uppercase text-emerald-600 mt-1">Confirmed</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 flex-1">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="h-0.5 w-full bg-emerald-500" />
+                <span className="text-[8px] font-bold uppercase text-emerald-600 mt-1">En Route</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 flex-1">
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
+                <div className="h-0.5 w-full bg-gray-100" />
+                <span className="text-[8px] font-bold uppercase text-gray-400 mt-1">Arrived</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 flex-1">
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
+                <div className="h-0.5 w-full bg-gray-100" />
+                <span className="text-[8px] font-bold uppercase text-gray-400 mt-1">Trip</span>
               </div>
             </div>
           </div>
-        )}
 
-        {/* ETA Overlay */}
-        <div style={{
-          position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)',
-          padding: '10px 20px', borderRadius: 24,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)', zIndex: 5,
-          display: 'flex', alignItems: 'center', gap: 8
-        }}>
-          <Clock size={16} color="#0A2540" />
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#0A2540' }}>
-            {tripStatus === 'ARRIVED' ? 'Arrived' : `Arriving in ${etaMinutes} min`}
-          </span>
-        </div>
-
-        {/* Status badge */}
-        <div style={{
-          position: 'absolute', top: 16, right: 16,
-          background: tripStatus === 'ARRIVED' ? 'rgba(40,167,69,0.9)' : 'rgba(255,255,255,0.9)',
-          backdropFilter: 'blur(8px)', padding: '6px 14px', borderRadius: 20, zIndex: 5,
-          display: 'flex', alignItems: 'center', gap: 6
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: tripStatus === 'ARRIVED' ? '#FFFFFF' : '#28A745', display: 'inline-block' }} />
-          <span style={{
-            fontSize: 12, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const,
-            color: tripStatus === 'ARRIVED' ? '#FFFFFF' : '#1A1A1A'
-          }}>
-            {tripStatus === 'ARRIVED' ? 'Arrived' : 'En Route'}
-          </span>
-        </div>
-      </div>
-
-      {/* Action Buttons — 4 Equal Columns */}
-      <div className="bg-white border-t border-black/[0.03] p-4 pb-12 z-50 space-y-4">
-        <div className="grid grid-cols-4 gap-2">
-          <button
-            onClick={() => window.open(`tel:${CHAUFFEUR.phone}`)}
-            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-[#001F3F]"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#001F3F]/[0.05] flex items-center justify-center">
-              <Phone size={18} />
-            </div>
-            <span className="text-[10px] font-medium uppercase tracking-widest">Call</span>
-          </button>
-
-          <button
-            onClick={() => setShowChat(true)}
-            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-[#28A745] relative"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#28A745]/[0.05] flex items-center justify-center">
-              <MessageCircle size={18} />
-            </div>
-            <span className="text-[10px] font-medium uppercase tracking-widest">Chat</span>
-            <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#28A745] ring-2 ring-white" />
-          </button>
-
-          <button
-            onClick={() => {
-              const shareData = { title: 'URBONT Trip', text: `I'm on my way with URBONT. Chauffeur: ${CHAUFFEUR.name}`, url: window.location.href };
-              if (navigator.share) { navigator.share(shareData).catch(() => { }); }
-              else { navigator.clipboard.writeText(shareData.text); }
-            }}
-            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-[#001F3F]"
-          >
-            <div className="w-10 h-10 rounded-full bg-[#001F3F]/[0.05] flex items-center justify-center">
-              <Share2 size={18} />
-            </div>
-            <span className="text-[10px] font-medium uppercase tracking-widest">Share</span>
-          </button>
-
-          <button
-            onClick={() => setShowCancelDialog(true)}
-            className="flex flex-col items-center justify-center gap-2 p-3 bg-[#FAFAFA] rounded-2xl border border-black/[0.03] text-red-500"
-          >
-            <div className="w-10 h-10 rounded-full bg-red-500/[0.05] flex items-center justify-center">
-              <X size={18} />
-            </div>
-            <span className="text-[10px] font-medium uppercase tracking-widest">Cancel</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Trip Completed bar — shown when chauffeur ARRIVED */}
-      {tripStatus === 'ARRIVED' && (
-        <div style={{ padding: '0 20px 16px', background: '#FFFFFF', zIndex: 10 }}>
-          <button
-            onClick={handleTripCompleted}
-            style={{
-              width: '100%', padding: 16, borderRadius: 14, border: 'none',
-              background: '#0A2540', color: '#FFFFFF', fontSize: 15, fontWeight: 600,
-              letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-              cursor: 'pointer', fontFamily: "'Barlow Condensed', sans-serif",
-              boxShadow: '0 4px 24px rgba(10,37,64,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
-            }}
-          >
-            <CheckCircle2 size={18} />
-            Complete Trip
-          </button>
-        </div>
-      )}
-
-      {/* Cancel Confirmation Dialog */}
-      <AnimatePresence>
-        {showCancelDialog && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowCancelDialog(false)}
-              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 60 }}
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              style={{
-                position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                background: '#FFFFFF', borderRadius: 20, padding: 28, width: 'calc(100% - 48px)',
-                maxWidth: 340, zIndex: 61, boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16
-              }}
+          {/* Quick Cancel Button (Visible in collapsed view) */}
+          {!isPanelExpanded && (
+            <button 
+              onClick={onEndTrip}
+              className="w-full py-3 text-red-600 text-[10px] font-bold uppercase tracking-[0.2em] border border-red-100 rounded-xl hover:bg-red-50 transition-all mb-4"
             >
-              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(220,53,69,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <AlertTriangle size={28} color="#DC3545" />
+              Cancel Journey
+            </button>
+          )}
+
+          {/* Expanded Details */}
+          <div className="space-y-8">
+            {/* Vehicle Details */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Vehicle</p>
+                <p className="text-sm font-bold text-[#001F3F]">{vehicle.name}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">Mercedes-Benz E-Class</p>
               </div>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: '#1A1A1A', margin: 0, textAlign: 'center' }}>Cancel this ride?</h3>
-              <p style={{ fontSize: 14, color: '#1A1A1A', opacity: 0.6, margin: 0, textAlign: 'center', lineHeight: 1.5 }}>
-                Are you sure you want to cancel? Cancellation fees may apply.
-              </p>
-              <div style={{ display: 'flex', gap: 8, width: '100%', marginTop: 8 }}>
-                <button
-                  onClick={() => setShowCancelDialog(false)}
-                  style={{ flex: 1, padding: 14, borderRadius: 12, border: '1px solid rgba(0,0,0,0.1)', background: '#F0F0F0', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#1A1A1A', fontFamily: "'Barlow Condensed', sans-serif" }}
-                >
-                  No
-                </button>
-                <button
-                  onClick={handleCancelConfirm}
-                  style={{ flex: 1, padding: 14, borderRadius: 12, border: 'none', background: '#DC3545', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#FFFFFF', fontFamily: "'Barlow Condensed', sans-serif" }}
-                >
-                  Yes, cancel
-                </button>
+              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Plate Number</p>
+                <p className="text-sm font-bold text-[#001F3F]">URB-2026</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">Midnight Black</p>
               </div>
-            </motion.div>
-          </>
+            </div>
+
+            {/* Journey Path */}
+            <div className="space-y-6 relative">
+              <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gray-100" />
+              
+              <div className="flex items-start gap-4 relative">
+                <div className="w-4 h-4 mt-1 bg-emerald-500 rounded-full border-4 border-white shadow-sm z-10" />
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pickup Location</p>
+                  <p className="text-sm font-medium text-[#001F3F] mt-0.5">The Ritz-Carlton, South Beach</p>
+                  <p className="text-[10px] text-gray-500">1 Lincoln Rd, Miami Beach, FL 33139</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 relative">
+                <div className="w-4 h-4 mt-1 bg-[#001F3F] rounded-full border-4 border-white shadow-sm z-10" />
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Destination</p>
+                  <p className="text-sm font-medium text-[#001F3F] mt-0.5">Miami International Airport (MIA)</p>
+                  <p className="text-[10px] text-gray-500">2100 NW 42nd Ave, Miami, FL 33142</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment & Price */}
+            <div className="flex justify-between items-center p-5 bg-gray-50 rounded-3xl border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100">
+                  <CreditCard size={18} className="text-[#001F3F]" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Payment Method</p>
+                  <p className="text-sm font-bold text-[#001F3F]">Visa •••• 4242</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Fare</p>
+                <p className="text-xl font-bold text-[#001F3F]">{vehicle.price}</p>
+              </div>
+            </div>
+
+            {/* Safety & Support */}
+            <div className="grid grid-cols-2 gap-3">
+              <button 
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Urbont Journey Status',
+                      text: `I'm on my way in a ${vehicle.name}. Arriving in 8 minutes.`,
+                      url: window.location.href
+                    }).catch(() => {});
+                  } else {
+                    setNotification('Status link copied to clipboard!');
+                  }
+                }}
+                className="flex items-center justify-center gap-2 h-14 bg-gray-50 text-[#001F3F] text-[11px] font-bold uppercase tracking-widest rounded-2xl border border-gray-100 hover:bg-gray-100 transition-all"
+              >
+                <Share2 size={16} />
+                Share Status
+              </button>
+              <button 
+                onClick={() => setShowSOS(true)}
+                className="flex items-center justify-center gap-2 h-14 bg-red-50 text-red-600 text-[11px] font-bold uppercase tracking-widest rounded-2xl border border-red-100 hover:bg-red-100 transition-all"
+              >
+                <ShieldCheck size={16} />
+                Safety Center
+              </button>
+            </div>
+
+            {/* Trip ID & Support */}
+            <div className="flex flex-col items-center gap-2 pt-4">
+              <p className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.3em]">Trip ID: URB-99283-XM</p>
+              <button 
+                onClick={onEndTrip}
+                className="w-full h-16 bg-red-600 text-white text-xs font-bold uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 hover:bg-red-700 active:scale-[0.98] transition-all flex items-center justify-center mt-4"
+              >
+                Cancel Journey
+              </button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Notification Toast */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-24 left-1/2 -translate-x-1/2 bg-[#001F3F] text-white px-6 py-3 rounded-2xl shadow-2xl z-[100] text-sm font-medium text-center min-w-[280px]"
+          >
+            {notification}
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Full Profile Modal */}
+      {/* SOS Modal */}
       <AnimatePresence>
-        {showFullProfile && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowFullProfile(false)}
-              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', zIndex: 50 }}
-            />
-            <motion.div
-              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                background: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-                maxHeight: '80%', overflowY: 'auto', zIndex: 51, padding: '24px 20px 40px'
-              }}
+        {showSOS && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-red-600/90 backdrop-blur-md z-[60] flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="bg-white rounded-[32px] p-8 w-full max-w-sm text-center space-y-6 shadow-2xl"
             >
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-                <button onClick={() => setShowFullProfile(false)} style={{ width: 36, height: 36, borderRadius: '50%', background: '#F0F0F0', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={18} color="#1A1A1A" />
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto">
+                <AlertTriangle size={40} className="text-red-600 animate-pulse" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-[#001F3F]">Emergency SOS</h3>
+                <p className="text-sm text-gray-500">Are you in immediate danger? This will notify our security team and local authorities.</p>
+              </div>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => {
+                    setNotification('Emergency services have been notified. Stay calm, help is on the way.');
+                    setShowSOS(false);
+                  }}
+                  className="w-full py-4 bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-all"
+                >
+                  CALL EMERGENCY
+                </button>
+                <button 
+                  onClick={() => setShowSOS(false)}
+                  className="w-full py-4 bg-gray-100 text-[#001F3F] font-bold rounded-xl active:scale-95 transition-all"
+                >
+                  CANCEL
                 </button>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-                <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', border: '2px solid #0A2540', flexShrink: 0 }}>
-                  <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} referrerPolicy="no-referrer" />
-                </div>
-                <div>
-                  <h3 style={{ fontSize: 20, fontWeight: 600, color: '#1A1A1A', margin: 0 }}>{CHAUFFEUR.name}</h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                    <Star size={14} fill="#FFC107" color="#FFC107" />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#1A1A1A' }}>{CHAUFFEUR.rating}</span>
-                    <span style={{ fontSize: 13, color: '#1A1A1A', opacity: 0.4 }}>• {CHAUFFEUR.experience}</span>
-                  </div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div>
-                  <h4 style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#1A1A1A', opacity: 0.5, marginBottom: 8 }}>Vehicle</h4>
-                  <p style={{ fontSize: 16, color: '#1A1A1A', margin: 0 }}>{CHAUFFEUR.vehicle} • {CHAUFFEUR.licensePlate}</p>
-                </div>
-                <div>
-                  <h4 style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#1A1A1A', opacity: 0.5, marginBottom: 8 }}>Certifications</h4>
-                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
-                    {CHAUFFEUR.certifications.map((cert, i) => (
-                      <span key={i} style={{ padding: '5px 10px', borderRadius: 16, fontSize: 12, fontWeight: 500, background: 'rgba(10,37,64,0.06)', color: '#0A2540' }}>{cert}</span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h4 style={{ fontSize: 13, fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#1A1A1A', opacity: 0.5, marginBottom: 8 }}>Languages</h4>
-                  <p style={{ fontSize: 16, color: '#1A1A1A', margin: 0 }}>{CHAUFFEUR.languages.join(', ')}</p>
-                </div>
-              </div>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Chat Room Overlay */}
+      {/* Call Modal */}
       <AnimatePresence>
-        {showChat && (tripStatus === 'IN_PROGRESS' || tripStatus === 'ARRIVED') && (
-          <ChatRoom
-            rideId={rideId}
-            senderRole="passenger"
-            tripStatus={tripStatus}
-            onClose={() => setShowChat(false)}
-            onTripCompleted={handleTripCompleted}
-          />
+        {showCall && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end"
+          >
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="w-full bg-white rounded-t-[32px] p-8 space-y-6"
+            >
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold">Contact Chauffeur</h3>
+                <button onClick={() => setShowCall(false)} className="p-2 bg-gray-100 rounded-full">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl">
+                <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                  <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg">{CHAUFFEUR.name}</h4>
+                  <p className="text-sm text-gray-500">+1 (555) 000-1234</p>
+                </div>
+              </div>
+              <a 
+                href="tel:+15550001234"
+                className="w-full py-4 bg-[#001F3F] text-white font-bold rounded-xl flex items-center justify-center gap-3 shadow-lg active:scale-95 transition-all"
+              >
+                <Phone size={20} />
+                START CALL
+              </a>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Simple Chat Modal Overlay */}
+      <AnimatePresence>
+        {showChat && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 z-50 flex items-end"
+          >
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="w-full bg-white rounded-t-3xl p-6 h-[80%] flex flex-col"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold">Chat with {CHAUFFEUR.name}</h3>
+                <button onClick={() => setShowChat(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="flex-1 bg-gray-50 rounded-2xl p-4 overflow-y-auto mb-4 space-y-4">
+                {messages.map((msg) => (
+                  <div 
+                    key={msg.id} 
+                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`p-3 rounded-2xl shadow-sm max-w-[80%] ${
+                      msg.sender === 'user' 
+                        ? 'bg-[#001F3F] text-white rounded-br-none' 
+                        : 'bg-white text-[#001F3F] rounded-bl-none'
+                    }`}>
+                      <p className="text-sm">{msg.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Type a message..." 
+                  className="flex-1 bg-gray-100 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#001F3F]/10"
+                />
+                <button 
+                  onClick={handleSendMessage}
+                  className="p-3 bg-[#001F3F] text-white rounded-xl active:scale-95 transition-all"
+                >
+                  <ArrowRight size={20} />
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.div>
   );
 }
 
-
-
-function ProfileScreen({
-  userProfile,
-  onBack,
-  onEditProfile,
-  onEditAddress,
-  onSignOut,
+function ProfileScreen({ 
+  userProfile, 
+  onBack, 
+  onEditProfile, 
+  onEditAddress, 
+  onSignOut, 
   onLegal,
+  onApiHealth,
   onUpdateProfile
-}: {
-  userProfile: UserProfile,
-  onBack: () => void,
-  onEditProfile: () => void,
-  onEditAddress: (type: 'home' | 'work' | 'other') => void,
-  onSignOut: () => void,
-  onLegal: () => void,
+}: { 
+  userProfile: UserProfile, 
+  onBack: () => void, 
+  onEditProfile: () => void, 
+  onEditAddress: (type: 'home' | 'work' | 'other') => void, 
+  onSignOut: () => void, 
+  onLegal: () => void, 
+  onApiHealth: () => void,
   onUpdateProfile: (updated: Partial<UserProfile>) => void,
-  key?: string
+  key?: string 
 }) {
   const [blackCarsOnly, setBlackCarsOnly] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -2862,25 +2827,25 @@ function ProfileScreen({
   const languages = ['English', 'Spanish', 'French', 'German'];
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center justify-between p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <button onClick={onEditProfile} className="text-sm font-medium text-[#1A1A1A] hover:text-[#1A1A1A] transition-colors">Edit</button>
+        <button onClick={onEditProfile} className="text-sm font-medium text-[#001F3F] hover:text-[#001F3F] transition-colors">Edit</button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8">
+      <div className="flex-1 overflow-y-auto px-6 pb-12">
         <div className="flex flex-col items-center mb-6">
           <div className="relative">
             <div className="w-28 h-28 rounded-full bg-white shadow-sm flex items-center justify-center overflow-hidden border border-black/[0.02]">
-              <User size={48} className="text-[#1A1A1A]/20" />
+              <User size={48} className="text-[#001F3F]/20" />
             </div>
             <div className="absolute bottom-0 right-0 flex items-center justify-center">
               <div className="w-8 h-8 bg-[#001F3F] rounded-full flex items-center justify-center shadow-md border-2 border-[#FFFFFF]">
@@ -2898,101 +2863,103 @@ function ProfileScreen({
             For now, I'll assume the user wants to see it here. 
             Actually, I can just add the prop to the component definition right here since I am replacing the whole component or part of it.
         */}
-
+        
         <div className="flex justify-center mb-8">
-          <div className="flex bg-[#001F3F]/5 p-1 rounded-full w-fit border border-[#001F3F]/10">
-            <button
-              onClick={() => onUpdateProfile({ accountType: 'personal' })}
-              className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${userProfile.accountType === 'personal'
-                ? 'bg-[#001F3F] text-white shadow-md'
-                : 'text-[#1A1A1A]/80 hover:text-[#1A1A1A]'
-                }`}>
-              Personal
-            </button>
-            <button
-              onClick={() => onUpdateProfile({ accountType: 'business' })}
-              className={`px-4 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${userProfile.accountType === 'business'
-                ? 'bg-[#001F3F] text-white shadow-md'
-                : 'text-[#1A1A1A]/80 hover:text-[#1A1A1A]'
-                }`}>
-              Business
-            </button>
-          </div>
+           <div className="flex bg-[#001F3F]/5 p-1 rounded-full w-fit border border-[#001F3F]/10">
+              <button 
+                onClick={() => onUpdateProfile({ accountType: 'personal' })}
+                className={`px-6 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${
+                userProfile.accountType === 'personal' 
+                  ? 'bg-[#001F3F] text-white shadow-md' 
+                  : 'text-[#001F3F]/60 hover:text-[#001F3F]'
+              }`}>
+                Personal
+              </button>
+              <button 
+                onClick={() => onUpdateProfile({ accountType: 'business' })}
+                className={`px-6 py-2 rounded-full text-xs font-medium uppercase tracking-widest transition-all ${
+                userProfile.accountType === 'business' 
+                  ? 'bg-[#001F3F] text-white shadow-md' 
+                  : 'text-[#001F3F]/60 hover:text-[#001F3F]'
+              }`}>
+                Business
+              </button>
+           </div>
         </div>
 
         <div className="space-y-8">
           {/* User Info Card */}
           <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest font-medium mb-1">Name</div>
-              <div className="text-base font-medium text-[#1A1A1A]">{userProfile.firstName} {userProfile.lastName}</div>
+              <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1">Name</div>
+              <div className="text-base font-medium text-[#001F3F]">{userProfile.firstName} {userProfile.lastName}</div>
             </div>
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest font-medium mb-1">Phone</div>
-              <div className="text-base font-medium text-[#1A1A1A]">{userProfile.phone}</div>
+              <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1">Phone</div>
+              <div className="text-base font-medium text-[#001F3F]">{userProfile.phone}</div>
             </div>
             <div className="py-4 px-5 border-b border-black/[0.04]">
-              <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest font-medium mb-1">Email</div>
-              <div className="text-base font-medium text-[#1A1A1A]">{userProfile.email}</div>
+              <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1">Email</div>
+              <div className="text-base font-medium text-[#001F3F]">{userProfile.email}</div>
             </div>
             {userProfile.accountType === 'business' && (
               <div className="py-4 px-5 bg-[#001F3F]/5">
-                <div className="text-xs text-[#1A1A1A]/80 uppercase tracking-widest mb-1 flex items-center gap-2">
+                <div className="text-xs text-[#001F3F]/80 uppercase tracking-widest mb-1 flex items-center gap-2">
                   <Briefcase size={12} />
                   Company
                 </div>
-                <div className="text-base font-medium text-[#1A1A1A]">{userProfile.companyName || 'Add Company Details'}</div>
+                <div className="text-base font-medium text-[#001F3F]">{userProfile.companyName || 'Add Company Details'}</div>
               </div>
             )}
           </div>
 
           {/* Favorites Card */}
           <div className="space-y-3">
-            <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest px-2 font-medium transition-all">Favorites</div>
+            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Favorites</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <button onClick={() => onEditAddress('home')} className="flex items-center gap-4 w-full p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                   <Home size={18} />
                 </div>
                 <div className="flex flex-col items-start flex-1">
-                  <span className="text-base font-medium text-[#1A1A1A]">
+                  <span className="text-base font-medium text-[#001F3F]">
                     {userProfile.homeAddress ? 'Home' : 'Add Home'}
                   </span>
                   {userProfile.homeAddress && (
-                    <span className="text-xs text-[#1A1A1A]/50 text-left line-clamp-1">{userProfile.homeAddress}</span>
+                    <span className="text-xs text-[#001F3F]/50 text-left line-clamp-1">{userProfile.homeAddress}</span>
                   )}
                 </div>
-                <ChevronRight size={16} className="text-[#1A1A1A]/30" />
+                <ChevronRight size={16} className="text-[#001F3F]/30" />
               </button>
               <button onClick={() => onEditAddress('work')} className="flex items-center gap-4 w-full p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                   <Briefcase size={18} />
                 </div>
                 <div className="flex flex-col items-start flex-1">
-                  <span className="text-base font-medium text-[#1A1A1A]">
+                  <span className="text-base font-medium text-[#001F3F]">
                     {userProfile.workAddress ? 'Work' : 'Add Work'}
                   </span>
                   {userProfile.workAddress && (
-                    <span className="text-xs text-[#1A1A1A]/50 text-left line-clamp-1">{userProfile.workAddress}</span>
+                    <span className="text-xs text-[#001F3F]/50 text-left line-clamp-1">{userProfile.workAddress}</span>
                   )}
                 </div>
-                <ChevronRight size={16} className="text-[#1A1A1A]/30" />
+                <ChevronRight size={16} className="text-[#001F3F]/30" />
               </button>
               <button onClick={() => onEditAddress('other')} className="flex items-center gap-4 w-full p-5 hover:bg-black/[0.02] transition-colors">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                   <Plus size={18} />
                 </div>
-                <span className="text-base font-medium text-[#1A1A1A] flex-1 text-left">Add Other Address</span>
-                <ChevronRight size={16} className="text-[#1A1A1A]/30" />
+                <span className="text-base font-medium text-[#001F3F] flex-1 text-left">Add Other Address</span>
+                <ChevronRight size={16} className="text-[#001F3F]/30" />
               </button>
               {userProfile.otherAddresses.map((addr) => (
                 <div key={addr.id} className="flex items-center gap-4 w-full p-5 border-t border-black/[0.04]">
-                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                     <MapPin size={18} />
                   </div>
                   <div className="flex flex-col items-start flex-1">
-                    <span className="text-base font-medium text-[#1A1A1A]">{addr.label}</span>
-                    <span className="text-xs text-[#1A1A1A]/50 text-left line-clamp-1">{addr.address}</span>
+                    <span className="text-base font-medium text-[#001F3F]">{addr.label}</span>
+                    <span className="text-xs text-[#001F3F]/50 text-left line-clamp-1">{addr.address}</span>
                   </div>
                 </div>
               ))}
@@ -3001,30 +2968,30 @@ function ProfileScreen({
 
           {/* Settings Card */}
           <div className="space-y-3">
-            <div className="text-[12px] text-[#1A1A1A] uppercase tracking-widest px-2 font-medium transition-all">Settings</div>
+            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Settings</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <div className="p-5 border-b border-black/[0.04]">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-base font-medium text-[#1A1A1A]">Black Cars Only</span>
-                  <button
+                  <span className="text-base font-medium text-[#001F3F]">Black Cars Only</span>
+                  <button 
                     onClick={() => setBlackCarsOnly(!blackCarsOnly)}
                     className={`w-14 h-7 rounded-full relative transition-all duration-300 border-2 ${blackCarsOnly ? 'bg-[#001F3F] border-[#001F3F]' : 'bg-white border-[#001F3F]/20'}`}
                   >
-                    <motion.div
+                    <motion.div 
                       animate={{ x: blackCarsOnly ? 28 : 2 }}
                       className={`absolute top-0.5 w-5 h-5 rounded-full shadow-md transition-all duration-300 ${blackCarsOnly ? 'bg-white' : 'bg-[#001F3F]/20'}`}
                     />
                   </button>
                 </div>
-                <p className="text-xs text-[#1A1A1A]/50 leading-relaxed">
+                <p className="text-xs text-[#001F3F]/50 leading-relaxed">
                   Use this option to book only black cars. You might have to wait longer.
                 </p>
               </div>
               <button onClick={() => setShowLanguageMenu(true)} className="flex justify-between items-center w-full p-5 hover:bg-black/[0.02] transition-colors">
-                <span className="text-base font-medium text-[#1A1A1A]">Language</span>
+                <span className="text-base font-medium text-[#001F3F]">Language</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#1A1A1A]/50">{language}</span>
-                  <ChevronRight size={16} className="text-[#1A1A1A]/30" />
+                  <span className="text-sm text-[#001F3F]/50">{language}</span>
+                  <ChevronRight size={16} className="text-[#001F3F]/30" />
                 </div>
               </button>
             </div>
@@ -3032,11 +2999,16 @@ function ProfileScreen({
 
           <div className="pt-4 space-y-4">
             <button onClick={onLegal} className="flex justify-between items-center w-full p-5 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] hover:bg-black/[0.02] transition-colors">
-              <span className="text-base font-medium text-[#1A1A1A]">Terms & Privacy</span>
-              <ChevronRight size={16} className="text-[#1A1A1A]/30" />
+              <span className="text-base font-medium text-[#001F3F]">Terms & Privacy</span>
+              <ChevronRight size={16} className="text-[#001F3F]/30" />
             </button>
-
-            <button onClick={onSignOut} className="w-full py-4 text-[#1A1A1A] text-sm font-medium uppercase tracking-widest text-center hover:bg-black\/10 rounded-2xl transition-colors">
+            
+            <button onClick={onApiHealth} className="flex justify-between items-center w-full p-5 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] hover:bg-black/[0.02] transition-colors">
+              <span className="text-base font-medium text-[#001F3F]">API Health Check</span>
+              <ChevronRight size={16} className="text-[#001F3F]/30" />
+            </button>
+            
+            <button onClick={onSignOut} className="w-full h-14 bg-transparent border border-[#001F3F]/20 text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-[#001F3F]/5 active:scale-[0.98] transition-all flex items-center justify-center">
               Sign Out
             </button>
           </div>
@@ -3047,14 +3019,14 @@ function ProfileScreen({
       <AnimatePresence>
         {showLanguageMenu && (
           <>
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowLanguageMenu(false)}
               className="absolute inset-0 bg-black/20 backdrop-blur-sm z-40"
             />
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -3063,12 +3035,12 @@ function ProfileScreen({
             >
               <div className="space-y-6">
                 <div className="flex justify-between items-center px-2">
-                  <h3 className="font-sans text-2xl font-light text-[#1A1A1A]">Select Language</h3>
-                  <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-white rounded-full shadow-sm text-[#1A1A1A]/80 hover:bg-white\/10 transition-colors">
+                  <h3 className="font-sans text-2xl font-light text-[#001F3F]">Select Language</h3>
+                  <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-white rounded-full shadow-sm text-[#001F3F]/80 hover:bg-white/10 transition-colors">
                     <X size={18} />
                   </button>
                 </div>
-
+                
                 <div className="space-y-3">
                   {languages.map((lang) => {
                     const isSelected = language === lang;
@@ -3079,15 +3051,16 @@ function ProfileScreen({
                           setLanguage(lang);
                           setTimeout(() => setShowLanguageMenu(false), 200);
                         }}
-                        className={`w-full py-4 px-4 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${isSelected
-                          ? 'bg-[#001F3F]/10 text-[#1A1A1A] border border-[#001F3F]/30 shadow-sm'
-                          : 'bg-white text-[#1A1A1A] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
-                          }`}
+                        className={`w-full py-4 px-6 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#001F3F]/10 text-[#001F3F] border border-[#001F3F]/30 shadow-sm'
+                            : 'bg-white text-[#001F3F] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+                        }`}
                       >
                         {lang}
                         {isSelected && (
                           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                            <CheckCircle2 size={20} className="text-[#1A1A1A]" />
+                            <CheckCircle2 size={20} className="text-[#001F3F]" />
                           </motion.div>
                         )}
                       </button>
@@ -3103,7 +3076,7 @@ function ProfileScreen({
   );
 }
 
-function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
+function RideHistoryScreen({ onBack }: { onBack: () => void }) {
   const [selectedRide, setSelectedRide] = useState<any>(null);
   const history = [
     { id: 1, date: 'Oct 24, 2024', destination: 'JFK Airport, Terminal 4', vehicle: 'First Class', price: '$145.00' },
@@ -3112,23 +3085,23 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
   ];
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-8">
+      <div className="flex-1 overflow-y-auto px-6 pb-12 space-y-8">
         <div className="text-center space-y-3 mt-2 mb-8">
-          <h2 className="font-sans text-3xl font-light text-[#1A1A1A]">Ride History</h2>
-          <p className="text-sm font-normal leading-relaxed text-[#1A1A1A]/80 px-4">
+          <h2 className="font-sans text-3xl font-light text-[#001F3F]">Ride History</h2>
+          <p className="text-sm font-normal leading-relaxed text-[#001F3F]/80 px-4">
             Review your past journeys and receipts
           </p>
         </div>
@@ -3137,33 +3110,33 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
           {history.map((ride) => (
             <div key={ride.id} className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] space-y-4 hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-shadow">
               <div className="flex justify-between items-start border-b border-black/[0.04] pb-4">
-                <div className="text-[11px] text-[#1A1A1A]/80 uppercase tracking-widest font-medium">{ride.date}</div>
-                <div className="text-sm font-medium text-[#1A1A1A]">{ride.price}</div>
+                <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest font-medium">{ride.date}</div>
+                <div className="text-sm font-medium text-[#001F3F]">{ride.price}</div>
               </div>
               <div className="flex gap-4 items-center">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                   <MapPin size={18} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-sans text-xl font-medium text-[#1A1A1A]">{ride.destination}</h3>
-                  <div className="text-xs text-[#1A1A1A]/80 mt-1">{ride.vehicle}</div>
+                  <h3 className="font-sans text-xl font-medium text-[#001F3F]">{ride.destination}</h3>
+                  <div className="text-xs text-[#001F3F]/80 mt-1">{ride.vehicle}</div>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
-
+    
       {/* Receipt Modal */}
       <AnimatePresence>
         {selectedRide && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
           >
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -3171,38 +3144,38 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#1A1A1A]">Receipt</h3>
-                <button onClick={() => setSelectedRide(null)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
+                <h3 className="text-2xl font-light text-[#001F3F]">Receipt</h3>
+                <button onClick={() => setSelectedRide(null)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
                   <X size={20} />
                 </button>
               </div>
-
+              
               <div className="p-6 bg-[#001F3F]/5 rounded-2xl space-y-6">
                 <div className="flex justify-between items-center border-b border-black/[0.04] pb-6">
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Date</p>
-                    <p className="text-base font-medium text-[#1A1A1A] mt-1">{selectedRide.date}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Date</p>
+                    <p className="text-base font-medium text-[#001F3F] mt-1">{selectedRide.date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Total</p>
-                    <p className="text-xl font-light text-[#1A1A1A] mt-1">{selectedRide.price}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Total</p>
+                    <p className="text-xl font-light text-[#001F3F] mt-1">{selectedRide.price}</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Destination</p>
-                    <p className="text-sm font-medium text-[#1A1A1A] mt-1">{selectedRide.destination}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Destination</p>
+                    <p className="text-sm font-medium text-[#001F3F] mt-1">{selectedRide.destination}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-[#1A1A1A]/80">Vehicle Class</p>
-                    <p className="text-sm font-medium text-[#1A1A1A] mt-1">{selectedRide.vehicle}</p>
+                    <p className="text-xs uppercase tracking-widest text-[#001F3F]/80">Vehicle Class</p>
+                    <p className="text-sm font-medium text-[#001F3F] mt-1">{selectedRide.vehicle}</p>
                   </div>
                 </div>
               </div>
 
               <div className="flex gap-4">
-                <button className="flex-1 py-4 border border-[#001F3F]/20 text-[#1A1A1A] text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
+                <button className="flex-1 py-4 border border-[#001F3F]/20 text-[#001F3F] text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
                   Download PDF
                 </button>
                 <button className="flex-1 py-4 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
@@ -3213,12 +3186,12 @@ function RideHistoryScreen({ onBack }: { onBack: () => void, key?: string }) {
           </motion.div>
         )}
       </AnimatePresence>
-
+  
     </motion.div>
   );
 }
 
-function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) {
+function PaymentMethodsScreen({ onBack }: { onBack: () => void }) {
   const [methods, setMethods] = useState([
     { id: '1', type: 'card', brand: 'VISA', last4: '4242', active: true },
     { id: '2', type: 'card', brand: 'AMEX', last4: '1005', active: false },
@@ -3257,30 +3230,30 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
   };
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="ml-4 font-sans text-xl font-medium uppercase tracking-widest text-[#1A1A1A]">PAYMENT</h2>
+        <h2 className="ml-4 font-sans text-xl font-medium uppercase tracking-widest text-[#001F3F]">PAYMENT</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8">
+      <div className="flex-1 overflow-y-auto px-6 pb-12">
         <div className="space-y-8">
           <div className="space-y-4">
-            <div className="text-[10px] text-[#1A1A1A]/80 uppercase tracking-[0.2em] font-medium px-1">Saved Cards</div>
-
+            <div className="text-[10px] text-[#001F3F]/60 uppercase tracking-[0.2em] font-medium px-1">Saved Cards</div>
+            
             {/* Realistic Card UI */}
             <div className="relative w-full aspect-[1.586] rounded-2xl overflow-hidden shadow-2xl transition-transform hover:scale-[1.02] duration-300">
               {/* Card Background */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F] via-[#003366] to-[#001F3F]"></div>
-
+              
               {/* Decorative Circles */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl"></div>
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/20 rounded-full translate-y-1/3 -translate-x-1/3 blur-xl"></div>
@@ -3289,41 +3262,41 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
               <div className="relative h-full p-6 flex flex-col justify-between text-white">
                 <div className="flex justify-between items-start">
                   <div className="w-12 h-9 bg-gradient-to-br from-yellow-200 to-yellow-500 rounded-md opacity-90 flex items-center justify-center overflow-hidden relative">
-                    <div className="absolute inset-0 border border-black/10 rounded-md"></div>
-                    <div className="w-full h-[1px] bg-black/10 absolute top-1/3"></div>
-                    <div className="w-full h-[1px] bg-black/10 absolute bottom-1/3"></div>
-                    <div className="h-full w-[1px] bg-black/10 absolute left-1/3"></div>
-                    <div className="h-full w-[1px] bg-black/10 absolute right-1/3"></div>
+                     <div className="absolute inset-0 border border-black/10 rounded-md"></div>
+                     <div className="w-full h-[1px] bg-black/10 absolute top-1/3"></div>
+                     <div className="w-full h-[1px] bg-black/10 absolute bottom-1/3"></div>
+                     <div className="h-full w-[1px] bg-black/10 absolute left-1/3"></div>
+                     <div className="h-full w-[1px] bg-black/10 absolute right-1/3"></div>
                   </div>
-                  <span className="font-mono text-xs opacity-80 tracking-widest">PLATINUM</span>
+                  <span className="font-mono text-xs opacity-60 tracking-widest">PLATINUM</span>
                 </div>
 
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
                     <div className="flex gap-1">
-                      {[1, 2, 3, 4].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80" />)}
+                      {[1,2,3,4].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80" />)}
                     </div>
                     <div className="flex gap-1">
-                      {[1, 2, 3, 4].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80" />)}
+                      {[1,2,3,4].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80" />)}
                     </div>
                     <div className="flex gap-1">
-                      {[1, 2, 3, 4].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80" />)}
+                      {[1,2,3,4].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80" />)}
                     </div>
                     <span className="font-mono text-lg tracking-[0.2em]">4242</span>
                   </div>
 
                   <div className="flex justify-between items-end">
                     <div className="space-y-1">
-                      <span className="text-[8px] uppercase tracking-widest opacity-80">Card Holder</span>
+                      <span className="text-[8px] uppercase tracking-widest opacity-60">Card Holder</span>
                       <div className="text-xs font-medium uppercase tracking-widest">Angel Boyer</div>
                     </div>
                     <div className="space-y-1 text-right">
-                      <span className="text-[8px] uppercase tracking-widest opacity-80">Expires</span>
+                      <span className="text-[8px] uppercase tracking-widest opacity-60">Expires</span>
                       <div className="text-xs font-medium tracking-widest">12/28</div>
                     </div>
                     <div className="w-10 h-6 flex items-center justify-center">
-                      <div className="w-6 h-6 rounded-full bg-red-500/80 -mr-2"></div>
-                      <div className="w-6 h-6 rounded-full bg-yellow-500/80"></div>
+                       <div className="w-6 h-6 rounded-full bg-red-500/80 -mr-2"></div>
+                       <div className="w-6 h-6 rounded-full bg-yellow-500/80"></div>
                     </div>
                   </div>
                 </div>
@@ -3332,18 +3305,18 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
 
             <div className="space-y-3">
               {methods.map((method) => (
-                <button
+                <button 
                   key={method.id}
                   onClick={() => toggleActive(method.id)}
                   className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all ${method.active ? 'bg-[#001F3F]/5 border-[#001F3F]/20 shadow-sm' : 'bg-white border-black/[0.03] hover:bg-black/[0.01]'}`}
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-white border border-black/[0.03] flex items-center justify-center shadow-sm">
-                      {method.type === 'card' ? <CreditCard size={18} className="text-[#1A1A1A]" /> : <Smartphone size={18} className="text-[#1A1A1A]" />}
+                      {method.type === 'card' ? <CreditCard size={18} className="text-[#001F3F]" /> : <Smartphone size={18} className="text-[#001F3F]" />}
                     </div>
                     <div className="text-left">
-                      <div className="text-sm font-medium text-[#1A1A1A]">{method.brand} •••• {method.last4}</div>
-                      <div className="text-xs text-[#1A1A1A]/80">{method.active ? 'Primary Payment Method' : 'Secondary'}</div>
+                      <div className="text-sm font-medium text-[#001F3F]">{method.brand} •••• {method.last4}</div>
+                      <div className="text-xs text-[#001F3F]/60">{method.active ? 'Primary Payment Method' : 'Secondary'}</div>
                     </div>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${method.active ? 'border-[#001F3F] bg-[#001F3F]' : 'border-black/10'}`}>
@@ -3355,44 +3328,39 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
           </div>
 
           {!showAddMenu ? (
-            <button
+            <button 
               onClick={() => setShowAddMenu(true)}
-              className="w-full py-5 bg-white text-[#1A1A1A] font-medium rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-black/[0.04] flex items-center justify-between px-4 hover:bg-black/[0.02] transition-colors group"
+              className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl shadow-sm border border-[#001F3F]/10 flex items-center justify-center gap-3 hover:bg-[#001F3F]/5 active:scale-[0.98] transition-all"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-[#001F3F]/10 flex items-center justify-center text-[#1A1A1A] group-hover:bg-[#001F3F] group-hover:text-white transition-colors">
-                  <Plus size={18} />
-                </div>
-                <span className="text-sm font-medium uppercase tracking-widest">Add Payment Method</span>
-              </div>
-              <ChevronRight size={18} className="text-[#1A1A1A]/70 group-hover:text-[#1A1A1A] transition-colors" />
+              <Plus size={18} />
+              Add Payment Method
             </button>
           ) : (
             <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4">
-              <div className="text-[10px] text-[#1A1A1A]/80 uppercase tracking-[0.2em] font-medium px-1">Add New</div>
+              <div className="text-[10px] text-[#001F3F]/60 uppercase tracking-[0.2em] font-medium px-1">Add New</div>
               <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
-                <button
+                <button 
                   onClick={() => handleAddMethod('card')}
                   className="w-full p-5 border-b border-black/[0.04] flex items-center gap-4 hover:bg-black/[0.02] transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A] border border-black/[0.05]">
+                  <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F] border border-black/[0.05]">
                     <CreditCard size={18} />
                   </div>
-                  <span className="text-sm font-medium text-[#1A1A1A] uppercase tracking-wider">Credit or Debit Card</span>
+                  <span className="text-sm font-medium text-[#001F3F] uppercase tracking-wider">Credit or Debit Card</span>
                 </button>
-                <button
+                <button 
                   onClick={() => handleAddMethod('paypal')}
                   className="w-full p-5 flex items-center gap-4 hover:bg-black/[0.02] transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#1A1A1A] font-medium border border-black/[0.05]">
+                  <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] font-bold border border-black/[0.05]">
                     P
                   </div>
-                  <span className="text-sm font-medium text-[#1A1A1A] uppercase tracking-wider">PayPal</span>
+                  <span className="text-sm font-medium text-[#001F3F] uppercase tracking-wider">PayPal</span>
                 </button>
               </div>
-              <button
+              <button 
                 onClick={() => setShowAddMenu(false)}
-                className="w-full py-4 text-xs font-medium text-[#1A1A1A]/80 uppercase tracking-widest hover:text-[#1A1A1A] transition-colors"
+                className="w-full py-4 text-xs font-medium text-[#001F3F]/60 uppercase tracking-widest hover:text-[#001F3F] transition-colors"
               >
                 Cancel
               </button>
@@ -3400,17 +3368,17 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
           )}
         </div>
       </div>
-
+    
       {/* Add Card Modal */}
       <AnimatePresence>
         {showCardModal && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
           >
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -3418,47 +3386,47 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-xl font-light uppercase tracking-widest text-[#1A1A1A]">Add Card</h3>
-                <button onClick={() => setShowCardModal(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
+                <h3 className="text-xl font-light uppercase tracking-widest text-[#001F3F]">Add Card</h3>
+                <button onClick={() => setShowCardModal(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/80 font-medium">Card Number</label>
-                  <input
-                    type="text"
+                  <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/60 font-medium">Card Number</label>
+                  <input 
+                    type="text" 
                     placeholder="0000 0000 0000 0000"
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none tracking-widest placeholder:text-[#1A1A1A]/20"
+                    className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none tracking-widest placeholder:text-[#001F3F]/20" 
                   />
                 </div>
                 <div className="flex gap-4">
                   <div className="space-y-2 flex-1">
-                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/80 font-medium">Expiry</label>
-                    <input
-                      type="text"
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/60 font-medium">Expiry</label>
+                    <input 
+                      type="text" 
                       placeholder="MM/YY"
                       value={expiry}
                       onChange={(e) => setExpiry(e.target.value)}
-                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none tracking-widest placeholder:text-[#1A1A1A]/20"
+                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none tracking-widest placeholder:text-[#001F3F]/20" 
                     />
                   </div>
                   <div className="space-y-2 flex-1">
-                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/80 font-medium">CVV</label>
-                    <input
-                      type="text"
+                    <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/60 font-medium">CVV</label>
+                    <input 
+                      type="text" 
                       placeholder="123"
                       value={cvv}
                       onChange={(e) => setCvv(e.target.value)}
-                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#1A1A1A] outline-none tracking-widest placeholder:text-[#1A1A1A]/20"
+                      className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none tracking-widest placeholder:text-[#001F3F]/20" 
                     />
                   </div>
                 </div>
               </div>
-              <button
-                onClick={saveCard}
+              <button 
+                onClick={saveCard} 
                 disabled={!cardNumber || !expiry || !cvv}
                 className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all disabled:opacity-50 shadow-lg"
               >
@@ -3468,38 +3436,38 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void, key?: string }) 
           </motion.div>
         )}
       </AnimatePresence>
-
+  
     </motion.div>
   );
 }
 
-function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
+function GiftRideScreen({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="font-sans text-xl font-medium uppercase tracking-widest text-[#1A1A1A]">GIFT A JOURNEY</h2>
+        <h2 className="font-sans text-xl font-medium uppercase tracking-widest text-[#001F3F]">GIFT A JOURNEY</h2>
       </div>
 
-      <div className="flex-1 p-8 space-y-8 overflow-y-auto">
+      <div className="flex-1 p-8 space-y-8 overflow-y-auto pb-24">
         <div className="space-y-6 text-center mt-4">
           <div className="w-24 h-24 bg-[#001F3F] rounded-full flex items-center justify-center mx-auto shadow-xl shadow-[#001F3F]/20">
             <Gift size={36} className="text-white" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-2xl font-medium text-[#1A1A1A]">Surprise someone special</h3>
-            <p className="text-sm text-[#1A1A1A]/80 font-normal leading-relaxed max-w-[260px] mx-auto">
+            <h3 className="text-2xl font-bold text-[#001F3F]">Surprise someone special</h3>
+            <p className="text-sm text-[#001F3F]/60 font-normal leading-relaxed max-w-[260px] mx-auto">
               Send an elite chauffeur to pick up your guest.
             </p>
           </div>
@@ -3507,59 +3475,62 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
 
         <div className="space-y-6 mt-8">
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Recipient Name</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold ml-1">Recipient Name</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1A1A1A]/30">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/30">
                 <User size={20} />
               </div>
-              <input
-                type="text"
+              <input 
+                type="text" 
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Who are we picking up?"
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#1A1A1A] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#1A1A1A]/30"
+                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Phone Number</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold ml-1">Phone Number</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1A1A1A]/30">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#001F3F]/30">
                 <Phone size={20} />
               </div>
-              <input
-                type="tel"
+              <input 
+                type="tel" 
                 value={phone}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, '');
                   setPhone(val);
                 }}
                 placeholder="000 000 0000"
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#1A1A1A] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#1A1A1A]/30"
+                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A]/70 font-medium ml-1">Personal Message</label>
+            <label className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold ml-1">Personal Message</label>
             <div className="relative">
-              <div className="absolute left-4 top-4 text-[#1A1A1A]/30">
+              <div className="absolute left-4 top-4 text-[#001F3F]/30">
                 <MessageCircle size={20} />
               </div>
-              <textarea
+              <textarea 
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Add a welcoming note..."
                 rows={4}
-                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#1A1A1A] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#1A1A1A]/30 resize-none"
+                className="w-full bg-[#F5F7FA] rounded-xl py-4 pl-12 pr-4 text-base font-medium text-[#001F3F] outline-none focus:ring-1 focus:ring-[#001F3F]/20 transition-all placeholder:text-[#001F3F]/30 resize-none"
               />
             </div>
           </div>
         </div>
 
-        <div className="pt-4">
-          <button className="w-full py-4 bg-[#D1D5DB] text-white font-medium uppercase tracking-widest hover:bg-[#001F3F] transition-colors rounded-full shadow-sm text-sm">
+        <div className="pt-4 pb-12">
+          <button 
+            disabled={!name || !phone}
+            className="w-full h-14 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-30 disabled:bg-[#D1D5DB] hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all flex items-center justify-center shadow-lg shadow-[#001F3F]/10"
+          >
             Continue to Booking
           </button>
         </div>
@@ -3568,93 +3539,93 @@ function GiftRideScreen({ onBack }: { onBack: () => void, key?: string }) {
   );
 }
 
-function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
+function SettingsScreen({ onBack }: { onBack: () => void }) {
   const [language, setLanguage] = useState('English');
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [location, setLocation] = useState(true);
   const languages = ['English', 'Spanish', 'French', 'German', 'Arabic'];
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4 border-b border-black/[0.04]">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
         <h2 className="font-sans text-xl font-light uppercase tracking-widest">Settings</h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8 space-y-8">
+      <div className="flex-1 overflow-y-auto p-8 space-y-12">
         <div className="space-y-6">
           <div className="space-y-2">
-            <div className="text-[11px] text-[#1A1A1A]/80 uppercase tracking-widest px-2">General</div>
+            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">General</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
               <div className="flex justify-between items-center p-5 border-b border-black/[0.04]">
-                <span className="text-base font-medium text-[#1A1A1A]">Notifications</span>
-                <button
+                <span className="text-base font-medium text-[#001F3F]">Notifications</span>
+                <button 
                   onClick={() => setNotifications(!notifications)}
                   className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${notifications ? 'bg-[#001F3F]' : 'bg-gray-200'}`}
                 >
-                  <motion.div
+                  <motion.div 
                     animate={{ x: notifications ? 24 : 4 }}
-                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm" 
                   />
                 </button>
               </div>
               <div className="flex justify-between items-center p-5 border-b border-black/[0.04]">
-                <span className="text-base font-medium text-[#1A1A1A]">Location Services</span>
-                <button
+                <span className="text-base font-medium text-[#001F3F]">Location Services</span>
+                <button 
                   onClick={() => setLocation(!location)}
                   className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${location ? 'bg-[#001F3F]' : 'bg-gray-200'}`}
                 >
-                  <motion.div
+                  <motion.div 
                     animate={{ x: location ? 24 : 4 }}
-                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm" 
                   />
                 </button>
               </div>
-              <button
+              <button 
                 onClick={() => setShowLanguageMenu(true)}
                 className="w-full flex justify-between items-center p-5 hover:bg-black/[0.01] transition-colors"
               >
-                <span className="text-base font-medium text-[#1A1A1A]">Language</span>
+                <span className="text-base font-medium text-[#001F3F]">Language</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#1A1A1A]/80">{language}</span>
-                  <ChevronRight size={18} className="text-[#1A1A1A]/70" />
+                  <span className="text-sm text-[#001F3F]/60">{language}</span>
+                  <ChevronRight size={18} className="text-[#001F3F]/40" />
                 </div>
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <div className="text-[11px] text-[#1A1A1A]/80 uppercase tracking-widest px-2">Support</div>
+            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Support</div>
             <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
-              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#1A1A1A]">Help Center</span></button>
-              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#1A1A1A]">Terms of Service</span></button>
-              <button className="w-full text-left p-5 hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#1A1A1A]">Privacy Policy</span></button>
+              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Help Center</span></button>
+              <button className="w-full text-left p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Terms of Service</span></button>
+              <button className="w-full text-left p-5 hover:bg-black/[0.02] transition-colors"><span className="text-base font-medium text-[#001F3F]">Privacy Policy</span></button>
             </div>
           </div>
         </div>
 
         <div className="text-center">
-          <p className="text-[10px] text-[#1A1A1A]/80 uppercase tracking-widest">URBONT Chauffeur v1.0.4</p>
+          <p className="text-[10px] text-[#001F3F]/80 uppercase tracking-widest">URBONT Chauffeur v1.0.4</p>
         </div>
       </div>
 
       {/* Language Menu */}
       <AnimatePresence>
         {showLanguageMenu && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex flex-col justify-end"
           >
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -3662,17 +3633,17 @@ function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
               className="bg-white rounded-t-[32px] p-6 pb-10 space-y-6"
             >
               <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-light text-[#1A1A1A]">Select Language</h3>
-                <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A]">
+                <h3 className="text-2xl font-light text-[#001F3F]">Select Language</h3>
+                <button onClick={() => setShowLanguageMenu(false)} className="p-2 bg-black/5 rounded-full text-[#001F3F]">
                   <X size={20} />
                 </button>
               </div>
               <div className="space-y-2">
                 {languages.map((lang) => (
-                  <button
+                  <button 
                     key={lang}
                     onClick={() => { setLanguage(lang); setShowLanguageMenu(false); }}
-                    className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all ${language === lang ? 'bg-[#001F3F] text-white shadow-lg' : 'bg-black/5 text-[#1A1A1A] hover:bg-black/10'}`}
+                    className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all ${language === lang ? 'bg-[#001F3F] text-white shadow-lg' : 'bg-black/5 text-[#001F3F] hover:bg-black/10'}`}
                   >
                     <span className="text-sm font-medium">{lang}</span>
                     {language === lang && <Check size={18} />}
@@ -3687,7 +3658,7 @@ function SettingsScreen({ onBack }: { onBack: () => void, key?: string }) {
   );
 }
 
-function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
+function MyPreferencesScreen({ onBack }: { onBack: () => void }) {
   const [selectedValues, setSelectedValues] = useState({
     door: 'Pickup Only',
     temp: 'Comfortable',
@@ -3715,49 +3686,50 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
   ];
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col relative overflow-hidden"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col relative overflow-hidden"
     >
       <div className="flex items-center p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
       </div>
 
-      <div className="flex-1 px-4 space-y-8 overflow-y-auto pb-8">
+      <div className="flex-1 px-6 space-y-8 overflow-y-auto pb-12">
         <div className="text-center space-y-3 mt-4">
-          <h2 className="font-sans text-3xl font-light text-[#1A1A1A]">My Preferences</h2>
-          <p className="text-sm font-normal leading-relaxed text-[#1A1A1A]/80 px-4">
+          <h2 className="font-sans text-3xl font-light text-[#001F3F]">My Preferences</h2>
+          <p className="text-sm font-normal leading-relaxed text-[#001F3F]/80 px-4">
             Save your preferences and we will apply these choices to every journey for your comfort
           </p>
         </div>
 
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
           {preferences.map((pref, index) => (
-            <button
+            <button 
               key={pref.id}
               onClick={() => setEditingPref(pref.id)}
-              className={`w-full flex items-center justify-between p-5 hover:bg-black/[0.02] transition-colors ${index !== preferences.length - 1 ? 'border-b border-black/[0.04]' : ''
-                }`}
+              className={`w-full flex items-center justify-between p-5 hover:bg-black/[0.02] transition-colors ${
+                index !== preferences.length - 1 ? 'border-b border-black/[0.04]' : ''
+              }`}
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+                <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                   {pref.icon}
                 </div>
-                <span className="text-base font-medium text-[#1A1A1A]">{pref.label}</span>
+                <span className="text-base font-medium text-[#001F3F]">{pref.label}</span>
               </div>
-              <div className="flex items-center gap-3 text-[#1A1A1A]/50">
+              <div className="flex items-center gap-3 text-[#001F3F]/50">
                 <span className="text-sm font-normal">{pref.value}</span>
-                <ChevronRight size={16} className="opacity-70" />
+                <ChevronRight size={16} className="opacity-40" />
               </div>
             </button>
           ))}
         </div>
 
-        <div className="pt-6 flex items-center justify-center gap-2 text-[#1A1A1A]/80">
+        <div className="pt-6 flex items-center justify-center gap-2 text-[#001F3F]/80">
           <Info size={14} />
           <p className="text-[11px] font-light">Changes will be applied to your next journeys</p>
         </div>
@@ -3767,14 +3739,14 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
       <AnimatePresence>
         {editingPref && (
           <>
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setEditingPref(null)}
               className="absolute inset-0 bg-black/20 backdrop-blur-sm z-40"
             />
-            <motion.div
+            <motion.div 
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -3783,14 +3755,14 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
             >
               <div className="space-y-6">
                 <div className="flex justify-between items-center px-2">
-                  <h3 className="font-sans text-2xl font-light text-[#1A1A1A]">
+                  <h3 className="font-sans text-2xl font-light text-[#001F3F]">
                     {preferences.find(p => p.id === editingPref)?.label}
                   </h3>
-                  <button onClick={() => setEditingPref(null)} className="p-2 bg-black/5 rounded-full text-[#1A1A1A] hover:bg-black/10 transition-colors">
+                  <button onClick={() => setEditingPref(null)} className="p-2 bg-black/5 rounded-full text-[#001F3F] hover:bg-black/10 transition-colors">
                     <X size={18} />
                   </button>
                 </div>
-
+                
                 <div className="space-y-3">
                   {options[editingPref].map((option) => {
                     const isSelected = selectedValues[editingPref as keyof typeof selectedValues] === option;
@@ -3801,15 +3773,16 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
                           setSelectedValues(prev => ({ ...prev, [editingPref]: option }));
                           setTimeout(() => setEditingPref(null), 200); // Small delay for visual feedback
                         }}
-                        className={`w-full py-4 px-4 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${isSelected
-                          ? 'bg-[#001F3F]/10 text-[#1A1A1A] border border-[#001F3F]/30 shadow-sm'
-                          : 'bg-white text-[#1A1A1A] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
-                          }`}
+                        className={`w-full py-4 px-6 text-left text-base font-medium rounded-2xl transition-all duration-300 flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#001F3F]/10 text-[#001F3F] border border-[#001F3F]/30 shadow-sm'
+                            : 'bg-white text-[#001F3F] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+                        }`}
                       >
                         {option}
                         {isSelected && (
                           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
-                            <CheckCircle2 size={20} className="text-[#1A1A1A]" />
+                            <CheckCircle2 size={20} className="text-[#001F3F]" />
                           </motion.div>
                         )}
                       </button>
@@ -3825,42 +3798,42 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void, key?: string }) {
   );
 }
 
-function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string }) {
+function CustomerServiceScreen({ onBack }: { onBack: () => void }) {
   const [showChat, setShowChat] = useState(false);
   const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState<{ sender: 'user' | 'agent', text: string }[]>([{ sender: 'agent', text: 'Hello! How can I assist you today?' }]);
+  const [chatHistory, setChatHistory] = useState<{sender: 'user' | 'agent', text: string}[]>([{sender: 'agent', text: 'Hello! How can I assist you today?'}]);
 
   const sendMessage = () => {
     if (message.trim()) {
-      setChatHistory([...chatHistory, { sender: 'user', text: message }]);
+      setChatHistory([...chatHistory, {sender: 'user', text: message}]);
       setMessage('');
       setTimeout(() => {
-        setChatHistory(prev => [...prev, { sender: 'agent', text: 'Thank you for reaching out. An agent will be with you shortly.' }]);
+        setChatHistory(prev => [...prev, {sender: 'agent', text: 'Thank you for reaching out. An agent will be with you shortly.'}]);
       }, 1000);
     }
   };
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center justify-between p-6">
-        <h2 className="font-sans text-2xl font-light text-[#1A1A1A]">Help Center</h2>
-        <button onClick={onBack} className="p-2 bg-white rounded-full shadow-sm text-[#1A1A1A]/80 hover:bg-white\/10 transition-colors">
+        <h2 className="font-sans text-2xl font-light text-[#001F3F]">Help Center</h2>
+        <button onClick={onBack} className="p-2 bg-white rounded-full shadow-sm text-[#001F3F]/80 hover:bg-white/10 transition-colors">
           <X size={18} />
         </button>
       </div>
 
-      <div className="flex-1 px-4 pt-4 space-y-8">
+      <div className="flex-1 px-6 pt-4 space-y-8">
         <div className="text-center space-y-3 mb-8">
-          <div className="inline-flex p-4 bg-[#001F3F]/10 rounded-full text-[#1A1A1A] mb-2 shadow-sm border border-[#001F3F]/20">
+          <div className="inline-flex p-4 bg-[#001F3F]/10 rounded-full text-[#001F3F] mb-2 shadow-sm border border-[#001F3F]/20">
             <MessageCircle size={32} />
           </div>
-          <p className="text-sm font-normal text-[#1A1A1A]/80 leading-relaxed px-4">
+          <p className="text-sm font-normal text-[#001F3F]/80 leading-relaxed px-4">
             How can we assist you today? Our concierge team is available 24/7.
           </p>
         </div>
@@ -3868,56 +3841,56 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
         <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
           <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors group">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                 <MessageCircle size={18} />
               </div>
-              <span className="text-base font-medium text-[#1A1A1A]">Open Chat</span>
+              <span className="text-base font-medium text-[#001F3F]">Open Chat</span>
             </div>
-            <ChevronRight size={16} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
+            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
           </button>
-
+          
           <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors group">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                 <Phone size={18} />
               </div>
-              <span className="text-base font-medium text-[#1A1A1A]">Call Us</span>
+              <span className="text-base font-medium text-[#001F3F]">Call Us</span>
             </div>
-            <ChevronRight size={16} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
+            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
           </button>
-
+          
           <button onClick={() => setShowChat(true)} className="flex items-center justify-between w-full p-6 hover:bg-black/[0.02] transition-colors group">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A]">
+              <div className="w-10 h-10 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F]">
                 <Info size={18} />
               </div>
-              <span className="text-base font-medium text-[#1A1A1A]">Questions & Answers</span>
+              <span className="text-base font-medium text-[#001F3F]">Questions & Answers</span>
             </div>
-            <ChevronRight size={16} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
+            <ChevronRight size={16} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
           </button>
         </div>
       </div>
-
+    
       {/* Chat Modal */}
       <AnimatePresence>
         {showChat && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 bg-white z-50 flex flex-col"
           >
             <div className="flex items-center p-6 gap-4 border-b border-black/[0.04] bg-white">
-              <button onClick={() => setShowChat(false)} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+              <button onClick={() => setShowChat(false)} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
                 <ArrowLeft size={24} />
               </button>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#001F3F]/10 flex items-center justify-center text-[#1A1A1A]">
+                <div className="w-10 h-10 rounded-full bg-[#001F3F]/10 flex items-center justify-center text-[#001F3F]">
                   <MessageCircle size={18} />
                 </div>
                 <div>
-                  <h3 className="font-medium text-[#1A1A1A]">URBONT Concierge</h3>
-                  <p className="text-xs text-[#1A1A1A]/80">Typically replies in minutes</p>
+                  <h3 className="font-medium text-[#001F3F]">URBONT Concierge</h3>
+                  <p className="text-xs text-[#001F3F]/80">Typically replies in minutes</p>
                 </div>
               </div>
             </div>
@@ -3925,7 +3898,7 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-[#001F3F]/[0.02]">
               {chatHistory.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-2xl p-4 ${msg.sender === 'user' ? 'bg-[#001F3F] text-white rounded-tr-sm' : 'bg-white text-[#1A1A1A] border border-black/[0.04] shadow-sm rounded-tl-sm'}`}>
+                  <div className={`max-w-[80%] rounded-2xl p-4 ${msg.sender === 'user' ? 'bg-[#001F3F] text-white rounded-tr-sm' : 'bg-white text-[#001F3F] border border-black/[0.04] shadow-sm rounded-tl-sm'}`}>
                     <p className="text-sm leading-relaxed">{msg.text}</p>
                   </div>
                 </div>
@@ -3934,15 +3907,15 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
 
             <div className="p-6 bg-white border-t border-black/[0.04]">
               <div className="flex items-center gap-3">
-                <input
-                  type="text"
+                <input 
+                  type="text" 
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="Type a message..."
-                  className="flex-1 p-4 bg-[#001F3F]/5 rounded-full text-[#1A1A1A] outline-none text-sm"
+                  className="flex-1 p-4 bg-[#001F3F]/5 rounded-full text-[#001F3F] outline-none text-sm"
                 />
-                <button
+                <button 
                   onClick={sendMessage}
                   disabled={!message.trim()}
                   className="w-12 h-12 rounded-full bg-[#001F3F] text-white flex items-center justify-center disabled:opacity-50 transition-opacity"
@@ -3954,58 +3927,58 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void, key?: string })
           </motion.div>
         )}
       </AnimatePresence>
-
+  
     </motion.div>
   );
 }
 
-function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSelect: (code: string) => void, key?: string }) {
+function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSelect: (code: string) => void }) {
   const [search, setSearch] = useState('');
-
-  const filteredCommon = COMMON_COUNTRIES.filter(c =>
+  
+  const filteredCommon = COMMON_COUNTRIES.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) || c.code.includes(search)
   );
-
-  const filteredAll = COUNTRIES.filter(c =>
+  
+  const filteredAll = COUNTRIES.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) || c.code.includes(search)
   );
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-white text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-white text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4 border-b border-[#001F3F]/5">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
-        <input
-          type="text"
-          placeholder="Search country"
+        <input 
+          type="text" 
+          placeholder="Search country" 
           autoFocus
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-transparent outline-none text-lg placeholder:text-[#1A1A1A]/20 text-[#1A1A1A]"
+          className="flex-1 bg-transparent outline-none text-lg placeholder:text-[#001F3F]/20 text-[#001F3F]"
         />
       </div>
 
       <div className="flex-1 overflow-y-auto">
         {filteredCommon.length > 0 && (
           <div className="mb-8">
-            <div className="px-4 py-4 text-[10px] text-[#1A1A1A]/70 uppercase tracking-[0.2em] bg-[#F5F7FA] font-medium">
+            <div className="px-8 py-4 text-[10px] text-[#001F3F]/40 uppercase tracking-[0.2em] bg-[#F5F7FA] font-bold">
               Common Countries
             </div>
             <div className="flex flex-col">
               {filteredCommon.map((country) => (
-                <button
+                <button 
                   key={country.name}
                   onClick={() => onSelect(country.code)}
-                  className="flex items-center justify-between w-full py-5 px-4 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
+                  className="flex items-center justify-between w-full py-5 px-8 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
                 >
                   <span className="text-base font-medium">{country.name}</span>
-                  <span className="text-base font-medium text-[#1A1A1A]/70">{country.code}</span>
+                  <span className="text-base font-medium text-[#001F3F]/40">{country.code}</span>
                 </button>
               ))}
             </div>
@@ -4013,18 +3986,18 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
         )}
 
         <div>
-          <div className="px-4 py-4 text-[10px] text-[#1A1A1A]/70 uppercase tracking-[0.2em] bg-[#F5F7FA] font-medium">
+          <div className="px-8 py-4 text-[10px] text-[#001F3F]/40 uppercase tracking-[0.2em] bg-[#F5F7FA] font-bold">
             All Countries
           </div>
           <div className="flex flex-col">
             {filteredAll.map((country) => (
-              <button
+              <button 
                 key={country.name}
                 onClick={() => onSelect(country.code)}
-                className="flex items-center justify-between w-full py-5 px-4 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
+                className="flex items-center justify-between w-full py-5 px-8 border-b border-[#001F3F]/5 hover:bg-[#001F3F]/[0.02] transition-colors"
               >
                 <span className="text-base font-medium">{country.name}</span>
-                <span className="text-base font-medium text-[#1A1A1A]/70">{country.code}</span>
+                <span className="text-base font-medium text-[#001F3F]/40">{country.code}</span>
               </button>
             ))}
           </div>
@@ -4034,32 +4007,35 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
   );
 }
 
-function ServicesScreen({ onBack }: { onBack: () => void, key?: string }) {
+function ServicesScreen({ onBack }: { onBack: () => void }) {
   const services = [
-    { title: 'Airport Transfers', description: 'Reliable pickup and drop-off at all major airports.', icon: <Plane size={24} /> },
-    { title: 'Hourly Booking', description: 'A chauffeur at your disposal for as long as you need.', icon: <Clock size={24} /> },
-    { title: 'City to City', description: 'Seamless long-distance travel between cities.', icon: <Navigation size={24} /> },
-    { title: 'Events & Weddings', description: 'Arrive in style for your most important moments.', icon: <Star size={24} /> },
+    { title: 'Private Aviation & Airport Concierge', description: 'Seamless tarmac transfers and luxury airport coordination.', icon: <Plane size={24} /> },
+    { title: 'Executive Hourly Charter', description: 'On-demand chauffeur service for flexible business schedules.', icon: <Clock size={24} /> },
+    { title: 'Intercity Business Travel', description: 'First-class comfort for long-distance corporate journeys.', icon: <Navigation size={24} /> },
+    { title: 'Gala & Special Events', description: 'Red carpet arrivals and coordinated event transportation.', icon: <Star size={24} /> },
+    { title: 'Luxury Hotel Partnerships', description: 'Exclusive transport solutions for five-star hospitality guests.', icon: <Building2 size={24} /> },
+    { title: 'Diplomatic & Public Figure Services', description: 'Discreet, secure, and professional transport for high-profile individuals.', icon: <ShieldCheck size={24} /> },
+    { title: 'Residential & Estate Management', description: 'Dedicated chauffeur services for private residences and estates.', icon: <Home size={24} /> },
   ];
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center p-6 gap-4">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-8">
+      <div className="flex-1 overflow-y-auto px-6 pb-12 space-y-8">
         <div className="text-center space-y-3 mt-2 mb-8">
-          <h2 className="font-sans text-3xl font-light text-[#1A1A1A]">Signature</h2>
-          <p className="text-sm font-normal leading-relaxed text-[#1A1A1A]/80 px-4">
+          <h2 className="font-sans text-3xl font-light text-[#001F3F]">Signature Services</h2>
+          <p className="text-sm font-normal leading-relaxed text-[#001F3F]/80 px-4">
             Discover the URBONT standard of travel
           </p>
         </div>
@@ -4068,14 +4044,14 @@ function ServicesScreen({ onBack }: { onBack: () => void, key?: string }) {
           {services.map((service, i) => (
             <div key={i} className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] space-y-4 group cursor-pointer hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-shadow">
               <div className="flex items-center justify-between">
-                <div className="w-12 h-12 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#1A1A1A] group-hover:bg-[#001F3F] group-hover:text-white transition-colors duration-300">
+                <div className="w-12 h-12 rounded-full bg-[#FFFFFF] flex items-center justify-center text-[#001F3F] group-hover:bg-[#001F3F] group-hover:text-white transition-colors duration-300">
                   {service.icon}
                 </div>
-                <ChevronRight size={18} className="text-[#1A1A1A]/30 group-hover:text-[#1A1A1A] transition-colors" />
+                <ChevronRight size={18} className="text-[#001F3F]/30 group-hover:text-[#001F3F] transition-colors" />
               </div>
               <div className="space-y-2">
-                <h3 className="font-sans text-xl font-medium text-[#1A1A1A]">{service.title}</h3>
-                <p className="text-sm font-normal text-[#1A1A1A]/80 leading-relaxed">
+                <h3 className="font-sans text-xl font-medium text-[#001F3F]">{service.title}</h3>
+                <p className="text-sm font-normal text-[#001F3F]/80 leading-relaxed">
                   {service.description}
                 </p>
               </div>
@@ -4087,7 +4063,7 @@ function ServicesScreen({ onBack }: { onBack: () => void, key?: string }) {
   );
 }
 
-function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserProfile, onBack: () => void, onSave: (updated: Partial<UserProfile>) => void, key?: string }) {
+function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserProfile, onBack: () => void, onSave: (updated: Partial<UserProfile>) => void }) {
   const [title, setTitle] = useState<any>(userProfile.title || '');
   const [firstName, setFirstName] = useState(userProfile.firstName);
   const [lastName, setLastName] = useState(userProfile.lastName);
@@ -4096,11 +4072,11 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col relative">
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col relative">
       <div className="flex items-center justify-between p-6 border-b border-black/[0.04]">
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft size={24} />
@@ -4110,16 +4086,17 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
 
       <div className="p-8 space-y-6 flex-1 overflow-y-auto">
         <div className="space-y-2">
-          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Title</label>
+          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Title</label>
           <div className="flex gap-3">
             {['Mr.', 'Ms.', 'Mrs.', 'Dr.'].map((t) => (
               <button
                 key={t}
                 onClick={() => setTitle(t)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${title === t
-                  ? 'bg-[#001F3F] text-white border-[#001F3F]'
-                  : 'bg-transparent text-[#1A1A1A] border-black/[0.1] hover:border-[#001F3F]'
-                  }`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                  title === t 
+                    ? 'bg-[#001F3F] text-white border-[#001F3F]' 
+                    : 'bg-transparent text-[#001F3F] border-black/[0.1] hover:border-[#001F3F]'
+                }`}
               >
                 {t}
               </button>
@@ -4128,53 +4105,53 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">First Name</label>
-          <input
-            type="text"
+          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">First Name</label>
+          <input 
+            type="text" 
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Last Name</label>
-          <input
-            type="text"
+          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Last Name</label>
+          <input 
+            type="text" 
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
           />
         </div>
         <div className="space-y-2">
-          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Email</label>
-          <input
-            type="email"
+          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Email</label>
+          <input 
+            type="email" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
           />
         </div>
 
         {userProfile.accountType === 'business' && (
           <div className="space-y-2 pt-4 border-t border-black/[0.04]">
-            <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium flex items-center gap-2">
+            <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium flex items-center gap-2">
               <Briefcase size={12} />
               Company Name
             </label>
-            <input
-              type="text"
+            <input 
+              type="text" 
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
               placeholder="Enter company name"
-              className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
+              className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
             />
           </div>
         )}
 
-        <div className="pt-8">
-          <button
+        <div className="pt-12">
+          <button 
             onClick={() => setShowDeleteConfirm(true)}
-            className="w-full py-4 text-red-500 text-sm font-medium uppercase tracking-widest hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full h-14 bg-transparent border border-red-500/20 text-red-500 text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-red-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             <LogOut size={16} />
             Delete Account
@@ -4186,37 +4163,37 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
       <AnimatePresence>
         {showDeleteConfirm && (
           <div className="absolute inset-0 z-50 flex items-center justify-center p-6">
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowDeleteConfirm(false)}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
-            <motion.div
+            <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               className="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl relative z-10"
             >
-              <h3 className="text-xl font-medium text-[#1A1A1A] mb-2">Delete Account?</h3>
-              <p className="text-sm text-[#1A1A1A]/70 mb-6 leading-relaxed">
+              <h3 className="text-xl font-medium text-[#001F3F] mb-2">Delete Account?</h3>
+              <p className="text-sm text-[#001F3F]/70 mb-6 leading-relaxed">
                 Are you sure you want to delete your account? This action cannot be undone and you will lose all your data.
               </p>
               <div className="flex gap-3">
-                <button
+                <button 
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-3 rounded-xl bg-[#001F3F]/5 text-[#1A1A1A] font-medium text-sm uppercase tracking-wider hover:bg-[#001F3F]/10 transition-colors"
+                  className="flex-1 h-12 bg-[#001F3F]/5 text-[#001F3F] text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-[#001F3F]/10 active:scale-[0.98] transition-all flex items-center justify-center"
                 >
                   Cancel
                 </button>
-                <button
+                <button 
                   onClick={() => {
                     // In a real app, this would trigger account deletion
                     setShowDeleteConfirm(false);
                     onBack(); // Or navigate to welcome
                   }}
-                  className="flex-1 py-3 rounded-xl bg-red-500 text-white font-medium text-sm uppercase tracking-wider hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                  className="flex-1 h-12 bg-red-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:bg-red-600 active:scale-[0.98] transition-all flex items-center justify-center shadow-lg shadow-red-500/20"
                 >
                   Delete
                 </button>
@@ -4229,21 +4206,21 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
   );
 }
 
-function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | 'other', onBack: () => void, onSave: (addr: string) => void, key?: string }) {
+function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | 'other', onBack: () => void, onSave: (addr: string) => void }) {
   const [address, setAddress] = useState('');
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col">
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col">
       <div className="flex items-center justify-between p-6 border-b border-black/[0.04]">
         <button onClick={onBack} className="p-2 -ml-2">
           <ArrowLeft size={24} />
         </button>
-        <button
-          onClick={() => onSave(address)}
+        <button 
+          onClick={() => onSave(address)} 
           disabled={!address.trim()}
           className="text-base font-medium disabled:opacity-30"
         >
@@ -4255,16 +4232,16 @@ function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | '
         <h2 className="font-sans text-2xl font-light uppercase tracking-widest">
           {type === 'home' ? 'Add Home Address' : type === 'work' ? 'Add Work Address' : 'Add New Address'}
         </h2>
-
+        
         <div className="space-y-2">
-          <label className="text-xs text-[#1A1A1A]/70 uppercase tracking-widest font-medium">Address</label>
-          <input
-            type="text"
+          <label className="text-xs text-[#001F3F]/70 uppercase tracking-widest font-medium">Address</label>
+          <input 
+            type="text" 
             autoFocus
             placeholder="Search for address"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#1A1A1A] placeholder:text-[#1A1A1A]/50 transition-colors"
+            className="w-full py-2 border-b border-black/[0.04] outline-none text-lg font-light focus:border-[#001F3F] bg-transparent text-[#001F3F] placeholder:text-[#001F3F]/50 transition-colors"
           />
         </div>
       </div>
@@ -4272,15 +4249,15 @@ function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | '
   );
 }
 
-function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
+function LegalScreen({ onBack }: { onBack: () => void }) {
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full bg-[#FFFFFF] text-[#1A1A1A] flex flex-col">
+      className="h-full w-full bg-[#FFFFFF] text-[#001F3F] flex flex-col">
       <div className="flex items-center p-6 gap-4 border-b border-black/[0.04]">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A] hover:bg-black/5 rounded-full transition-colors">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F] hover:bg-black/5 rounded-full transition-colors">
           <ArrowLeft size={24} />
         </button>
         <h2 className="font-sans text-xl font-light uppercase tracking-widest">Terms & Privacy</h2>
@@ -4289,7 +4266,7 @@ function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
       <div className="flex-1 overflow-y-auto p-8 space-y-10">
         <section className="space-y-4">
           <h3 className="text-lg font-medium uppercase tracking-widest border-b border-black/5 pb-2">Terms of Service</h3>
-          <div className="space-y-4 text-sm text-[#1A1A1A]/80 leading-relaxed font-light">
+          <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed font-light">
             <p>
               Welcome to URBONT. By accessing or using our application, you agree to be bound by these Terms of Service.
             </p>
@@ -4307,10 +4284,10 @@ function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
             </p>
           </div>
         </section>
-
+        
         <section className="space-y-4">
           <h3 className="text-lg font-medium uppercase tracking-widest border-b border-black/5 pb-2">Privacy Policy</h3>
-          <div className="space-y-4 text-sm text-[#1A1A1A]/80 leading-relaxed font-light">
+          <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed font-light">
             <p>
               Your privacy is our priority. This policy explains how we collect, use, and protect your personal data.
             </p>
@@ -4330,75 +4307,75 @@ function LegalScreen({ onBack }: { onBack: () => void, key?: string }) {
         </section>
 
         <div className="pt-8 text-center">
-          <p className="text-[10px] text-[#1A1A1A]/70 uppercase tracking-widest">Last Updated: March 2026</p>
+          <p className="text-[10px] text-[#001F3F]/40 uppercase tracking-widest">Last Updated: March 2026</p>
         </div>
       </div>
     </motion.div>
   );
 }
 
-function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
+function MembershipScreen({ onBack }: { onBack: () => void }) {
   const privileges = [
-    {
-      name: 'LUXE',
-      description: 'Discover the latest-generation Mercedes-Maybach S-Class, delivering the smoothest and most elegant journeys. Available in Dubai and Paris.'
+    { 
+      name: 'LUXE', 
+      description: 'Discover the latest-generation Mercedes-Maybach S-Class, delivering the smoothest and most elegant journeys. Available in Dubai and Paris.' 
     },
-    {
-      name: 'SUV',
-      description: 'Experience URBONT’s most refined class to date, featuring the latest generation Range Rover Long Wheelbase 4×4, available exclusively in London.'
+    { 
+      name: 'SUV', 
+      description: 'Experience URBONT’s most refined class to date, featuring the latest generation Range Rover Long Wheelbase 4×4, available exclusively in London.' 
     },
-    {
-      name: 'CONCIERGE',
-      description: 'Reclaim your precious time by having a trusted chauffeur handle errands — including seamless purchasing — on your behalf.'
+    { 
+      name: 'CONCIERGE', 
+      description: 'Reclaim your precious time by having a trusted chauffeur handle errands — including seamless purchasing — on your behalf.' 
     },
-    {
-      name: 'CHAUFFEUR FOR A DAY',
-      description: 'Reserve a chauffeur for up to an entire day, at a convenient flat hourly rate.'
+    { 
+      name: 'CHAUFFEUR FOR A DAY', 
+      description: 'Reserve a chauffeur for up to an entire day, at a convenient flat hourly rate.' 
     }
   ];
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-white text-[#1A1A1A] flex flex-col"
+      className="h-full w-full bg-white text-[#001F3F] flex flex-col"
     >
       <div className="flex items-center p-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-[#1A1A1A]">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F]">
           <X size={24} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8 no-scrollbar">
-        <div className="text-center space-y-4 mt-8 mb-8 px-4">
-          <h3 className="text-3xl font-light text-[#1A1A1A]">Access</h3>
-          <p className="text-base font-light text-[#1A1A1A] leading-relaxed">
+      <div className="flex-1 overflow-y-auto px-6 pb-12 no-scrollbar">
+        <div className="text-center space-y-4 mt-8 mb-16 px-6">
+          <h3 className="text-3xl font-light text-[#001F3F]">Access</h3>
+          <p className="text-base font-light text-[#001F3F] leading-relaxed">
             Access exclusive privileges after taking 15 journeys within 6 months, or by invitation from another member.
           </p>
-
+          
           {/* Progress Tracker */}
           <div className="mt-12 space-y-4">
             <div className="flex justify-between items-end">
-              <span className="text-[10px] uppercase tracking-widest text-[#1A1A1A]/70 font-medium">Your Progress</span>
-              <span className="text-sm font-medium text-[#1A1A1A]">8 / 15 Journeys</span>
+              <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/40 font-bold">Your Progress</span>
+              <span className="text-sm font-medium text-[#001F3F]">8 / 15 Journeys</span>
             </div>
             <div className="h-1.5 w-full bg-[#001F3F]/5 rounded-full overflow-hidden">
-              <motion.div
+              <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: '53%' }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="h-full bg-[#001F3F] rounded-full"
               />
             </div>
-            <p className="text-[10px] text-[#1A1A1A]/80 font-medium italic">7 more journeys to unlock Signature Access</p>
+            <p className="text-[10px] text-[#001F3F]/60 font-medium italic">7 more journeys to unlock Signature Access</p>
           </div>
         </div>
 
-        <div className="space-y-8">
-          <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#1A1A1A] font-medium border-t border-black/[0.03] pt-10">Membership Privileges</h4>
-
+        <div className="space-y-12">
+          <h4 className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F] font-medium border-t border-black/[0.03] pt-10">Membership Privileges</h4>
+          
           <div className="space-y-10">
             {privileges.map((item, i) => (
               <div key={i} className="flex gap-6">
@@ -4410,8 +4387,8 @@ function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <h5 className="text-sm font-medium uppercase tracking-widest text-[#1A1A1A]">{item.name}</h5>
-                  <p className="text-sm text-[#1A1A1A]/80 font-light leading-relaxed">
+                  <h5 className="text-sm font-medium uppercase tracking-widest text-[#001F3F]">{item.name}</h5>
+                  <p className="text-sm text-[#001F3F]/80 font-light leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -4422,8 +4399,8 @@ function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
 
         <div className="mt-16 pt-8 border-t border-black/[0.03]">
           <button className="w-full flex items-center justify-between group">
-            <span className="text-sm font-medium text-[#1A1A1A]">Membership Details</span>
-            <ChevronRight size={18} className="text-[#1A1A1A]/80 group-hover:text-[#1A1A1A] transition-colors" />
+            <span className="text-sm font-medium text-[#001F3F]">Membership Details</span>
+            <ChevronRight size={18} className="text-[#001F3F]/80 group-hover:text-[#001F3F] transition-colors" />
           </button>
         </div>
       </div>
@@ -4432,6 +4409,110 @@ function MembershipScreen({ onBack }: { onBack: () => void, key?: string }) {
         <button className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
           Become a Member
         </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function ApiHealthScreen({ onBack }: { onBack: () => void }) {
+  const [status, setStatus] = useState<Record<string, 'loading' | 'success' | 'error' | 'missing'>>({
+    googleMaps: 'loading',
+    stripe: 'loading',
+    groq: 'loading',
+    cloudinary: 'loading',
+    translation: 'loading',
+    speech: 'loading',
+    aviation: 'loading',
+    freepik: 'loading'
+  });
+
+  useEffect(() => {
+    const checkApis = async () => {
+      const newStatus = { ...status };
+      
+      newStatus.googleMaps = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY ? 'success' : 'missing';
+      newStatus.stripe = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ? 'success' : 'missing';
+      newStatus.groq = 'missing'; 
+      newStatus.cloudinary = 'missing';
+      newStatus.translation = import.meta.env.VITE_GOOGLE_TRANSLATION_API_KEY ? 'success' : 'missing';
+      newStatus.speech = import.meta.env.VITE_GOOGLE_SPEECH_API_KEY ? 'success' : 'missing';
+      newStatus.aviation = import.meta.env.VITE_AVIATION_STACK_API_KEY ? 'success' : 'missing';
+      newStatus.freepik = import.meta.env.VITE_FREEPIK_API_KEY ? 'success' : 'missing';
+
+      setStatus(newStatus);
+    };
+
+    checkApis();
+  }, []);
+
+  const apis = [
+    { id: 'googleMaps', name: 'Google Maps API', desc: 'Used for routing and location search' },
+    { id: 'stripe', name: 'Stripe API', desc: 'Used for payment processing' },
+    { id: 'groq', name: 'Groq AI API', desc: 'Used for AI features' },
+    { id: 'cloudinary', name: 'Cloudinary API', desc: 'Used for image uploads' },
+    { id: 'translation', name: 'Google Translation API', desc: 'Used for chat translation' },
+    { id: 'speech', name: 'Google Speech API', desc: 'Used for voice commands' },
+    { id: 'aviation', name: 'Aviation Stack API', desc: 'Used for flight tracking' },
+    { id: 'freepik', name: 'Freepik API', desc: 'Used for animated icons' }
+  ];
+
+  return (
+    <motion.div 
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '100%' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+      className="h-full w-full bg-[#F5F7FA] text-[#001F3F] flex flex-col"
+    >
+      <div className="bg-[#001F3F] text-white p-6 pt-12 pb-8 rounded-b-[2rem] shadow-xl z-10 shrink-0">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors">
+            <ArrowLeft size={24} />
+          </button>
+          <h2 className="font-sans text-xl font-light uppercase tracking-widest">
+            API Health Check
+          </h2>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6">
+        <p className="text-sm opacity-80 mb-6">
+          This dashboard verifies if the required API keys are configured in the environment variables.
+        </p>
+
+        <div className="space-y-4">
+          {apis.map(api => (
+            <div key={api.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
+              <div className="flex flex-col flex-1">
+                <span className="text-sm font-medium">{api.name}</span>
+                <span className="text-xs text-[#001F3F]/50">{api.desc}</span>
+              </div>
+              <div className="shrink-0">
+                {status[api.id] === 'loading' && (
+                  <div className="w-6 h-6 border-2 border-[#001F3F]/20 border-t-[#001F3F] rounded-full animate-spin" />
+                )}
+                {status[api.id] === 'success' && (
+                  <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold">
+                    <CheckCircle2 size={14} />
+                    Active
+                  </div>
+                )}
+                {status[api.id] === 'missing' && (
+                  <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold">
+                    <Zap size={14} />
+                    Missing Key
+                  </div>
+                )}
+                {status[api.id] === 'error' && (
+                  <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold">
+                    <X size={14} />
+                    Error
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </motion.div>
   );

@@ -4,8 +4,18 @@ import crypto from "crypto";
 
 export const translationRouter = Router();
 
-// --- Gemini Initialization ---
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// --- Gemini Initialization (Lazy Loading) ---
+let ai: GoogleGenAI | null = null;
+
+function getGeminiClient() {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new Error("GEMINI_API_KEY environment variable is not set");
+  }
+  if (!ai) {
+    ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  }
+  return ai;
+}
 
 // --- Types ---
 interface TranslationRequest {
@@ -23,6 +33,7 @@ const conversations: any[] = [];
 
 // --- Helper: Transcribe & Translate (Gemini Multimodal) ---
 async function processInput(content: string, inputType: 'text' | 'audio', sourceLang: string, targetLang: string) {
+  const client = getGeminiClient();
   const model = "gemini-2.5-flash-latest"; // Using latest Flash model for speed/context
   
   let prompt = "";
@@ -55,7 +66,7 @@ async function processInput(content: string, inputType: 'text' | 'audio', source
   }
 
   try {
-    const result = await ai.models.generateContent({
+    const result = await client.models.generateContent({
       model: model,
       contents: { parts },
       config: { responseMimeType: "application/json" }
@@ -70,6 +81,7 @@ async function processInput(content: string, inputType: 'text' | 'audio', source
 
 // --- Helper: Text-to-Speech (Gemini TTS) ---
 async function generateSpeech(text: string, language: string) {
+  const client = getGeminiClient();
   const model = "gemini-2.5-flash-preview-tts";
   
   // Voice Selection: 'Kore' (Female/Soft) or 'Fenrir' (Male/Deep)
@@ -77,7 +89,7 @@ async function generateSpeech(text: string, language: string) {
   const voiceName = language === 'en' ? 'Fenrir' : 'Kore'; 
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await client.models.generateContent({
       model: model,
       contents: { parts: [{ text }] },
       config: {
@@ -99,6 +111,15 @@ async function generateSpeech(text: string, language: string) {
     throw new Error("Failed to generate speech.");
   }
 }
+
+// --- Route: Health Check ---
+translationRouter.get("/health", (req: Request, res: Response) => {
+  const hasGeminiKey = !!process.env.GEMINI_API_KEY;
+  res.json({
+    status: "ok",
+    geminiAvailable: hasGeminiKey
+  });
+});
 
 // --- Route: The Language Bridge ---
 translationRouter.post("/speak", async (req: Request, res: Response) => {

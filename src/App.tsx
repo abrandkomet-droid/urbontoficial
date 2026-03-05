@@ -489,13 +489,13 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
           loop
           muted
           playsInline
-          className="w-full h-full object-cover opacity-50"
+          className="w-full h-full object-cover opacity-60"
         >
-          <source src="https://lh3.googleusercontent.com/d/1m2u9FjvWRRxn_yVXowV0vIVCWtI0CuEq" type="video/mp4" />
+          <source src="https://res.cloudinary.com/dgzysyl8g/video/upload/v1/banner_xzwanc.mp4" type="video/mp4" />
           <div className="w-full h-full bg-[#001F3F]" />
         </video>
-        {/* Elegant Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/90" />
+        {/* Softer, more elegant gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
       </div>
 
       {/* Top Logo */}
@@ -503,12 +503,12 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 0.5 }}
-        className="relative z-20 flex justify-center mt-12"
+        className="relative z-20 flex justify-center mt-8"
       >
         <img 
           src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
           alt="URBONT Logo" 
-          className="h-16 object-contain brightness-0 invert"
+          className="h-32 object-contain brightness-0 invert opacity-100"
           referrerPolicy="no-referrer"
         />
       </motion.div>
@@ -520,20 +520,26 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1, delay: 1.2 }}
-        className="relative z-20 w-full mb-16 flex flex-col items-center text-center space-y-8"
+        className="relative z-20 w-full mb-20 flex flex-col items-center text-center space-y-8"
       >
-        <div className="space-y-2 px-4">
-          <h2 className="text-white text-2xl font-light tracking-[0.3em] uppercase">Urbont</h2>
-          <p className="text-white/60 text-[10px] font-light tracking-[0.4em] uppercase leading-relaxed">
-            Time Redefined. Excellence in Motion.
+        <div className="space-y-1 px-4">
+          <p className="text-white/90 text-[12px] font-light tracking-[0.4em] uppercase leading-relaxed">
+            Time Redefined
           </p>
+          <h2 className="text-white text-2xl font-light tracking-[0.3em] uppercase bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-white/50">Excellence in Motion</h2>
         </div>
 
         <button 
           onClick={onStart} 
-          className="w-full max-w-[240px] h-12 bg-transparent border border-white/30 text-white text-[10px] font-bold uppercase tracking-[0.4em] rounded-full hover:bg-white hover:text-black transition-all duration-500 flex items-center justify-center backdrop-blur-sm"
+          className="group relative px-8 py-2 text-white text-[9px] font-light uppercase tracking-[0.4em] transition-all duration-700 flex items-center justify-center gap-3"
         >
-          Discover Urbont
+          <span className="relative z-10 opacity-80 group-hover:opacity-100 transition-opacity duration-500">Discover Urbont</span>
+          <span className="relative z-10 opacity-50 group-hover:opacity-100 transition-opacity duration-500">
+            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 4H11M11 4L8 1M11 4L8 7" stroke="white" strokeWidth="0.5"/>
+            </svg>
+          </span>
+          <span className="absolute bottom-1 left-0 right-0 h-[0.5px] bg-white/30 group-hover:bg-white transition-colors duration-500" />
         </button>
       </motion.div>
     </motion.div>
@@ -1872,7 +1878,7 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
         {/* Featured Image */}
         <div className="mb-8 rounded-2xl overflow-hidden shadow-xl border border-[#001F3F]/5">
           <img 
-            src="https://lh3.googleusercontent.com/d/14ZMLRakA2dXBSPFta8mCM7iSa10UP3OH" 
+            src="https://drive.google.com/uc?export=view&id=1z954RXBm5fUId9_zv-JN0Ftcc4pyhLVq" 
             alt="Urbont News" 
             className="w-full h-48 object-cover"
             referrerPolicy="no-referrer"
@@ -2464,6 +2470,7 @@ function ConfirmedScreen({ onContinue }: { onContinue: () => void }) {
 function TripCompletedScreen({ onBack }: { onBack: () => void }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [isFavorite, setIsFavorite] = useState(false);
 
   return (
     <motion.div 
@@ -2485,10 +2492,16 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
             <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
               <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
-            <div className="text-left">
+            <div className="text-left flex-1">
               <h4 className="font-bold text-[#001F3F] text-lg">{CHAUFFEUR.name}</h4>
               <p className="text-xs text-gray-500">URB-2026 • Black</p>
             </div>
+            <button 
+              onClick={() => setIsFavorite(!isFavorite)}
+              className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-amber-100 text-amber-500' : 'bg-white text-gray-300 hover:text-amber-400'}`}
+            >
+              <Star size={20} className={isFavorite ? 'fill-amber-500' : ''} />
+            </button>
           </div>
 
           <div className="space-y-2 mb-6">

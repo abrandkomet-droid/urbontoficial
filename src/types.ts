@@ -57,6 +57,21 @@ export const VEHICLES: Vehicle[] = [
   }
 ];
 
+export interface RideRating {
+  rideId: string;
+  rating: number;
+  comment: string;
+  isFavorite: boolean;
+  timestamp: string;
+}
+
+export interface FavoriteDriver {
+  driverId: string;
+  name: string;
+  portrait: string;
+  addedAt: string;
+}
+
 export const CHAUFFEUR: Chauffeur = {
   name: 'Alexander Sterling',
   portrait: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',

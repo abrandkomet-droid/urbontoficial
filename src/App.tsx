@@ -51,10 +51,12 @@ import {
   Building2,
   UserPlus,
   Calendar,
+  Heart,
 } from 'lucide-react';
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
 import DriverDashboardMobile from './components/DriverDashboardMobile';
+import RatingBox from './components/RatingBox';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -295,7 +297,8 @@ export default function App() {
             onContinue={(num) => {
               setPhoneNumber(num);
               navigate('auth-otp');
-            }} 
+            }}
+            onChauffeurStart={() => navigate('chauffeur-login')}
           />
         )}
         {currentScreen === 'country-selector' && (
@@ -374,12 +377,12 @@ export default function App() {
             }}
           />
         )}
-        {currentScreen === 'trip-completed' && (
-          <TripCompletedScreen 
-            onBack={() => navigate('booking')} 
-          />
-        )}
-        {currentScreen === 'profile' && (
+  {currentScreen === 'trip-completed' && (
+  <TripCompletedScreen
+  onBack={() => navigate('booking')}
+  />
+  )}
+  {currentScreen === 'profile' && (
           <ProfileScreen 
             key="profile-screen" 
             userProfile={userProfile}
@@ -473,20 +476,7 @@ export default function App() {
 }
 
 function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onChauffeurStart: () => void }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const slides = [
-    "Excellence in Motion",
-    "Your Private Journey",
-    "Unmatched Comfort",
-    "Professional Chauffeurs"
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   return (
     <motion.div 
@@ -494,63 +484,75 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
-      className="relative h-full w-full flex flex-col justify-between p-8 overflow-hidden navy-gradient-bg"
+      className="relative h-full w-full flex flex-col overflow-hidden"
     >
-      {/* Subtle Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-           style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }} 
-      />
-
-      {/* Content */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center flex-1 space-y-12">
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          className="flex flex-col items-center"
+      {/* Video Background */}
+      <div className="absolute inset-0">
+        <video
+          autoPlay
+          muted
+          playsInline
+          loop
+          onLoadedData={() => setVideoLoaded(true)}
+          className="w-full h-full object-cover"
         >
-          <img 
-            src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
-            alt="URBONT Logo" 
-            className="h-40 object-contain drop-shadow-2xl brightness-0 invert mb-8"
-            referrerPolicy="no-referrer"
-          />
-          
-          <div className="h-12 overflow-hidden relative w-full flex justify-center">
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={currentSlide}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-white/60 text-sm uppercase tracking-[0.3em] font-light absolute text-center w-full"
-              >
-                {slides[currentSlide]}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-        </motion.div>
+          <source src="/videos/banner.mp4" type="video/mp4" />
+        </video>
+        {/* Soft Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-black/70" />
       </div>
 
+      {/* Top Logo Section with Subtle Gradient Background */}
+      <motion.div 
+        initial={{ y: -30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="relative z-20 pt-12 pb-8 px-8 bg-gradient-to-b from-black/40 to-transparent"
+      >
+        <img 
+          src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
+          alt="URBONT Logo" 
+          className="h-12 object-contain drop-shadow-lg brightness-0 invert"
+          referrerPolicy="no-referrer"
+        />
+      </motion.div>
+
+      {/* Center Content - Spacer */}
+      <div className="relative z-10 flex-1" />
+
+      {/* Bottom Content Section */}
       <motion.div 
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 1, delay: 1.2 }}
-        className="relative z-20 w-full space-y-4 mb-12 pb-6"
+        transition={{ duration: 1, delay: 0.3 }}
+        className="relative z-20 w-full px-8 pb-20"
       >
+        {/* Elegant Text Content */}
+        <div className="mb-12 text-center space-y-4">
+          <p className="text-white/80 text-sm leading-relaxed font-light">
+            Elevate your journey. Experience luxury chauffeur services crafted for those who value elegance and excellence.
+          </p>
+        </div>
+
+        {/* Elegant Button - Outline Style */}
         <button 
           onClick={onStart} 
-          className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-lg shadow-white/10"
+          className="w-full py-3 px-6 border border-white/40 text-white text-xs font-light uppercase tracking-[0.15em] rounded-sm hover:border-white/80 hover:bg-white/5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
         >
-          Get Started
+          Discover Urbont
+          <ArrowRight size={14} strokeWidth={1} />
         </button>
         
+        {/* Divider */}
+        <div className="my-6 h-px bg-white/10" />
+        
+        {/* Access Chauffeur - Elegant Link Style */}
         <button 
           onClick={onChauffeurStart} 
-          className="w-full py-3 text-white/40 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 text-white/60 font-light uppercase tracking-[0.15em] text-xs hover:text-white transition-colors duration-300 flex items-center justify-center gap-2"
         >
-          Chauffeur Login <ArrowRight size={12} strokeWidth={1.5} />
+          Access Chauffeur
+          <ArrowRight size={12} strokeWidth={1} />
         </button>
       </motion.div>
     </motion.div>
@@ -961,7 +963,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string }) {
+function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, onChauffeurStart, countryCode }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, onChauffeurStart: () => void, countryCode: string }) {
   const [value, setValue] = useState('');
   
   const selectedCountry = COUNTRIES.find(c => c.code === countryCode) || { placeholder: '000 000 0000', maxLength: 10 };
@@ -1006,18 +1008,28 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode }: {
         </p>
       </div>
 
-      <button 
-        disabled={value.length < 5}
-        onClick={() => onContinue(value)} 
-        className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-20 hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/10 mt-8 mb-20"
-      >
-        CONTINUE
-      </button>
-    </motion.div>
-  );
-}
+  <button
+  disabled={value.length < 5}
+  onClick={() => onContinue(value)}
+  className="w-full h-14 bg-white text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl disabled:opacity-20 hover:bg-white/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-white/10 mt-8"
+  >
+  CONTINUE
+  </button>
 
-function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onBack: () => void, onVerify: () => void }) {
+  {/* Access Chauffeur Link */}
+  <div className="w-full py-6 border-t border-white/10 mt-8">
+    <button 
+      onClick={onChauffeurStart}
+      className="w-full py-3 text-white/60 font-bold uppercase tracking-widest text-xs hover:text-white transition-all flex items-center justify-center gap-2"
+    >
+      Access Chauffeur <ArrowRight size={12} strokeWidth={1.5} />
+    </button>
+  </div>
+  </motion.div>
+  );
+  }
+  
+  function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onBack: () => void, onVerify: () => void }) {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
@@ -2457,74 +2469,97 @@ function ConfirmedScreen({ onContinue }: { onContinue: () => void }) {
 }
 
 function TripCompletedScreen({ onBack }: { onBack: () => void }) {
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
+  const [showRating, setShowRating] = useState(true);
+
+  const handleRatingSubmit = (rating: number, comment: string, isFavorite: boolean) => {
+    console.log('Rating submitted:', { rating, comment, isFavorite });
+    // Aquí irían acciones para guardar la calificación
+    setTimeout(() => setShowRating(false), 500);
+  };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
+      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-y-auto"
     >
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+      <div className="flex-1 flex flex-col items-center justify-start p-6 text-center pt-8">
+        {/* Success Header */}
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6"
+        >
           <CheckCircle2 size={40} className="text-emerald-600" />
-        </div>
+        </motion.div>
         
-        <h2 className="text-2xl font-light text-[#001F3F] mb-2">Trip Completed</h2>
+        <h2 className="text-3xl font-light text-[#001F3F] mb-2">Trip Completed</h2>
         <p className="text-sm text-gray-500 mb-8">Your ride has been successfully completed.</p>
 
-        <div className="w-full bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+        {/* Trip Summary */}
+        <div className="w-full mb-8 space-y-4 bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
+            <div className="w-16 h-16 rounded-2xl overflow-hidden border border-gray-200 shadow-sm flex-shrink-0">
               <img src={CHAUFFEUR.portrait} alt={CHAUFFEUR.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             </div>
-            <div className="text-left">
+            <div className="flex-1 text-left">
               <h4 className="font-bold text-[#001F3F] text-lg">{CHAUFFEUR.name}</h4>
-              <p className="text-xs text-gray-500">URB-2026 • Black</p>
+              <p className="text-xs text-gray-500">URB-2026 • Black Mercedes</p>
+              <div className="flex items-center gap-1 mt-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={14} className={i < 4 ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                ))}
+                <span className="text-xs text-gray-600 ml-1">4.98</span>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2 mb-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Rate your experience</p>
-            <div className="flex justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button 
-                  key={star}
-                  onClick={() => setRating(star)}
-                  className="p-1 transition-transform active:scale-90"
-                >
-                  <Star 
-                    size={32} 
-                    className={`${rating >= star ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} transition-colors`} 
-                  />
-                </button>
-              ))}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Distance</span>
+              <span className="font-semibold text-[#001F3F]">8.5 km</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Duration</span>
+              <span className="font-semibold text-[#001F3F]">22 minutes</span>
+            </div>
+            <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+              <span className="text-sm font-semibold text-gray-700">Total Fare</span>
+              <span className="text-2xl font-bold text-[#001F3F]">$85.00</span>
             </div>
           </div>
-
-          <textarea
-            placeholder="Add a comment (optional)..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl p-3 text-sm outline-none focus:border-[#001F3F] transition-colors resize-none h-24"
-          />
         </div>
 
-        <div className="w-full space-y-4">
-          <div className="flex justify-between items-center px-4">
-            <span className="text-sm text-gray-500">Total Fare</span>
-            <span className="text-xl font-bold text-[#001F3F]">$85.00</span>
-          </div>
-          
-          <button 
-            onClick={onBack}
-            className="w-full py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all"
+        {/* Rating Box Component */}
+        {showRating && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full"
           >
-            Done
-          </button>
-        </div>
+            <RatingBox
+              driverName={CHAUFFEUR.name}
+              driverImage={CHAUFFEUR.portrait}
+              vehicleInfo="URB-2026 • Black Mercedes"
+              fare="$85.00"
+              onSubmit={handleRatingSubmit}
+            />
+          </motion.div>
+        )}
+
+        {/* Done Button - Shows after rating */}
+        {!showRating && (
+          <motion.button 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onClick={onBack}
+            className="w-full mt-6 py-4 bg-[#001F3F] text-white text-sm font-bold uppercase tracking-widest rounded-xl shadow-lg hover:bg-[#001F3F]/90 active:scale-[0.98] transition-all"
+          >
+            Return to Home
+          </motion.button>
+        )}
       </div>
     </motion.div>
   );

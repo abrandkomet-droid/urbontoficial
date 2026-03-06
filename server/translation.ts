@@ -4,8 +4,19 @@ import crypto from "crypto";
 
 export const translationRouter = Router();
 
-// --- Gemini Initialization ---
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// --- Gemini Initialization (Lazy) ---
+let ai: GoogleGenAI | null = null;
+
+function getAI(): GoogleGenAI {
+  if (!ai) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY environment variable is not set. Please configure it to use translation features.");
+    }
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+}
 
 // --- Types ---
 interface TranslationRequest {
@@ -55,7 +66,7 @@ async function processInput(content: string, inputType: 'text' | 'audio', source
   }
 
   try {
-    const result = await ai.models.generateContent({
+    const result = await getAI().models.generateContent({
       model: model,
       contents: { parts },
       config: { responseMimeType: "application/json" }
@@ -77,7 +88,7 @@ async function generateSpeech(text: string, language: string) {
   const voiceName = language === 'en' ? 'Fenrir' : 'Kore'; 
 
   try {
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: model,
       contents: { parts: [{ text }] },
       config: {

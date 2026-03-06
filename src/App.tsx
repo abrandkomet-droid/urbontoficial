@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component, ErrorInfo, ReactNode } from 'react';
+import React, { useState, useEffect, useRef, Component, ErrorInfo, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 import { loadStripe } from '@stripe/stripe-js';
@@ -1226,6 +1226,49 @@ function OtpScreen({ phoneNumber, onBack, onVerify, key }: { phoneNumber: string
   );
 }
 
+const SmoothMarker = ({ position, icon }: { position: { lat: number, lng: number }, icon: any }) => {
+  const [currentPos, setCurrentPos] = useState(position);
+  const targetPosRef = useRef(position);
+
+  useEffect(() => {
+    targetPosRef.current = position;
+  }, [position]);
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let lastTime = performance.now();
+
+    const animate = (time: number) => {
+      const deltaTime = Math.min(time - lastTime, 50);
+      lastTime = time;
+
+      setCurrentPos(prev => {
+        const latDiff = targetPosRef.current.lat - prev.lat;
+        const lngDiff = targetPosRef.current.lng - prev.lng;
+
+        if (Math.abs(latDiff) < 0.000001 && Math.abs(lngDiff) < 0.000001) {
+          return targetPosRef.current;
+        }
+
+        const factor = 1 - Math.pow(0.05, deltaTime / 1000);
+
+        return {
+          lat: prev.lat + latDiff * factor,
+          lng: prev.lng + lngDiff * factor
+        };
+      });
+
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
+  return <Marker position={currentPos} icon={icon} />;
+};
+
 function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, activeTrip, onReturnToTrip, isLoaded, loadError }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, activeTrip: boolean, onReturnToTrip: () => void, isLoaded: boolean, loadError: Error | undefined, key?: string }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
@@ -1243,6 +1286,31 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
   const [flightNumber, setFlightNumber] = useState('');
   const [isAirportPickup, setIsAirportPickup] = useState(false);
   const places = ['Times Square', 'Beverly Hills', 'Miami Beach', 'Las Vegas', 'Grand Canyon', 'Central Park'];
+  const [availableCars, setAvailableCars] = useState<{id: number, lat: number, lng: number}[]>([]);
+
+  useEffect(() => {
+    // Generate initial cars around center
+    const generateCars = () => {
+      return Array.from({ length: 5 }).map((_, i) => ({
+        id: i,
+        lat: center.lat + (Math.random() - 0.5) * 0.015,
+        lng: center.lng + (Math.random() - 0.5) * 0.015,
+      }));
+    };
+
+    setAvailableCars(generateCars());
+
+    const interval = setInterval(() => {
+      setAvailableCars(prev => prev.map(car => ({
+        ...car,
+        // Move cars randomly but slowly
+        lat: car.lat + (Math.random() - 0.5) * 0.0005,
+        lng: car.lng + (Math.random() - 0.5) * 0.0005,
+      })));
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [center.lat, center.lng]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1594,6 +1662,17 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                 clickableIcons: false,
               }}
             >
+              {availableCars.map(car => (
+                <SmoothMarker 
+                  key={car.id} 
+                  position={{ lat: car.lat, lng: car.lng }} 
+                  icon={{
+                    url: 'https://i.imgur.com/bR5fpzi.png',
+                    scaledSize: new google.maps.Size(40, 40),
+                    anchor: new google.maps.Point(20, 20)
+                  }}
+                />
+              ))}
             </GoogleMap>
           ) : (
             <div className="w-full h-full bg-[#FFFFFF] animate-pulse" />
@@ -2936,16 +3015,12 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
                   strokeColor: '#FFFFFF',
                 }}
               />
-              <Marker 
+              <SmoothMarker 
                 position={carPos}
                 icon={{
-                  path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                  scale: 6,
-                  fillColor: '#001F3F',
-                  fillOpacity: 1,
-                  strokeWeight: 2,
-                  strokeColor: '#FFFFFF',
-                  rotation: 45
+                  url: 'https://i.imgur.com/bR5fpzi.png',
+                  scaledSize: new google.maps.Size(40, 40),
+                  anchor: new google.maps.Point(20, 20)
                 }}
               />
             </GoogleMap>

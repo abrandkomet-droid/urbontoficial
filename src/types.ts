@@ -1,4 +1,4 @@
-export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'api-health' | 'schedule-ride' | 'trip-completed' | 'suggestions';
+export type Screen = 'welcome' | 'auth-phone' | 'auth-otp' | 'booking' | 'vehicle-selection' | 'payment-confirmation' | 'searching' | 'confirmed' | 'chauffeur-profile' | 'tracking' | 'profile' | 'ride-history' | 'payment-methods' | 'settings' | 'preferences' | 'customer-service' | 'country-selector' | 'services' | 'membership' | 'address-edit' | 'edit-profile' | 'legal' | 'notifications' | 'chauffeur-login' | 'chauffeur-dashboard' | 'gift-ride' | 'chauffeur-registration' | 'schedule-ride' | 'trip-completed' | 'suggestions' | 'ride-preferences';
 
 export interface Vehicle {
   id: string;
@@ -28,6 +28,17 @@ export interface UserProfile {
   homeAddress?: string;
   workAddress?: string;
   otherAddresses: { id: string; label: string; address: string }[];
+  ridePreferences?: {
+    temperature: 'Cool' | 'Warm' | 'Neutral';
+    music: 'Jazz' | 'Classical' | 'Pop' | 'Silence';
+    conversation: 'Active' | 'Minimal' | 'Silence';
+  };
+  loyalty?: {
+    level: 'Silver' | 'Gold' | 'Platinum' | 'Diamond';
+    points: number;
+    nextLevelPoints: number;
+    ridesThisMonth: number;
+  };
 }
 
 export const VEHICLES: Vehicle[] = [

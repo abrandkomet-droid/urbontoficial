@@ -1,11 +1,16 @@
 import { Router, Request, Response } from "express";
 import { GoogleGenAI, Modality } from "@google/genai";
+import Groq from "groq-sdk";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 export const translationRouter = Router();
 
-// --- Gemini Initialization ---
+// --- Clients Initialization ---
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 // --- Types ---
 interface TranslationRequest {
@@ -21,59 +26,61 @@ interface TranslationRequest {
 // --- Mock DB Store ---
 const conversations: any[] = [];
 
-// --- Helper: Transcribe & Translate (Gemini Multimodal) ---
-async function processInput(content: string, inputType: 'text' | 'audio', sourceLang: string, targetLang: string) {
-  const model = "gemini-2.5-flash-latest"; // Using latest Flash model for speed/context
-  
-  let prompt = "";
-  let parts: any[] = [];
-
-  if (inputType === 'audio') {
-    // Audio Input: Transcribe AND Translate in one go
-    prompt = `
-      You are a professional interpreter for a luxury chauffeur service.
-      Task:
-      1. Transcribe the audio (spoken in ${sourceLang === 'es' ? 'Spanish' : 'English'}).
-      2. Translate it to ${targetLang === 'es' ? 'Spanish' : 'English'}.
-      3. Maintain professional, polite tone. Handle driving jargon correctly (e.g., "pickup" -> "punto de recogida").
-      4. Output JSON: { "original": "...", "translated": "..." }
-    `;
-    parts = [
-      { text: prompt },
-      { inlineData: { mimeType: "audio/wav", data: content } } // Assuming WAV from frontend
-    ];
-  } else {
-    // Text Input: Translate directly
-    prompt = `
-      You are a professional interpreter for a luxury chauffeur service.
-      Task:
-      1. Translate the following text from ${sourceLang === 'es' ? 'Spanish' : 'English'} to ${targetLang === 'es' ? 'Spanish' : 'English'}.
-      2. Maintain professional, polite tone. Handle driving jargon correctly.
-      3. Output JSON: { "original": "${content}", "translated": "..." }
-    `;
-    parts = [{ text: prompt }];
-  }
-
+// --- Helper: Process with Groq (STT & Translation) ---
+async function processWithGroq(content: string, inputType: 'text' | 'audio', sourceLang: string, targetLang: string) {
   try {
-    const result = await ai.models.generateContent({
-      model: model,
-      contents: { parts },
-      config: { responseMimeType: "application/json" }
+    let originalText = "";
+    let translatedText = "";
+
+    if (inputType === 'audio') {
+      // 1. STT with Groq Whisper
+      const tempFilePath = path.join(os.tmpdir(), `audio_${Date.now()}.wav`);
+      fs.writeFileSync(tempFilePath, Buffer.from(content, 'base64'));
+
+      const transcription = await groq.audio.transcriptions.create({
+        file: fs.createReadStream(tempFilePath),
+        model: "whisper-large-v3",
+        language: sourceLang,
+        response_format: "json",
+      });
+
+      originalText = transcription.text;
+      fs.unlinkSync(tempFilePath); // Cleanup
+    } else {
+      originalText = content;
+    }
+
+    // 2. Translation with Groq Llama 3
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "system",
+          content: `You are a professional interpreter for a luxury chauffeur service. 
+          Translate the following text from ${sourceLang === 'es' ? 'Spanish' : 'English'} to ${targetLang === 'es' ? 'Spanish' : 'English'}. 
+          Maintain a professional, polite tone. Handle driving jargon correctly (e.g., "pickup" -> "punto de recogida").
+          Output ONLY the translated text.`
+        },
+        {
+          role: "user",
+          content: originalText
+        }
+      ],
+      model: "llama-3.3-70b-versatile",
     });
-    
-    return JSON.parse(result.text || "{}");
+
+    translatedText = chatCompletion.choices[0]?.message?.content || "";
+
+    return { original: originalText, translated: translatedText };
   } catch (error) {
-    console.error("Translation Error:", error);
-    throw new Error("Failed to process translation.");
+    console.error("Groq Processing Error:", error);
+    // Fallback to Gemini if Groq fails
+    return { original: content, translated: "Translation unavailable (Groq Error)" };
   }
 }
 
 // --- Helper: Text-to-Speech (Gemini TTS) ---
 async function generateSpeech(text: string, language: string) {
   const model = "gemini-2.5-flash-preview-tts";
-  
-  // Voice Selection: 'Kore' (Female/Soft) or 'Fenrir' (Male/Deep)
-  // Mapping 'Journey'/'Studio' request to available Gemini voices
   const voiceName = language === 'en' ? 'Fenrir' : 'Kore'; 
 
   try {
@@ -96,7 +103,7 @@ async function generateSpeech(text: string, language: string) {
     return audioData; // Base64
   } catch (error) {
     console.error("TTS Error:", error);
-    throw new Error("Failed to generate speech.");
+    return null;
   }
 }
 
@@ -108,7 +115,7 @@ translationRouter.post("/speak", async (req: Request, res: Response) => {
     console.log(`[LANGUAGE_BRIDGE] Processing ${inputType} from ${senderRole} (${sourceLang} -> ${targetLang})`);
 
     // 1. Process Input (Transcribe + Translate)
-    const { original, translated } = await processInput(content, inputType, sourceLang, targetLang);
+    const { original, translated } = await processWithGroq(content, inputType, sourceLang, targetLang);
     
     if (!translated) {
       throw new Error("Translation failed to produce output.");

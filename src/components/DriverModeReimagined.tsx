@@ -20,9 +20,15 @@ import {
   CheckCircle2,
   User,
   Sparkles,
-  Loader2
+  Loader2,
+  XCircle,
+  ArrowUpRight,
+  AlertTriangle,
+  ArrowUp,
+  ArrowLeft
 } from 'lucide-react';
 import AnimatedChauffeurMarker from './AnimatedChauffeurMarker';
+import SmartChat from './SmartChat';
 
 // --- Types ---
 interface TripDetails {
@@ -96,6 +102,14 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
   const [showChat, setShowChat] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [isRefining, setIsRefining] = useState(false);
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [showRouteModal, setShowRouteModal] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [turnInstruction, setTurnInstruction] = useState({
+    distance: '200 ft',
+    text: 'Turn right on 5th Ave',
+    icon: <ArrowRight size={32} strokeWidth={1.5} />
+  });
   const [chatHistory, setChatHistory] = useState([
     { role: 'passenger', text: 'I am waiting near the main entrance.' }
   ]);
@@ -107,6 +121,17 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
         const change = Math.random() * 4 - 2;
         return Math.max(0, Math.min(65, prev + change));
       });
+
+      // Simulate turn instructions changing
+      if (Math.random() > 0.9) {
+        const instructions = [
+          { distance: '0.5 mi', text: 'Continue straight', icon: <ArrowUp size={32} strokeWidth={1.5} /> },
+          { distance: '300 ft', text: 'Turn left on Broadway', icon: <ArrowLeft size={32} strokeWidth={1.5} /> },
+          { distance: '1.2 mi', text: 'Merge onto I-95 N', icon: <ArrowUpRight size={32} strokeWidth={1.5} /> },
+          { distance: '50 ft', text: 'Arriving at destination', icon: <MapPin size={32} strokeWidth={1.5} /> }
+        ];
+        setTurnInstruction(instructions[Math.floor(Math.random() * instructions.length)]);
+      }
 
       // Simulate small position changes
       setCarPosition(prev => ({
@@ -229,11 +254,11 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
       <div className="absolute top-0 left-0 right-0 p-6 z-20 pointer-events-none">
         <div className="flex justify-between items-start">
           {/* Turn Indicator */}
-          <div className="bg-[#001F3F] text-white p-4 rounded-xl shadow-lg flex items-center gap-4 pointer-events-auto min-w-[200px]">
-            <ArrowRight size={32} strokeWidth={1.5} />
+          <div className="bg-[#001F3F] text-white p-4 rounded-xl shadow-lg flex items-center gap-4 pointer-events-auto min-w-[200px] transition-all duration-500">
+            {turnInstruction.icon}
             <div>
-              <p className="text-2xl font-medium">200 ft</p>
-              <p className="text-sm opacity-80 font-light">Turn right on 5th Ave</p>
+              <p className="text-2xl font-medium">{turnInstruction.distance}</p>
+              <p className="text-sm opacity-80 font-light">{turnInstruction.text}</p>
             </div>
           </div>
 
@@ -270,7 +295,10 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             </div>
           </div>
           <div className="flex gap-3">
-            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors">
+            <button 
+              onClick={() => alert('Calling Sarah...')}
+              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
+            >
               <Phone size={20} strokeWidth={1.5} />
             </button>
             <button 
@@ -279,7 +307,10 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             >
               <MessageSquare size={20} strokeWidth={1.5} />
             </button>
-            <button className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors">
+            <button 
+              onClick={() => alert('SOS Alert triggered. Safety team notified.')}
+              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
+            >
               <ShieldAlert size={20} strokeWidth={1.5} />
             </button>
           </div>
@@ -328,9 +359,14 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
               <h2 className="text-3xl font-light uppercase tracking-widest">Trip Menu</h2>
               <button onClick={() => setShowMenu(false)} className="p-2 bg-white/10 rounded-full"><X size={24} /></button>
             </div>
-            
-            <div className="flex-1 space-y-4">
-              <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
+                       <div className="flex-1 space-y-4">
+              <button 
+                onClick={() => {
+                  setShowMenu(false);
+                  setShowRouteModal(true);
+                }}
+                className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group"
+              >
                 <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
                   <Maximize2 size={24} strokeWidth={1.5} />
                 </div>
@@ -340,7 +376,13 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
                 </div>
               </button>
               
-              <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
+              <button 
+                onClick={() => {
+                  setShowMenu(false);
+                  setShowEmergencyModal(true);
+                }}
+                className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group"
+              >
                 <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
                   <ShieldAlert size={24} strokeWidth={1.5} />
                 </div>
@@ -349,8 +391,14 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
                   <p className="text-sm opacity-60">Immediate help from URBONT safety</p>
                 </div>
               </button>
-
-              <button className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group">
+ 
+              <button 
+                onClick={() => {
+                  setShowMenu(false);
+                  setShowCancelConfirm(true);
+                }}
+                className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group"
+              >
                 <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
                   <X size={24} strokeWidth={1.5} />
                 </div>
@@ -371,93 +419,153 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
         )}
 
         {showChat && (
-          <motion.div 
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            className="absolute inset-x-0 bottom-0 top-20 z-50 bg-white rounded-t-[32px] shadow-2xl flex flex-col overflow-hidden"
-          >
-            <div className="p-6 border-b border-[#001F3F]/5 flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
-                  <User size={20} />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-[#001F3F]">{tripDetails.passengerName}</p>
-                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Online</p>
-                </div>
-              </div>
-              <button onClick={() => setShowChat(false)} className="p-2 bg-[#001F3F]/5 rounded-full"><X size={20} /></button>
-            </div>
+          <SmartChat 
+            rideId={tripDetails.id}
+            senderRole="chauffeur"
+            passengerName={tripDetails.passengerName}
+            onClose={() => setShowChat(false)}
+          />
+        )}
+      </AnimatePresence>
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {chatHistory.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'driver' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-4 rounded-2xl text-sm ${msg.role === 'driver' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#001F3F] rounded-tl-none'}`}>
-                    {msg.text}
+      {/* Emergency Modal */}
+      <AnimatePresence>
+        {showEmergencyModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[60] bg-red-900/90 backdrop-blur-md flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="w-full max-w-sm bg-white rounded-3xl p-8 text-center space-y-8"
+            >
+              <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <ShieldAlert size={40} strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-red-600 mb-2">Emergency Assistance</h3>
+                <p className="text-gray-600">Who do you need to contact?</p>
+              </div>
+              <div className="space-y-3">
+                <button onClick={() => alert('Calling 911...')} className="w-full py-4 bg-red-600 text-white rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-red-600/30">
+                  Call 911
+                </button>
+                <button onClick={() => alert('Calling Safety Team...')} className="w-full py-4 bg-[#001F3F] text-white rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-[#001F3F]/30">
+                  URBONT Safety Team
+                </button>
+                <button onClick={() => setShowEmergencyModal(false)} className="w-full py-4 text-gray-500 font-medium">
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Route Modal */}
+      <AnimatePresence>
+        {showRouteModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[60] bg-white flex flex-col"
+          >
+            <div className="p-6 border-b border-[#001F3F]/10 flex justify-between items-center bg-white shadow-sm z-10">
+              <h3 className="text-xl font-medium text-[#001F3F]">Route Overview</h3>
+              <button onClick={() => setShowRouteModal(false)} className="p-2 bg-[#001F3F]/5 rounded-full"><X size={24} /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div className="flex gap-4">
+                <div className="flex flex-col items-center pt-2">
+                  <div className="w-4 h-4 rounded-full bg-[#001F3F]" />
+                  <div className="w-0.5 flex-1 bg-[#001F3F]/10 my-1" />
+                  <div className="w-4 h-4 rounded-full border-2 border-[#001F3F]" />
+                </div>
+                <div className="flex-1 space-y-8 pb-8">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#001F3F]/60 mb-1">Pickup</p>
+                    <p className="text-lg font-medium text-[#001F3F]">{tripDetails.pickup}</p>
+                    <p className="text-sm text-[#001F3F]/60">10:30 AM</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-[#001F3F]/60 mb-1">Dropoff</p>
+                    <p className="text-lg font-medium text-[#001F3F]">{tripDetails.dropoff}</p>
+                    <p className="text-sm text-[#001F3F]/60">11:15 AM (Est.)</p>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            <div className="p-6 border-t border-[#001F3F]/5 flex flex-col gap-3">
-              <div className="flex gap-3">
-                <input 
-                  type="text" 
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-[#001F3F]/5 rounded-xl px-4 py-3 text-sm outline-none"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && chatMessage.trim()) {
-                      setChatHistory([...chatHistory, { role: 'driver', text: chatMessage }]);
-                      setChatMessage('');
-                    }
-                  }}
-                />
-                <button 
-                  onClick={async () => {
-                    if (!chatMessage.trim() || isRefining) return;
-                    setIsRefining(true);
-                    try {
-                      const res = await fetch('/api/ai/refine-message', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: chatMessage, context: 'chauffeur' })
-                      });
-                      const data = await res.json();
-                      if (data.refinedText) {
-                        setChatMessage(data.refinedText);
-                      }
-                    } catch (error) {
-                      console.error('AI Refinement failed', error);
-                    } finally {
-                      setIsRefining(false);
-                    }
-                  }}
-                  disabled={isRefining || !chatMessage.trim()}
-                  className="p-3 bg-[#001F3F]/5 text-[#001F3F] rounded-xl hover:bg-[#001F3F]/10 transition-colors disabled:opacity-50"
-                  title="AI Refine Message"
-                >
-                  {isRefining ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
-                </button>
-                <button 
-                  onClick={() => {
-                    if (chatMessage.trim()) {
-                      setChatHistory([...chatHistory, { role: 'driver', text: chatMessage }]);
-                      setChatMessage('');
-                    }
-                  }}
-                  className="p-3 bg-[#001F3F] text-white rounded-xl"
-                >
-                  <ArrowRight size={20} />
-                </button>
               </div>
-              <p className="text-[10px] text-[#001F3F]/40 text-center">AI Refinement powered by Groq</p>
+
+              <div className="space-y-4 pt-6 border-t border-[#001F3F]/10">
+                <h4 className="font-medium text-[#001F3F]">Turn-by-Turn</h4>
+                {[
+                  { dist: '0.0 mi', text: 'Start on Main St', icon: <Navigation size={16} /> },
+                  { dist: '0.5 mi', text: 'Turn right on 5th Ave', icon: <ArrowRight size={16} /> },
+                  { dist: '2.1 mi', text: 'Merge onto I-95 N', icon: <ArrowUpRight size={16} /> },
+                  { dist: '5.4 mi', text: 'Take exit 42 towards Airport', icon: <ArrowUpRight size={16} /> },
+                  { dist: '1.2 mi', text: 'Arrive at Terminal 4', icon: <MapPin size={16} /> },
+                ].map((step, i) => (
+                  <div key={i} className="flex items-start gap-4 p-3 rounded-xl hover:bg-[#001F3F]/5 transition-colors">
+                    <div className="mt-1 text-[#001F3F]">{step.icon}</div>
+                    <div>
+                      <p className="font-medium text-[#001F3F]">{step.text}</p>
+                      <p className="text-xs text-[#001F3F]/60">{step.dist}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Cancel Confirm Modal */}
+      <AnimatePresence>
+        {showCancelConfirm && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#001F3F] border border-white/10 rounded-3xl p-8 w-full max-w-sm text-center space-y-6"
+            >
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
+                <AlertTriangle size={32} className="text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-xl font-light text-white mb-2">Cancel Trip?</h3>
+                <p className="text-white/60 text-sm">Are you sure you want to cancel this trip? This action cannot be undone.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="py-4 rounded-xl border border-white/10 text-white font-medium uppercase tracking-widest text-xs hover:bg-white/5"
+                >
+                  Keep Trip
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowCancelConfirm(false);
+                    onLogout();
+                  }}
+                  className="py-4 rounded-xl bg-red-500 text-white font-medium uppercase tracking-widest text-xs hover:bg-red-600 shadow-lg shadow-red-500/20"
+                >
+                  Cancel Trip
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

@@ -48,15 +48,25 @@ import {
   Mail,
   AlertTriangle,
   MessageSquare,
+  Thermometer,
   Building2,
   UserPlus,
   Calendar,
   Heart,
+  Loader2,
+  Droplets,
+  Wifi,
+  Wine,
+  Package,
+  ShoppingBag,
+  Shirt,
+  UserCheck
 } from 'lucide-react';
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
 import DriverDashboardMobile from './components/DriverDashboardMobile';
 import SuggestionsScreen from './components/SuggestionsScreen';
+import SmartChat from './components/SmartChat';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -73,7 +83,18 @@ export default function App() {
     phone: '+58 424-5661220',
     email: 'angelelisx@gmail.com',
     accountType: 'personal',
-    otherAddresses: []
+    otherAddresses: [],
+    ridePreferences: {
+      temperature: 'Neutral',
+      music: 'Silence',
+      conversation: 'Minimal'
+    },
+    loyalty: {
+      level: 'Gold',
+      points: 2450,
+      nextLevelPoints: 5000,
+      ridesThisMonth: 12
+    }
   });
   
   const [editingAddressType, setEditingAddressType] = useState<'home' | 'work' | 'other' | null>(null);
@@ -194,10 +215,10 @@ export default function App() {
                     <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">SIGNATURE</span>
                   </button>
                   <button onClick={() => navigate('membership', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">THE CLUB</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">CLUB</span>
                   </button>
                   <button onClick={() => navigate('customer-service', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">HELP CENTER</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">ASSISTANCE</span>
                   </button>
                 </div>
 
@@ -206,7 +227,7 @@ export default function App() {
                   <button onClick={() => navigate('profile', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <User size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY INFO</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">ACCOUNT</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-sans text-sm font-normal text-[#001F3F]/80">Angel Boyer</span>
@@ -216,35 +237,35 @@ export default function App() {
                   <button onClick={() => navigate('preferences', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Settings size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY PREFERENCES</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">PREFERENCES</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('ride-history', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Clock size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY JOURNEY HISTORY</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">JOURNEYS</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('payment-methods', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <CreditCard size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">PAYMENT</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">WALLET</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('gift-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Gift size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">GIFT A RIDE</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">SEND RIDE</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('suggestions', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <MessageSquare size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">SUGGESTIONS</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">FEEDBACK</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
@@ -348,6 +369,7 @@ export default function App() {
             vehicle={selectedVehicle || VEHICLES[1]}
             onBack={() => navigate('vehicle-selection')}
             onConfirm={() => navigate('searching')}
+            onPaymentMethods={() => navigate('payment-methods')}
           />
         )}
         {currentScreen === 'searching' && (
@@ -375,6 +397,8 @@ export default function App() {
               setActiveTrip(false);
               navigate('trip-completed');
             }}
+            isLoaded={isLoaded}
+            loadError={loadError}
           />
         )}
         {currentScreen === 'trip-completed' && (
@@ -394,7 +418,7 @@ export default function App() {
             }}
             onSignOut={() => navigate('welcome')}
             onLegal={() => navigate('legal', returnToMenu)}
-            onApiHealth={() => navigate('api-health', returnToMenu)}
+            onRidePreferences={() => navigate('ride-preferences', returnToMenu)}
             onUpdateProfile={(updated) => setUserProfile(prev => ({ ...prev, ...updated }))}
           />
         )}
@@ -434,6 +458,7 @@ export default function App() {
         )}
         {currentScreen === 'membership' && (
           <MembershipScreen 
+            userProfile={userProfile}
             onBack={handleBack} 
           />
         )}
@@ -470,9 +495,11 @@ export default function App() {
             onBack={handleBack} 
           />
         )}
-        {currentScreen === 'api-health' && (
-          <ApiHealthScreen 
-            onBack={handleBack} 
+        {currentScreen === 'ride-preferences' && (
+          <RidePreferencesScreen 
+            preferences={userProfile.ridePreferences!}
+            onBack={handleBack}
+            onSave={(prefs) => setUserProfile(prev => ({ ...prev, ridePreferences: prefs }))}
           />
         )}
       </AnimatePresence>
@@ -605,7 +632,10 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
           </div>
         </div>
 
-        <button className="mt-8 font-sans text-xs text-white/60 uppercase tracking-widest hover:text-white transition-colors font-medium">
+        <button 
+          onClick={() => alert("Password reset link sent to your email.")}
+          className="mt-8 font-sans text-xs text-white/60 uppercase tracking-widest hover:text-white transition-colors font-medium"
+        >
           Forgot Password?
         </button>
       </div>
@@ -631,6 +661,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
 function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => void, onComplete: () => void }) {
   const [step, setStep] = useState(1);
   const [documents, setDocuments] = useState<Record<string, string | null>>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const REQUIRED_DOCS = [
     { id: 'limoPermit', label: 'Miami Dade County Limo Permit' },
@@ -658,14 +689,14 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-[#F5F7FA] text-[#001F3F] relative"
+      className="h-full w-full flex flex-col navy-gradient-bg text-white relative"
     >
-      <div className="bg-[#001F3F] text-white p-6 pt-12 pb-8 rounded-b-[2rem] shadow-xl z-10 shrink-0">
+      <div className="p-6 pt-12 pb-8 z-10 shrink-0">
         <div className="flex items-center gap-4">
-          <button onClick={step === 1 ? onBack : () => setStep(step - 1)} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors">
+          <button onClick={step === 1 ? onBack : step === 3 ? onComplete : () => setStep(step - 1)} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors text-white">
             <ArrowLeft size={24} />
           </button>
-          <h2 className="font-sans text-xl font-light uppercase tracking-widest">
+          <h2 className="font-sans text-xl font-light uppercase tracking-widest text-white">
             {step === 1 ? 'Create Account' : step === 2 ? 'Upload Documents' : 'Application Sent'}
           </h2>
         </div>
@@ -675,38 +706,51 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
         {step === 1 && (
           <div className="flex flex-col items-center justify-center h-full space-y-8">
             <div className="text-center space-y-4">
-              <h3 className="text-2xl font-light">Join URBONT</h3>
-              <p className="text-sm opacity-60 max-w-xs mx-auto">
+              <h3 className="text-2xl font-light text-white">Join URBONT</h3>
+              <p className="text-sm text-white/60 max-w-xs mx-auto">
                 Sign up with your Google account to start your application process as a professional chauffeur.
               </p>
             </div>
 
             <button 
-              onClick={() => setStep(2)}
-              className="w-full max-w-sm py-4 bg-white border border-black/10 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-black/5 transition-colors"
+              onClick={() => {
+                setIsLoading(true);
+                setTimeout(() => {
+                  setIsLoading(false);
+                  setStep(2);
+                }, 1500);
+              }}
+              disabled={isLoading}
+              className="w-full max-w-sm py-4 bg-white border border-black/10 rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-black/5 transition-colors disabled:opacity-50"
             >
-              <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">G</div>
-              <span className="font-medium">Continue with Google (Gmail)</span>
+              {isLoading ? (
+                <Loader2 className="animate-spin text-[#001F3F]" />
+              ) : (
+                <>
+                  <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">G</div>
+                  <span className="font-medium">Continue with Google (Gmail)</span>
+                </>
+              )}
             </button>
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-6 pb-24">
-            <p className="text-sm opacity-80">
+            <p className="text-sm text-white/80">
               Please upload clear, legible copies of the following required documents. Your application will be reviewed once all documents are submitted.
             </p>
 
             <div className="space-y-4">
               {REQUIRED_DOCS.map(doc => (
-                <div key={doc.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
+                <div key={doc.id} className="bg-white/10 backdrop-blur-md p-4 rounded-xl shadow-sm border border-white/10 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${documents[doc.id] ? 'bg-green-100 text-green-600' : 'bg-[#001F3F]/5 text-[#001F3F]/40'}`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${documents[doc.id] ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'}`}>
                       {documents[doc.id] ? <CheckCircle2 size={20} /> : (doc.isPhoto ? <Camera size={20} /> : <FileText size={20} />)}
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{doc.label}</p>
-                      {documents[doc.id] && <p className="text-[10px] text-green-600 uppercase tracking-widest mt-1">Uploaded</p>}
+                      <p className="text-sm font-medium text-white">{doc.label}</p>
+                      {documents[doc.id] && <p className="text-[10px] text-green-400 uppercase tracking-widest mt-1">Uploaded</p>}
                     </div>
                   </div>
                   
@@ -721,51 +765,46 @@ function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => voi
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <div className={`px-4 py-2 rounded-lg text-xs font-medium uppercase tracking-widest transition-colors ${documents[doc.id] ? 'bg-black/5 text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
+                    <div className={`px-4 py-2 rounded-lg text-xs font-medium uppercase tracking-widest transition-colors ${documents[doc.id] ? 'bg-white/10 text-white' : 'bg-white text-[#001F3F]'}`}>
                       {documents[doc.id] ? 'Replace' : 'Upload'}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+
+            <div className="fixed bottom-0 left-0 right-0 p-6 bg-[#001F3F] border-t border-white/10 z-20">
+              <button 
+                onClick={() => setStep(3)}
+                disabled={!allDocsUploaded}
+                className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest text-sm transition-all shadow-lg ${allDocsUploaded ? 'bg-[#001F3F] text-white shadow-[#001F3F]/20' : 'bg-black/10 text-black/40 cursor-not-allowed'}`}
+              >
+                Submit Application
+              </button>
+            </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="flex flex-col items-center justify-center h-full space-y-6 text-center">
-            <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-8">
+            <div className="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
               <CheckCircle2 size={48} />
             </div>
-            <h3 className="text-2xl font-light">Application Submitted</h3>
-            <p className="text-sm opacity-60 max-w-xs">
-              Thank you for applying. Our team will review your documents and contact you within 2-3 business days.
-            </p>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-light">Application Received</h3>
+              <p className="text-sm opacity-60 max-w-xs mx-auto">
+                Thank you for applying to be an URBONT chauffeur. Our team will review your documents and contact you within 2-3 business days.
+              </p>
+            </div>
+            <button 
+              onClick={onComplete}
+              className="w-full max-w-sm py-4 bg-[#001F3F] text-white rounded-xl font-bold uppercase tracking-widest text-sm shadow-lg shadow-[#001F3F]/20"
+            >
+              Back to Welcome
+            </button>
           </div>
         )}
       </div>
-
-      {step === 2 && (
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-white via-white to-transparent">
-          <button 
-            disabled={!allDocsUploaded}
-            onClick={() => setStep(3)}
-            className="w-full py-5 bg-[#001F3F] text-white font-medium uppercase tracking-[0.2em] rounded-full shadow-xl disabled:opacity-50 transition-all text-xs"
-          >
-            Submit Application
-          </button>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <button 
-            onClick={onComplete}
-            className="w-full py-5 bg-[#001F3F] text-white font-medium uppercase tracking-[0.2em] rounded-full shadow-xl transition-all text-xs"
-          >
-            Return to Login
-          </button>
-        </div>
-      )}
     </motion.div>
   );
 }
@@ -2098,12 +2137,24 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
             </h4>
             <div className="grid grid-cols-2 gap-3">
               {(vehicle.id === 'concierge' 
-                ? ['Package Delivery', 'Personal Shopping', 'Dry Cleaning', 'Wait Service']
-                : ['Fiji Water', 'Vintage Wine', 'WiFi', 'Tablet']
-              ).map(amenity => (
-                <div key={amenity} className="flex items-center gap-3 p-3 rounded-xl bg-[#001F3F]/[0.02] border border-[#001F3F]/5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#001F3F]/20" />
-                  <span className="text-sm font-medium text-[#001F3F]">{amenity}</span>
+                ? [
+                    { name: 'Package Delivery', icon: <Package size={14} /> },
+                    { name: 'Personal Shopping', icon: <ShoppingBag size={14} /> },
+                    { name: 'Dry Cleaning', icon: <Shirt size={14} /> },
+                    { name: 'Wait Service', icon: <UserCheck size={14} /> }
+                  ]
+                : [
+                    { name: 'Fiji Water', icon: <Droplets size={14} /> },
+                    { name: 'Vintage Wine', icon: <Wine size={14} /> },
+                    { name: 'WiFi', icon: <Wifi size={14} /> },
+                    { name: 'Tablet', icon: <Smartphone size={14} /> }
+                  ]
+              ).map(item => (
+                <div key={item.name} className="flex items-center gap-3 p-3 rounded-xl bg-[#001F3F]/[0.02] border border-[#001F3F]/5">
+                  <div className="text-[#001F3F]/60">
+                    {item.icon}
+                  </div>
+                  <span className="text-sm font-medium text-[#001F3F]">{item.name}</span>
                 </div>
               ))}
             </div>
@@ -2177,7 +2228,7 @@ function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onC
   );
 }
 
-function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Vehicle, onBack: () => void, onConfirm: () => void }) {
+function PaymentConfirmationScreen({ vehicle, onBack, onConfirm, onPaymentMethods }: { vehicle: Vehicle, onBack: () => void, onConfirm: () => void, onPaymentMethods: () => void }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const stripe = useStripe();
@@ -2281,7 +2332,7 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm }: { vehicle: Ve
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Payment Method</h3>
-            <button className="text-sm font-bold text-[#001F3F]">Change</button>
+            <button onClick={onPaymentMethods} className="text-sm font-bold text-[#001F3F]">Change</button>
           </div>
           
           {clientSecret && !clientSecret.startsWith('mock_') ? (
@@ -2393,7 +2444,7 @@ function ChauffeurProfileScreen({ onBack, onConfirm }: { onBack: () => void, onC
           <ArrowLeft size={24} />
         </button>
         <button className="absolute top-6 right-6 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-all">
-          <Heart size={24} />
+          <Crown size={24} />
         </button>
 
         <div className="absolute bottom-6 left-6 right-6 text-white">
@@ -2515,9 +2566,9 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
             </div>
             <button 
               onClick={() => setIsFavorite(!isFavorite)}
-              className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-rose-100 text-rose-500' : 'bg-white text-gray-300 hover:text-rose-400'}`}
+              className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-amber-100 text-amber-600' : 'bg-white text-gray-300 hover:text-amber-500'}`}
             >
-              <Heart size={20} className={isFavorite ? 'fill-rose-500' : ''} />
+              <Crown size={20} className={isFavorite ? 'fill-amber-500' : ''} />
             </button>
           </div>
 
@@ -2565,7 +2616,7 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip }: { vehicle: Vehicle, onBack: () => void, onEndTrip: () => void, onCompleteTrip: () => void }) {
+function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, loadError }: { vehicle: Vehicle, onBack: () => void, onEndTrip: () => void, onCompleteTrip: () => void, isLoaded: boolean, loadError: Error | undefined }) {
   const [isPanelExpanded, setIsPanelExpanded] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
@@ -2575,6 +2626,122 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip }: { vehicl
   const [messages, setMessages] = useState([
     { id: 1, text: "Hello! I am 5 minutes away from your location.", sender: 'chauffeur' }
   ]);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [carPos, setCarPos] = useState({ lat: 40.7128, lng: -74.0060 });
+  const [userPos, setUserPos] = useState({ lat: 40.7150, lng: -74.0080 });
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setUserPos({ lat: latitude, lng: longitude });
+        setCarPos({ lat: latitude + 0.005, lng: longitude + 0.005 });
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCarPos(prev => ({
+        lat: prev.lat - 0.0001,
+        lng: prev.lng - 0.0001
+      }));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const mapStyles = [
+    {
+      "featureType": "all",
+      "elementType": "geometry",
+      "stylers": [{"color": "#f5f5f5"}]
+    },
+    {
+      "featureType": "all",
+      "elementType": "labels.icon",
+      "stylers": [{"visibility": "off"}]
+    },
+    {
+      "featureType": "all",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#616161"}]
+    },
+    {
+      "featureType": "all",
+      "elementType": "labels.text.stroke",
+      "stylers": [{"color": "#f5f5f5"}]
+    },
+    {
+      "featureType": "administrative.land_parcel",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#bdbdbd"}]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "geometry",
+      "stylers": [{"color": "#eeeeee"}]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#757575"}]
+    },
+    {
+      "featureType": "poi.park",
+      "elementType": "geometry",
+      "stylers": [{"color": "#e5e5e5"}]
+    },
+    {
+      "featureType": "poi.park",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#9e9e9e"}]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry",
+      "stylers": [{"color": "#ffffff"}]
+    },
+    {
+      "featureType": "road.arterial",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#757575"}]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "geometry",
+      "stylers": [{"color": "#dadada"}]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#616161"}]
+    },
+    {
+      "featureType": "road.local",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#9e9e9e"}]
+    },
+    {
+      "featureType": "transit.line",
+      "elementType": "geometry",
+      "stylers": [{"color": "#e5e5e5"}]
+    },
+    {
+      "featureType": "transit.station",
+      "elementType": "geometry",
+      "stylers": [{"color": "#eeeeee"}]
+    },
+    {
+      "featureType": "water",
+      "elementType": "geometry",
+      "stylers": [{"color": "#c9c9c9"}]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels.text.fill",
+      "stylers": [{"color": "#9e9e9e"}]
+    }
+  ];
 
   useEffect(() => {
     if (notification) {
@@ -2599,8 +2766,50 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip }: { vehicl
     >
       {/* Map Area */}
       <div className="flex-1 relative bg-gray-100">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="w-full h-full bg-[url('https://www.google.com/maps/vt/pb=!1m4!1m3!1i14!2i4093!3i6151!2m3!1e0!2sm!3i6151!3m8!2sen!3sus!5e1105!12m4!1e68!2m2!1sset!2sRoadmap!4e0!5m1!5f2!23i1301875')] bg-repeat" />
+        <div className="absolute inset-0">
+          {isLoaded ? (
+            <GoogleMap
+              mapContainerStyle={{ width: '100%', height: '100%' }}
+              center={userPos}
+              zoom={14}
+              onLoad={setMap}
+              options={{
+                disableDefaultUI: true,
+                styles: mapStyles,
+                zoomControl: false,
+                streetViewControl: false,
+                mapTypeControl: false,
+                fullscreenControl: false,
+                clickableIcons: false,
+              }}
+            >
+              <Marker 
+                position={userPos}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 7,
+                  fillColor: '#001F3F',
+                  fillOpacity: 1,
+                  strokeWeight: 2,
+                  strokeColor: '#FFFFFF',
+                }}
+              />
+              <Marker 
+                position={carPos}
+                icon={{
+                  path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  scale: 6,
+                  fillColor: '#001F3F',
+                  fillOpacity: 1,
+                  strokeWeight: 2,
+                  strokeColor: '#FFFFFF',
+                  rotation: 45
+                }}
+              />
+            </GoogleMap>
+          ) : (
+            <div className="w-full h-full bg-gray-100 animate-pulse" />
+          )}
         </div>
 
         {/* Top Controls */}
@@ -2608,32 +2817,35 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip }: { vehicl
           <button onClick={onBack} className="p-3 bg-white rounded-full shadow-lg text-[#001F3F] hover:bg-gray-50 transition-colors">
             <ArrowLeft size={20} />
           </button>
-          <div className="bg-[#001F3F] px-4 py-2 rounded-full shadow-lg">
-            <span className="text-xs font-bold text-white uppercase tracking-wider">En Route</span>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                // Mock share functionality
+                const shareText = `I'm on my way with Urbont! Track my trip here: ${window.location.href}`;
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'Urbont Trip',
+                    text: shareText,
+                    url: window.location.href
+                  }).catch(console.error);
+                } else {
+                  alert('Trip link copied to clipboard!');
+                  navigator.clipboard.writeText(shareText);
+                }
+              }}
+              className="p-3 bg-white rounded-full shadow-lg text-[#001F3F] hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center"
+            >
+              <Share2 size={20} />
+            </button>
+            <button 
+              onClick={() => setShowSOS(true)}
+              className="p-3 bg-red-600 rounded-full shadow-lg text-white hover:bg-red-700 active:scale-95 transition-all flex items-center justify-center"
+            >
+              <AlertTriangle size={20} />
+            </button>
           </div>
-          <button 
-            onClick={() => setShowSOS(true)}
-            className="p-3 bg-red-600 rounded-full shadow-lg text-white hover:bg-red-700 active:scale-95 transition-all flex items-center justify-center"
-          >
-            <AlertTriangle size={20} />
-          </button>
         </div>
 
-        {/* Animated Car Marker */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <motion.div 
-            animate={{ 
-              x: [0, -20, 10, 0],
-              y: [0, 30, -10, 0],
-              rotate: [0, 10, -5, 0]
-            }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-            className="w-8 h-12 bg-[#001F3F] rounded-md shadow-xl border-2 border-white flex flex-col items-center justify-between p-1"
-          >
-            <div className="w-full h-2 bg-white/20 rounded-sm" />
-            <div className="w-full h-1 bg-white/20 rounded-sm" />
-          </motion.div>
-        </div>
       </div>
 
       {/* Bottom Panel */}
@@ -2934,61 +3146,15 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip }: { vehicl
         )}
       </AnimatePresence>
 
-      {/* Simple Chat Modal Overlay */}
+      {/* Smart Chat Modal Overlay */}
       <AnimatePresence>
         {showChat && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black/60 z-50 flex items-end"
-          >
-            <motion.div 
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              className="w-full bg-white rounded-t-3xl p-6 h-[80%] flex flex-col"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold">Chat with {CHAUFFEUR.name}</h3>
-                <button onClick={() => setShowChat(false)} className="p-2 hover:bg-gray-100 rounded-full">
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="flex-1 bg-gray-50 rounded-2xl p-4 overflow-y-auto mb-4 space-y-4">
-                {messages.map((msg) => (
-                  <div 
-                    key={msg.id} 
-                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`p-3 rounded-2xl shadow-sm max-w-[80%] ${
-                      msg.sender === 'user' 
-                        ? 'bg-[#001F3F] text-white rounded-br-none' 
-                        : 'bg-white text-[#001F3F] rounded-bl-none'
-                    }`}>
-                      <p className="text-sm">{msg.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  value={chatMessage}
-                  onChange={(e) => setChatMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Type a message..." 
-                  className="flex-1 bg-gray-100 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#001F3F]/10"
-                />
-                <button 
-                  onClick={handleSendMessage}
-                  className="p-3 bg-[#001F3F] text-white rounded-xl active:scale-95 transition-all"
-                >
-                  <ArrowRight size={20} />
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
+          <SmartChat 
+            rideId="active-ride-123"
+            senderRole="passenger"
+            passengerName={CHAUFFEUR.name}
+            onClose={() => setShowChat(false)}
+          />
         )}
       </AnimatePresence>
     </motion.div>
@@ -3002,7 +3168,7 @@ function ProfileScreen({
   onEditAddress, 
   onSignOut, 
   onLegal,
-  onApiHealth,
+  onRidePreferences,
   onUpdateProfile
 }: { 
   userProfile: UserProfile, 
@@ -3011,7 +3177,7 @@ function ProfileScreen({
   onEditAddress: (type: 'home' | 'work' | 'other') => void, 
   onSignOut: () => void, 
   onLegal: () => void, 
-  onApiHealth: () => void,
+  onRidePreferences: () => void,
   onUpdateProfile: (updated: Partial<UserProfile>) => void,
   key?: string 
 }) {
@@ -3194,11 +3360,6 @@ function ProfileScreen({
           <div className="pt-4 space-y-4">
             <button onClick={onLegal} className="flex justify-between items-center w-full p-5 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] hover:bg-black/[0.02] transition-colors">
               <span className="text-base font-medium text-[#001F3F]">Terms & Privacy</span>
-              <ChevronRight size={16} className="text-[#001F3F]/30" />
-            </button>
-            
-            <button onClick={onApiHealth} className="flex justify-between items-center w-full p-5 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] hover:bg-black/[0.02] transition-colors">
-              <span className="text-base font-medium text-[#001F3F]">API Health Check</span>
               <ChevronRight size={16} className="text-[#001F3F]/30" />
             </button>
             
@@ -4158,6 +4319,122 @@ function GiftRideScreen({ onBack, isLoaded }: { onBack: () => void, isLoaded: bo
   );
 }
 
+function RidePreferencesScreen({ preferences, onBack, onSave }: { 
+  preferences: UserProfile['ridePreferences'], 
+  onBack: () => void,
+  onSave: (prefs: UserProfile['ridePreferences']) => void 
+}) {
+  const [temp, setTemp] = useState(preferences?.temperature || 'Neutral');
+  const [music, setMusic] = useState(preferences?.music || 'Silence');
+  const [conv, setConv] = useState(preferences?.conversation || 'Minimal');
+
+  return (
+    <motion.div 
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '100%' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+      className="h-full w-full bg-white text-[#001F3F] flex flex-col"
+    >
+      <div className="flex items-center p-6 border-b border-gray-100">
+        <button onClick={onBack} className="p-2 -ml-2 text-[#001F3F]">
+          <ArrowLeft size={24} />
+        </button>
+        <h2 className="text-lg font-medium uppercase tracking-widest ml-4">Ride Preferences</h2>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 space-y-10 no-scrollbar">
+        {/* Temperature */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-3 text-[#001F3F]/60">
+            <Thermometer size={18} />
+            <h3 className="text-xs font-bold uppercase tracking-widest">Cabin Temperature</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {['Cool', 'Neutral', 'Warm'].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTemp(t as any)}
+                className={`py-4 rounded-xl text-sm font-medium transition-all ${
+                  temp === t 
+                    ? 'bg-[#001F3F] text-white shadow-lg' 
+                    : 'bg-gray-50 text-[#001F3F]/60 hover:bg-gray-100'
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Music */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-3 text-[#001F3F]/60">
+            <Music size={18} />
+            <h3 className="text-xs font-bold uppercase tracking-widest">In-Car Entertainment</h3>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {['Jazz', 'Classical', 'Pop', 'Silence'].map((m) => (
+              <button
+                key={m}
+                onClick={() => setMusic(m as any)}
+                className={`py-4 rounded-xl text-sm font-medium transition-all ${
+                  music === m 
+                    ? 'bg-[#001F3F] text-white shadow-lg' 
+                    : 'bg-gray-50 text-[#001F3F]/60 hover:bg-gray-100'
+                }`}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Conversation */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-3 text-[#001F3F]/60">
+            <MessageSquare size={18} />
+            <h3 className="text-xs font-bold uppercase tracking-widest">Conversation Level</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {['Active', 'Minimal', 'Silence'].map((c) => (
+              <button
+                key={c}
+                onClick={() => setConv(c as any)}
+                className={`py-4 rounded-xl text-sm font-medium transition-all ${
+                  conv === c 
+                    ? 'bg-[#001F3F] text-white shadow-lg' 
+                    : 'bg-gray-50 text-[#001F3F]/60 hover:bg-gray-100'
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+          <p className="text-xs text-[#001F3F]/60 leading-relaxed italic">
+            Your preferences will be shared with your chauffeur to ensure your journey is tailored to your exact requirements.
+          </p>
+        </div>
+      </div>
+
+      <div className="p-6 pb-10">
+        <button 
+          onClick={() => {
+            onSave({ temperature: temp as any, music: music as any, conversation: conv as any });
+            onBack();
+          }}
+          className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all shadow-xl"
+        >
+          Save Preferences
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 function SettingsScreen({ onBack }: { onBack: () => void }) {
   const [language, setLanguage] = useState('English');
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -4415,6 +4692,32 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void }) {
                 <div className="space-y-3">
                   {options[editingPref].map((option) => {
                     const isSelected = selectedValues[editingPref as keyof typeof selectedValues] === option;
+                    
+                    // Icon mapping for options
+                    const getOptionIcon = (opt: string) => {
+                      switch(opt) {
+                        case 'Water': return <Droplets size={18} />;
+                        case 'Newspaper': return <FileText size={18} />;
+                        case 'Both': return <Plus size={18} />;
+                        case 'None': return <X size={18} />;
+                        case 'Chillout': return <Music size={18} />;
+                        case 'Jazz': return <Music size={18} />;
+                        case 'Classical': return <Music size={18} />;
+                        case 'Radio': return <Music size={18} />;
+                        case 'Silence': return <BellOff size={18} />;
+                        case 'Quiet': return <MessageSquare size={18} />;
+                        case 'Friendly': return <MessageSquare size={18} />;
+                        case 'No Preference': return <Check size={18} />;
+                        case 'Comfortable': return <Sun size={18} />;
+                        case 'Cool': return <Thermometer size={18} />;
+                        case 'Warm': return <Thermometer size={18} />;
+                        case 'Pickup Only': return <DoorOpen size={18} />;
+                        case 'Pickup & Dropoff': return <DoorOpen size={18} />;
+                        case 'No': return <X size={18} />;
+                        default: return null;
+                      }
+                    };
+
                     return (
                       <button
                         key={option}
@@ -4428,7 +4731,12 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void }) {
                             : 'bg-white text-[#001F3F] border border-transparent hover:border-[#001F3F]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
                         }`}
                       >
-                        {option}
+                        <div className="flex items-center gap-4">
+                          <div className="text-[#001F3F]/60">
+                            {getOptionIcon(option)}
+                          </div>
+                          {option}
+                        </div>
                         {isSelected && (
                           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
                             <CheckCircle2 size={20} className="text-[#001F3F]" />
@@ -5024,7 +5332,10 @@ function LegalScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function MembershipScreen({ onBack }: { onBack: () => void }) {
+function MembershipScreen({ userProfile, onBack }: { userProfile: UserProfile, onBack: () => void }) {
+  const loyalty = userProfile.loyalty || { level: 'Silver', points: 0, nextLevelPoints: 1000, ridesThisMonth: 0 };
+  const progress = (loyalty.points / loyalty.nextLevelPoints) * 100;
+
   const privileges = [
     { 
       name: 'PRESIDENTIAL', 
@@ -5064,26 +5375,29 @@ function MembershipScreen({ onBack }: { onBack: () => void }) {
 
       <div className="flex-1 overflow-y-auto px-6 pb-12 no-scrollbar">
         <div className="text-center space-y-4 mt-8 mb-16 px-6">
-          <h3 className="text-3xl font-light text-[#001F3F]">The Club</h3>
+          <h2 className="text-4xl font-light text-[#001F3F] uppercase tracking-[0.4em] mb-2">CLUB URBONT</h2>
+          <h3 className="text-xl font-light text-[#001F3F] uppercase tracking-[0.3em] opacity-60">{loyalty.level} STATUS</h3>
           <p className="text-base font-light text-[#001F3F] leading-relaxed">
-            Unlock elite status after taking 15 journeys within 6 months, or by invitation from another member.
+            {loyalty.level === 'Diamond' 
+              ? 'You have reached the pinnacle of Urbont membership. Enjoy unparalleled access and bespoke service.'
+              : `You are ${loyalty.nextLevelPoints - loyalty.points} points away from the next tier of exclusive benefits.`}
           </p>
           
           {/* Progress Tracker */}
           <div className="mt-12 space-y-4">
             <div className="flex justify-between items-end">
-              <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/40 font-bold">Status Tracker</span>
-              <span className="text-sm font-medium text-[#001F3F]">8 / 15 Journeys</span>
+              <span className="text-[10px] uppercase tracking-widest text-[#001F3F]/40 font-bold">Points Tracker</span>
+              <span className="text-sm font-medium text-[#001F3F]">{loyalty.points} / {loyalty.nextLevelPoints} PTS</span>
             </div>
             <div className="h-1.5 w-full bg-[#001F3F]/5 rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: '53%' }}
+                animate={{ width: `${progress}%` }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 className="h-full bg-[#001F3F] rounded-full"
               />
             </div>
-            <p className="text-[10px] text-[#001F3F]/60 font-medium italic">7 more journeys to unlock Elite Status</p>
+            <p className="text-[10px] text-[#001F3F]/60 font-medium italic">{loyalty.ridesThisMonth} journeys taken this month</p>
           </div>
         </div>
 
@@ -5123,111 +5437,8 @@ function MembershipScreen({ onBack }: { onBack: () => void }) {
         <button className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all">
           Become a Member
         </button>
-      </div>
-    </motion.div>
-  );
-}
-
-function ApiHealthScreen({ onBack }: { onBack: () => void }) {
-  const [status, setStatus] = useState<Record<string, 'loading' | 'success' | 'error' | 'missing'>>({
-    googleMaps: 'loading',
-    stripe: 'loading',
-    groq: 'loading',
-    cloudinary: 'loading',
-    translation: 'loading',
-    speech: 'loading',
-    aviation: 'loading',
-    freepik: 'loading'
-  });
-
-  useEffect(() => {
-    const checkApis = async () => {
-      const newStatus = { ...status };
-      
-      newStatus.googleMaps = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY ? 'success' : 'missing';
-      newStatus.stripe = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ? 'success' : 'missing';
-      newStatus.groq = 'missing'; 
-      newStatus.cloudinary = 'missing';
-      newStatus.translation = import.meta.env.VITE_GOOGLE_TRANSLATION_API_KEY ? 'success' : 'missing';
-      newStatus.speech = import.meta.env.VITE_GOOGLE_SPEECH_API_KEY ? 'success' : 'missing';
-      newStatus.aviation = import.meta.env.VITE_AVIATION_STACK_API_KEY ? 'success' : 'missing';
-      newStatus.freepik = import.meta.env.VITE_FREEPIK_API_KEY ? 'success' : 'missing';
-
-      setStatus(newStatus);
-    };
-
-    checkApis();
-  }, []);
-
-  const apis = [
-    { id: 'googleMaps', name: 'Google Maps API', desc: 'Used for routing and location search' },
-    { id: 'stripe', name: 'Stripe API', desc: 'Used for payment processing' },
-    { id: 'groq', name: 'Groq AI API', desc: 'Used for AI features' },
-    { id: 'cloudinary', name: 'Cloudinary API', desc: 'Used for image uploads' },
-    { id: 'translation', name: 'Google Translation API', desc: 'Used for chat translation' },
-    { id: 'speech', name: 'Google Speech API', desc: 'Used for voice commands' },
-    { id: 'aviation', name: 'Aviation Stack API', desc: 'Used for flight tracking' },
-    { id: 'freepik', name: 'Freepik API', desc: 'Used for animated icons' }
-  ];
-
-  return (
-    <motion.div 
-      initial={{ x: '100%' }}
-      animate={{ x: 0 }}
-      exit={{ x: '100%' }}
-      transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-      className="h-full w-full bg-[#F5F7FA] text-[#001F3F] flex flex-col"
-    >
-      <div className="bg-[#001F3F] text-white p-6 pt-12 pb-8 rounded-b-[2rem] shadow-xl z-10 shrink-0">
-        <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors">
-            <ArrowLeft size={24} />
-          </button>
-          <h2 className="font-sans text-xl font-light uppercase tracking-widest">
-            API Health Check
-          </h2>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-6">
-        <p className="text-sm opacity-80 mb-6">
-          This dashboard verifies if the required API keys are configured in the environment variables.
-        </p>
-
-        <div className="space-y-4">
-          {apis.map(api => (
-            <div key={api.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
-              <div className="flex flex-col flex-1">
-                <span className="text-sm font-medium">{api.name}</span>
-                <span className="text-xs text-[#001F3F]/50">{api.desc}</span>
-              </div>
-              <div className="shrink-0">
-                {status[api.id] === 'loading' && (
-                  <div className="w-6 h-6 border-2 border-[#001F3F]/20 border-t-[#001F3F] rounded-full animate-spin" />
-                )}
-                {status[api.id] === 'success' && (
-                  <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold">
-                    <CheckCircle2 size={14} />
-                    Active
-                  </div>
-                )}
-                {status[api.id] === 'missing' && (
-                  <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold">
-                    <Zap size={14} />
-                    Missing Key
-                  </div>
-                )}
-                {status[api.id] === 'error' && (
-                  <div className="flex items-center gap-1 text-red-600 bg-red-50 px-2 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold">
-                    <X size={14} />
-                    Error
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+    
+   </div>
     </motion.div>
   );
 }

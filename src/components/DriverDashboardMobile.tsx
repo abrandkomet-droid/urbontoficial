@@ -30,9 +30,13 @@ import {
   Phone,
   X,
   Camera,
-  Upload
+  Upload,
+  Plus,
+  ArrowLeft,
+  MapPin
 } from 'lucide-react';
 import DriverModeReimagined from './DriverModeReimagined';
+import SkeletonScreen from './SkeletonScreen';
 
 // --- Types ---
 type Tab = 'HOME' | 'RIDES' | 'EARNINGS' | 'PROFILE';
@@ -81,6 +85,19 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
   const [rideStatus, setRideStatus] = useState<RideStatus>('NONE');
   const [showIncomingModal, setShowIncomingModal] = useState(false);
   const [showComplianceModal, setShowComplianceModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    // Simulate initial loading to show skeleton
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleTabChange = (tab: Tab) => {
+    setIsLoading(true);
+    setActiveTab(tab);
+    setTimeout(() => setIsLoading(false), 600);
+  };
   
   const [driverProfile, setDriverProfile] = useState<DriverProfileData>({
     name: 'Alexander Boyer',
@@ -98,6 +115,7 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
   const [sessionEarnings, setSessionEarnings] = useState(0);
   const [completedTrips, setCompletedTrips] = useState(0);
   const [selectedRide, setSelectedRide] = useState<any>(null);
+  const [ridesSubTab, setRidesSubTab] = useState<'COMPLETED' | 'SCHEDULED' | 'CANCELLED'>('COMPLETED');
 
   // Toggle Online Flow
   const handleToggleOnline = () => {
@@ -148,6 +166,10 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
     );
   }
 
+  if (isLoading) {
+    return <SkeletonScreen />;
+  }
+
   return (
     <div className="h-[100dvh] w-full bg-white text-[#001F3F] font-sans flex flex-col overflow-hidden relative">
       
@@ -195,9 +217,23 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
               onRequestOpen={() => setShowIncomingModal(true)}
               sessionEarnings={sessionEarnings}
               completedTrips={completedTrips}
+              onNavigate={setActiveTab}
+              onSelectRide={(ride) => {
+                setSelectedRide(ride);
+                setActiveTab('RIDES');
+              }}
             />
           )}
-          {activeTab === 'RIDES' && <RidesTab key="rides" onSelectRide={setSelectedRide} />}
+          {activeTab === 'RIDES' && (
+            <RidesTab 
+              key="rides" 
+              activeSubTab={ridesSubTab}
+              setActiveSubTab={setRidesSubTab}
+              onSelectRide={setSelectedRide}
+              selectedRide={selectedRide}
+              onBackToRides={() => setSelectedRide(null)}
+            />
+          )}
           {activeTab === 'EARNINGS' && <EarningsTab key="earnings" />}
           {activeTab === 'PROFILE' && (
             <ProfileTab 
@@ -212,10 +248,10 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
 
       {/* --- Bottom Navigation --- */}
       <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#001F3F]/5 pb-12 pt-4 px-6 flex justify-between items-center z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
-        <NavButton icon={<Home />} label="Home" active={activeTab === 'HOME'} onClick={() => setActiveTab('HOME')} />
-        <NavButton icon={<Map />} label="Rides" active={activeTab === 'RIDES'} onClick={() => setActiveTab('RIDES')} />
-        <NavButton icon={<Wallet />} label="Earnings" active={activeTab === 'EARNINGS'} onClick={() => setActiveTab('EARNINGS')} />
-        <NavButton icon={<User />} label="Profile" active={activeTab === 'PROFILE'} onClick={() => setActiveTab('PROFILE')} />
+        <NavButton icon={<Home />} label="Home" active={activeTab === 'HOME'} onClick={() => handleTabChange('HOME')} />
+        <NavButton icon={<Map />} label="Rides" active={activeTab === 'RIDES'} onClick={() => handleTabChange('RIDES')} />
+        <NavButton icon={<Wallet />} label="Earnings" active={activeTab === 'EARNINGS'} onClick={() => handleTabChange('EARNINGS')} />
+        <NavButton icon={<User />} label="Profile" active={activeTab === 'PROFILE'} onClick={() => handleTabChange('PROFILE')} />
       </nav>
 
       {/* --- Ride Detail Modal --- */}
@@ -320,13 +356,17 @@ function HomeTab({
   rideStatus, 
   onRequestOpen,
   sessionEarnings,
-  completedTrips
+  completedTrips,
+  onNavigate,
+  onSelectRide
 }: { 
   isOnline: boolean, 
   rideStatus: string, 
   onRequestOpen: () => void,
   sessionEarnings: number,
   completedTrips: number,
+  onNavigate: (tab: Tab) => void,
+  onSelectRide: (ride: any) => void,
   key?: string 
 }) {
   const [showRatingBreakdown, setShowRatingBreakdown] = useState(false);
@@ -340,16 +380,20 @@ function HomeTab({
     >
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-3">
-        <StatCard 
-          icon={<Wallet size={20} strokeWidth={1.5} />} 
-          label="Earnings" 
-          value={`$${sessionEarnings.toFixed(0)}`} 
-        />
-        <StatCard 
-          icon={<CarFront size={20} strokeWidth={1.5} />} 
-          label="Trips" 
-          value={completedTrips.toString()} 
-        />
+        <button onClick={() => onNavigate('EARNINGS')} className="text-left">
+          <StatCard 
+            icon={<Wallet size={20} strokeWidth={1.5} />} 
+            label="Earnings" 
+            value={`$${sessionEarnings.toFixed(0)}`} 
+          />
+        </button>
+        <button onClick={() => onNavigate('RIDES')} className="text-left">
+          <StatCard 
+            icon={<CarFront size={20} strokeWidth={1.5} />} 
+            label="Trips" 
+            value={completedTrips.toString()} 
+          />
+        </button>
         <button 
           onClick={() => setShowRatingBreakdown(!showRatingBreakdown)}
           className="bg-white border border-[#001F3F]/10 rounded-xl p-4 flex flex-col justify-between h-28 shadow-sm hover:bg-[#001F3F]/5 transition-colors text-left"
@@ -438,12 +482,40 @@ function HomeTab({
             time="10:30 AM" 
             amount="$85.00" 
             status="Completed"
+            onClick={() => {
+              onSelectRide({
+                id: '1',
+                date: 'Today, 10:30 AM',
+                from: 'JFK Airport, Terminal 4',
+                to: '15 Central Park West',
+                price: '$85.00',
+                status: 'Completed',
+                passenger: 'James Bond',
+                distance: '18.5 mi',
+                duration: '45 min'
+              });
+              onNavigate('RIDES');
+            }}
           />
           <ActivityItem 
             title="Downtown to Brooklyn" 
             time="08:45 AM" 
             amount="$45.00" 
             status="Completed"
+            onClick={() => {
+              onSelectRide({
+                id: '2',
+                date: 'Today, 08:45 AM',
+                from: '1 World Trade Center',
+                to: 'Williamsburg Hotel',
+                price: '$45.00',
+                status: 'Completed',
+                passenger: 'Sarah Connor',
+                distance: '5.2 mi',
+                duration: '22 min'
+              });
+              onNavigate('RIDES');
+            }}
           />
         </div>
       </div>
@@ -543,9 +615,20 @@ function ComplianceItem({ label, status, checked, onChange }: any) {
   );
 }
 
-function RidesTab({ onSelectRide }: { onSelectRide: (ride: any) => void, key?: string }) {
-  const [activeSubTab, setActiveSubTab] = useState<'COMPLETED' | 'SCHEDULED' | 'CANCELLED'>('COMPLETED');
-  
+function RidesTab({ 
+  activeSubTab, 
+  setActiveSubTab, 
+  onSelectRide, 
+  selectedRide, 
+  onBackToRides 
+}: { 
+  activeSubTab: 'COMPLETED' | 'SCHEDULED' | 'CANCELLED',
+  setActiveSubTab: (tab: 'COMPLETED' | 'SCHEDULED' | 'CANCELLED') => void,
+  onSelectRide: (ride: any) => void,
+  selectedRide: any | null,
+  onBackToRides: () => void,
+  key?: string 
+}) {
   const completedRides = [
     { 
       id: 'R-101',
@@ -620,6 +703,104 @@ function RidesTab({ onSelectRide }: { onSelectRide: (ride: any) => void, key?: s
 
   const currentRides = getRides();
 
+  if (selectedRide) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        className="space-y-6"
+      >
+        <div className="flex items-center gap-4">
+          <button onClick={onBackToRides} className="p-2 -ml-2 hover:bg-[#001F3F]/5 rounded-full transition-colors">
+            <ArrowLeft size={24} className="text-[#001F3F]" />
+          </button>
+          <h2 className="text-xl font-medium text-[#001F3F]">Ride Details</h2>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-[#001F3F]/10 overflow-hidden shadow-sm">
+          {/* Map Placeholder */}
+          <div className="h-48 bg-[#001F3F]/5 relative">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <MapPin size={32} className="text-[#001F3F]/20" />
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-2xl font-light text-[#001F3F]">{selectedRide.price}</h3>
+                <p className="text-sm text-[#001F3F]/60">{selectedRide.date}</p>
+              </div>
+              <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">
+                Completed
+              </div>
+            </div>
+
+            <div className="space-y-4 relative">
+              <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-[#001F3F]/10" />
+              
+              <div className="flex gap-4">
+                <div className="w-6 h-6 rounded-full bg-[#001F3F] flex items-center justify-center shrink-0 z-10 ring-4 ring-white">
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                </div>
+                <div>
+                  <p className="text-xs text-[#001F3F]/40 uppercase tracking-wider font-medium mb-1">Pickup</p>
+                  <p className="text-[#001F3F] font-medium">{selectedRide.from}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="w-6 h-6 rounded-full bg-[#001F3F] flex items-center justify-center shrink-0 z-10 ring-4 ring-white">
+                  <div className="w-2 h-2 bg-white rounded-full" />
+                </div>
+                <div>
+                  <p className="text-xs text-[#001F3F]/40 uppercase tracking-wider font-medium mb-1">Dropoff</p>
+                  <p className="text-[#001F3F] font-medium">{selectedRide.to}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-[#001F3F]/5 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-[#001F3F]/40 uppercase tracking-wider font-medium mb-1">Passenger</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F]">
+                    <User size={14} />
+                  </div>
+                  <span className="text-sm font-medium text-[#001F3F]">{selectedRide.passenger}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-[#001F3F]/40 uppercase tracking-wider font-medium mb-1">Rating</p>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      size={14} 
+                      className={i < (selectedRide.rating || 0) ? "text-[#001F3F] fill-[#001F3F]" : "text-[#001F3F]/20"} 
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-[#001F3F]/[0.02] p-3 rounded-lg border border-[#001F3F]/5">
+                <p className="text-xs text-[#001F3F]/40 uppercase tracking-wider font-medium mb-1">Distance</p>
+                <p className="text-sm font-medium text-[#001F3F]">{selectedRide.distance}</p>
+              </div>
+              <div className="bg-[#001F3F]/[0.02] p-3 rounded-lg border border-[#001F3F]/5">
+                <p className="text-xs text-[#001F3F]/40 uppercase tracking-wider font-medium mb-1">Duration</p>
+                <p className="text-sm font-medium text-[#001F3F]">{selectedRide.duration}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -651,21 +832,43 @@ function RidesTab({ onSelectRide }: { onSelectRide: (ride: any) => void, key?: s
       </div>
 
       <div className="space-y-4">
-        {currentRides.length > 0 ? currentRides.map(ride => (
-          <button 
-            key={ride.id} 
-            onClick={() => onSelectRide(ride)}
-            className="w-full text-left"
-          >
-            <RideCard 
-              date={ride.date}
-              from={ride.from}
-              to={ride.to}
-              price={ride.price}
-              rating={ride.rating}
-            />
-          </button>
-        )) : (
+        {currentRides.length > 0 ? (
+          currentRides.map(ride => (
+            <button 
+              key={ride.id} 
+              onClick={() => onSelectRide(ride)}
+              className="w-full text-left"
+            >
+              <div className="bg-white p-4 rounded-xl border border-[#001F3F]/5 shadow-sm hover:shadow-md transition-all space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-xs text-[#001F3F]/60 font-medium uppercase tracking-wider mb-1">{ride.date}</p>
+                    <h4 className="text-lg font-medium text-[#001F3F]">{ride.price}</h4>
+                  </div>
+                  <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${
+                    activeSubTab === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                    activeSubTab === 'SCHEDULED' ? 'bg-blue-100 text-blue-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {activeSubTab === 'COMPLETED' ? 'Completed' : activeSubTab === 'SCHEDULED' ? 'Scheduled' : 'Cancelled'}
+                  </div>
+                </div>
+                
+                <div className="space-y-2 relative pl-3">
+                  <div className="absolute left-0.5 top-1.5 bottom-1.5 w-px bg-[#001F3F]/10" />
+                  <div>
+                    <p className="text-[10px] text-[#001F3F]/40 uppercase tracking-wider">From</p>
+                    <p className="text-sm text-[#001F3F] truncate">{ride.from}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#001F3F]/40 uppercase tracking-wider">To</p>
+                    <p className="text-sm text-[#001F3F] truncate">{ride.to}</p>
+                  </div>
+                </div>
+              </div>
+            </button>
+          ))
+        ) : (
           <div className="py-20 text-center space-y-4">
             <div className="w-16 h-16 bg-[#001F3F]/5 rounded-full flex items-center justify-center mx-auto">
               <Clock size={24} className="text-[#001F3F]/40" />
@@ -680,6 +883,9 @@ function RidesTab({ onSelectRide }: { onSelectRide: (ride: any) => void, key?: s
 
 function EarningsTab({}: { key?: string } = {}) {
   const [isCashingOut, setIsCashingOut] = useState(false);
+  const [weeklyGoal, setWeeklyGoal] = useState(2000);
+  const [isEditingGoal, setIsEditingGoal] = useState(false);
+  const [tempGoal, setTempGoal] = useState(weeklyGoal.toString());
 
   return (
     <motion.div 
@@ -704,6 +910,53 @@ function EarningsTab({}: { key?: string } = {}) {
         >
           {isCashingOut ? 'Processing...' : 'Cash Out'}
         </button>
+      </div>
+
+      {/* Weekly Goal */}
+      <div className="bg-white border border-[#001F3F]/5 rounded-2xl p-6 shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-sm font-medium text-[#001F3F] uppercase tracking-widest">Weekly Goal</h3>
+          <button 
+            onClick={() => setIsEditingGoal(!isEditingGoal)}
+            className="p-2 hover:bg-[#001F3F]/5 rounded-full transition-colors"
+          >
+            <Settings size={16} className="text-[#001F3F]/40" />
+          </button>
+        </div>
+        
+        {isEditingGoal ? (
+          <div className="flex gap-2 items-center">
+            <span className="text-[#001F3F] font-medium">$</span>
+            <input 
+              type="number" 
+              value={tempGoal}
+              onChange={(e) => setTempGoal(e.target.value)}
+              className="flex-1 p-2 border border-[#001F3F]/10 rounded-lg text-sm outline-none focus:border-[#001F3F]/30"
+            />
+            <button 
+              onClick={() => {
+                setWeeklyGoal(parseInt(tempGoal) || 0);
+                setIsEditingGoal(false);
+              }}
+              className="px-4 py-2 bg-[#001F3F] text-white rounded-lg text-xs font-medium uppercase tracking-widest"
+            >
+              Save
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm text-[#001F3F]">
+              <span>$1,450 earned</span>
+              <span>${weeklyGoal} goal</span>
+            </div>
+            <div className="h-2 bg-[#001F3F]/5 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-[#001F3F] rounded-full transition-all duration-1000" 
+                style={{ width: `${Math.min((1450 / weeklyGoal) * 100, 100)}%` }} 
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Chart */}
@@ -771,6 +1024,14 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
     license: 'verified',
     photo: 'verified'
   });
+  const [showAddCard, setShowAddCard] = useState(false);
+  const [newCard, setNewCard] = useState({ number: '', expiry: '', cvc: '', name: '' });
+  const [preferences, setPreferences] = useState({
+    voiceNav: true,
+    darkMode: false,
+    screenOn: true
+  });
+  const [showHelp, setShowHelp] = useState(false);
 
   const renderContent = () => {
     switch (view) {
@@ -894,13 +1155,70 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
             </div>
 
             <div className="space-y-3">
-              <button className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors">
+              <button 
+                onClick={() => setView('DOCUMENTS')}
+                className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors"
+              >
                 View Vehicle Documents
               </button>
-              <button className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors">
+              <button 
+                onClick={() => alert('Vehicle change request submitted. Our team will contact you shortly.')}
+                className="w-full py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F] font-medium uppercase tracking-widest text-[10px] hover:bg-[#001F3F]/5 transition-colors"
+              >
                 Change Vehicle
               </button>
             </div>
+          </div>
+        );
+      case 'CHANGE_VEHICLE':
+        return (
+          <div className="space-y-6">
+            <div className="bg-[#001F3F]/5 p-4 rounded-xl flex items-center gap-3">
+              <CarFront size={20} className="text-[#001F3F]" />
+              <p className="text-xs text-[#001F3F] font-medium">Select a vehicle to switch to or add a new one.</p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                { id: 'v1', model: 'Mercedes-Benz S-Class', plate: 'LIMO-99', status: 'Active', image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&q=80&w=200' },
+                { id: 'v2', model: 'Cadillac Escalade', plate: 'LIMO-88', status: 'Pending', image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=200' }
+              ].map(vehicle => (
+                <div 
+                  key={vehicle.id}
+                  onClick={() => {
+                    if (vehicle.status === 'Active') {
+                      onUpdateProfile({ ...profile, vehicle: { model: vehicle.model, plate: vehicle.plate, class: 'Luxury' } });
+                      setView('VEHICLE');
+                    } else {
+                      alert('This vehicle is currently pending approval.');
+                    }
+                  }}
+                  className={`p-4 rounded-xl border transition-all flex items-center gap-4 ${profile.vehicle.plate === vehicle.plate ? 'border-[#001F3F] bg-[#001F3F]/5 ring-1 ring-[#001F3F]' : 'border-[#001F3F]/10 bg-white hover:border-[#001F3F]/30'}`}
+                >
+                  <div className="w-20 h-14 rounded-lg bg-gray-100 overflow-hidden shrink-0">
+                    <img src={vehicle.image} alt={vehicle.model} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-[#001F3F]">{vehicle.model}</h4>
+                      {profile.vehicle.plate === vehicle.plate && <CheckCircle2 size={16} className="text-[#001F3F]" />}
+                    </div>
+                    <p className="text-xs text-[#001F3F]/60">{vehicle.plate}</p>
+                    <div className={`text-[10px] uppercase tracking-widest font-bold mt-2 ${vehicle.status === 'Active' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {vehicle.status}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => alert('Add Vehicle flow would start here')}
+              className="w-full py-4 rounded-xl border border-dashed border-[#001F3F]/20 text-[#001F3F] font-medium uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus size={16} />
+              Add New Vehicle
+            </button>
           </div>
         );
       case 'DOCUMENTS':
@@ -963,43 +1281,155 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
       case 'PAYMENTS':
         return (
           <div className="space-y-4">
-            <div className="p-5 rounded-xl border border-[#001F3F]/10 bg-[#001F3F]/[0.02] flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <div className="p-2 rounded-full bg-[#001F3F]/10 text-[#001F3F]">
-                  <CreditCard size={20} strokeWidth={1.5} />
+            {!showAddCard ? (
+              <>
+                <div className="p-5 rounded-xl border border-[#001F3F]/10 bg-[#001F3F]/[0.02] flex justify-between items-center">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 rounded-full bg-[#001F3F]/10 text-[#001F3F]">
+                      <CreditCard size={20} strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-[#001F3F]">Chase Sapphire</p>
+                      <p className="text-xs text-[#001F3F]">**** 4242</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-medium text-[#001F3F] bg-[#001F3F]/5 px-2 py-1 rounded">Primary</span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-[#001F3F]">Chase Sapphire</p>
-                  <p className="text-xs text-[#001F3F]">**** 4242</p>
+                 <button 
+                  onClick={() => setShowAddCard(true)}
+                  className="w-full py-4 rounded-xl border border-dashed border-[#001F3F]/20 text-[#001F3F] font-medium uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-colors"
+                >
+                  + Add Payment Method
+                </button>
+              </>
+            ) : (
+              <div className="space-y-4 bg-[#001F3F]/5 p-4 rounded-xl">
+                <div className="flex justify-between items-center mb-2">
+                  <h4 className="text-sm font-medium text-[#001F3F]">Add New Card</h4>
+                  <button onClick={() => setShowAddCard(false)} className="p-1 rounded-full hover:bg-[#001F3F]/10"><X size={16} /></button>
                 </div>
+                <input 
+                  type="text" 
+                  placeholder="Card Number"
+                  value={newCard.number}
+                  onChange={e => setNewCard({...newCard, number: e.target.value})}
+                  className="w-full p-3 rounded-lg border border-[#001F3F]/10 text-sm outline-none focus:border-[#001F3F]/30"
+                />
+                <div className="flex gap-3">
+                  <input 
+                    type="text" 
+                    placeholder="MM/YY"
+                    value={newCard.expiry}
+                    onChange={e => setNewCard({...newCard, expiry: e.target.value})}
+                    className="flex-1 p-3 rounded-lg border border-[#001F3F]/10 text-sm outline-none focus:border-[#001F3F]/30"
+                  />
+                  <input 
+                    type="text" 
+                    placeholder="CVC"
+                    value={newCard.cvc}
+                    onChange={e => setNewCard({...newCard, cvc: e.target.value})}
+                    className="w-24 p-3 rounded-lg border border-[#001F3F]/10 text-sm outline-none focus:border-[#001F3F]/30"
+                  />
+                </div>
+                <input 
+                  type="text" 
+                  placeholder="Cardholder Name"
+                  value={newCard.name}
+                  onChange={e => setNewCard({...newCard, name: e.target.value})}
+                  className="w-full p-3 rounded-lg border border-[#001F3F]/10 text-sm outline-none focus:border-[#001F3F]/30"
+                />
+                <button 
+                  onClick={() => {
+                    alert('Card added successfully!');
+                    setShowAddCard(false);
+                    setNewCard({ number: '', expiry: '', cvc: '', name: '' });
+                  }}
+                  className="w-full py-3 bg-[#001F3F] text-white rounded-lg text-xs font-medium uppercase tracking-widest mt-2"
+                >
+                  Save Card
+                </button>
               </div>
-              <span className="text-xs font-medium text-[#001F3F] bg-[#001F3F]/5 px-2 py-1 rounded">Primary</span>
-            </div>
-             <button className="w-full py-4 rounded-xl border border-dashed border-[#001F3F]/20 text-[#001F3F] font-medium uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-colors">
-              + Add Payment Method
-            </button>
+            )}
           </div>
         );
       case 'PREFERENCES':
         return (
           <div className="space-y-4">
-            <MenuItem icon={<Navigation size={20} strokeWidth={1.5} />} label="Navigation App" subLabel="Google Maps" />
-            <MenuItem icon={<Volume2 size={20} strokeWidth={1.5} />} label="Voice Navigation" subLabel="On" />
-            <MenuItem icon={<Moon size={20} strokeWidth={1.5} />} label="Dark Mode" subLabel="System Default" />
-            <MenuItem icon={<Smartphone size={20} strokeWidth={1.5} />} label="Screen Always On" subLabel="Enabled" />
+            <MenuItem 
+              icon={<Navigation size={20} strokeWidth={1.5} />} 
+              label="Navigation App" 
+              subLabel="Google Maps" 
+              onClick={() => alert('Navigation preferences updated.')}
+            />
+            <MenuItem 
+              icon={<Volume2 size={20} strokeWidth={1.5} />} 
+              label="Voice Navigation" 
+              subLabel={preferences.voiceNav ? "On" : "Off"} 
+              onClick={() => setPreferences(prev => ({ ...prev, voiceNav: !prev.voiceNav }))}
+            />
+            <MenuItem 
+              icon={<Moon size={20} strokeWidth={1.5} />} 
+              label="Dark Mode" 
+              subLabel={preferences.darkMode ? "On" : "System Default"} 
+              onClick={() => setPreferences(prev => ({ ...prev, darkMode: !prev.darkMode }))}
+            />
+            <MenuItem 
+              icon={<Smartphone size={20} strokeWidth={1.5} />} 
+              label="Screen Always On" 
+              subLabel={preferences.screenOn ? "Enabled" : "Disabled"} 
+              onClick={() => setPreferences(prev => ({ ...prev, screenOn: !prev.screenOn }))}
+            />
           </div>
         );
       case 'SUPPORT':
         return (
           <div className="space-y-4">
-            <MenuItem 
-              icon={<MessageSquare size={20} strokeWidth={1.5} />} 
-              label="Chat with Support" 
-              subLabel="Average wait: 2 min" 
-              onClick={() => setView('CHAT')}
-            />
-            <MenuItem icon={<Phone size={20} strokeWidth={1.5} />} label="Call Support" subLabel="Emergency only" />
-            <MenuItem icon={<HelpCircle size={20} strokeWidth={1.5} />} label="Help Center" subLabel="FAQs and Guides" />
+            {!showHelp ? (
+              <>
+                <MenuItem 
+                  icon={<MessageSquare size={20} strokeWidth={1.5} />} 
+                  label="Chat with Support" 
+                  subLabel="Average wait: 2 min" 
+                  onClick={() => setShowHelp(true)}
+                />
+                <MenuItem 
+                  icon={<Phone size={20} strokeWidth={1.5} />} 
+                  label="Call Support" 
+                  subLabel="For urgent issues" 
+                  onClick={() => alert('Calling Support Line: +1 (800) 555-0199')}
+                />
+                <MenuItem 
+                  icon={<HelpCircle size={20} strokeWidth={1.5} />} 
+                  label="Help Center" 
+                  subLabel="FAQs and Guides" 
+                  onClick={() => setShowHelp(true)}
+                />
+              </>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <button onClick={() => setShowHelp(false)} className="p-2 -ml-2 hover:bg-[#001F3F]/5 rounded-full">
+                    <ArrowLeft size={20} className="text-[#001F3F]" />
+                  </button>
+                  <h3 className="text-lg font-medium text-[#001F3F]">Help Center</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  {[
+                    "How do I update my documents?",
+                    "Payment issues and disputes",
+                    "Vehicle requirements",
+                    "Safety guidelines",
+                    "Understanding your earnings"
+                  ].map((topic, i) => (
+                    <button key={i} className="w-full p-4 bg-white border border-[#001F3F]/5 rounded-xl text-left text-sm text-[#001F3F] hover:bg-[#001F3F]/5 transition-colors flex justify-between items-center">
+                      {topic}
+                      <ChevronRight size={16} className="text-[#001F3F]/40" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
       default:
@@ -1136,9 +1566,12 @@ function NavButton({ icon, label, active, onClick }: any) {
   );
 }
 
-function ActivityItem({ title, time, amount, status }: any) {
+function ActivityItem({ title, time, amount, status, onClick }: any) {
   return (
-    <div className="bg-white border border-[#001F3F]/5 rounded-xl p-4 flex justify-between items-center shadow-sm">
+    <button 
+      onClick={onClick}
+      className="w-full bg-white border border-[#001F3F]/5 rounded-xl p-4 flex justify-between items-center shadow-sm hover:bg-[#001F3F]/5 transition-colors text-left"
+    >
       <div className="flex items-center gap-3">
         <div className="p-2 bg-[#001F3F]/5 rounded-full text-[#001F3F]">
           <CarFront size={16} strokeWidth={1.5} />
@@ -1152,7 +1585,7 @@ function ActivityItem({ title, time, amount, status }: any) {
         <p className="text-sm font-medium text-[#001F3F]">{amount}</p>
         <p className="text-[10px] text-[#001F3F] font-medium uppercase tracking-wider">{status}</p>
       </div>
-    </div>
+    </button>
   );
 }
 

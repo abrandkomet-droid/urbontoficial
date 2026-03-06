@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component, ErrorInfo, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleMap, useJsApiLoader, Marker, Autocomplete } from '@react-google-maps/api';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { 
   MapPin, 
+  Map,
   Clock, 
   ArrowLeft, 
   Star, 
@@ -71,7 +72,42 @@ import SmartChat from './components/SmartChat';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
-export default function App() {
+class ErrorBoundary extends Component<{children: ReactNode, fallback?: ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: {children: ReactNode, fallback?: ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white text-red-500 p-8 text-center">
+          <h1 className="text-2xl font-bold mb-4">Something went wrong</h1>
+          <p className="text-sm font-mono bg-red-50 p-4 rounded-lg overflow-auto max-w-full">
+            {this.state.error?.message}
+          </p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-8 px-6 py-3 bg-[#001F3F] text-white rounded-xl"
+          >
+            Reload App
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('welcome');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -290,15 +326,17 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {currentScreen === 'welcome' && (
           <WelcomeScreen 
+            key="welcome"
             onStart={() => navigate('auth-phone')} 
             onChauffeurStart={() => navigate('chauffeur-login')}
           />
         )}
         {currentScreen === 'chauffeur-login' && (
           <ChauffeurLoginScreen 
+            key="chauffeur-login"
             onBack={() => navigate('welcome')}
             onLogin={() => navigate('chauffeur-dashboard')}
             onRegister={() => navigate('chauffeur-registration')}
@@ -306,17 +344,20 @@ export default function App() {
         )}
         {currentScreen === 'chauffeur-registration' && (
           <ChauffeurRegistrationScreen 
+            key="chauffeur-registration"
             onBack={() => navigate('chauffeur-login')}
             onComplete={() => navigate('chauffeur-login')}
           />
         )}
         {currentScreen === 'chauffeur-dashboard' && (
           <DriverDashboardMobile 
+            key="chauffeur-dashboard"
             onLogout={() => navigate('welcome')}
           />
         )}
         {currentScreen === 'auth-phone' && (
           <PhoneAuthScreen 
+            key="auth-phone"
             countryCode={countryCode}
             onBack={() => navigate('welcome')}
             onSelectCountry={() => navigate('country-selector')}
@@ -329,6 +370,7 @@ export default function App() {
         )}
         {currentScreen === 'country-selector' && (
           <CountrySelectorScreen 
+            key="country-selector"
             onBack={() => navigate('auth-phone')}
             onSelect={(code) => {
               setCountryCode(code);
@@ -338,6 +380,7 @@ export default function App() {
         )}
         {currentScreen === 'auth-otp' && (
           <OtpScreen 
+            key="auth-otp"
             phoneNumber={phoneNumber}
             onBack={() => navigate('auth-phone')}
             onVerify={() => navigate('booking')} 
@@ -345,6 +388,7 @@ export default function App() {
         )}
         {currentScreen === 'booking' && (
           <BookingScreen 
+            key="booking"
             onOpenMenu={() => setIsMenuOpen(true)}
             onSelectVehicle={() => navigate('vehicle-selection')} 
             onNotifications={() => navigate('notifications')}
@@ -357,11 +401,13 @@ export default function App() {
         )}
         {currentScreen === 'notifications' && (
           <NotificationsScreen 
+            key="notifications"
             onBack={() => navigate('booking')} 
           />
         )}
         {currentScreen === 'vehicle-selection' && (
           <VehicleSelectionScreen 
+            key="vehicle-selection"
             onBack={() => navigate('booking')}
             onConfirm={(v) => {
               setSelectedVehicle(v);
@@ -371,6 +417,7 @@ export default function App() {
         )}
         {currentScreen === 'payment-confirmation' && (
           <PaymentConfirmationScreen 
+            key="payment-confirmation"
             vehicle={selectedVehicle || VEHICLES[1]}
             onBack={() => navigate('vehicle-selection')}
             onConfirm={() => navigate('searching')}
@@ -379,6 +426,7 @@ export default function App() {
         )}
         {currentScreen === 'searching' && (
           <SearchingScreen 
+            key="searching"
             onFound={() => {
               setActiveTrip(true);
               navigate('confirmed');
@@ -387,11 +435,13 @@ export default function App() {
         )}
         {currentScreen === 'confirmed' && (
           <ConfirmedScreen 
+            key="confirmed"
             onContinue={() => navigate('tracking')} 
           />
         )}
         {currentScreen === 'tracking' && (
           <TrackingScreen 
+            key="tracking"
             vehicle={selectedVehicle || VEHICLES[1]}
             onBack={() => navigate('booking')}
             onEndTrip={() => {
@@ -408,12 +458,13 @@ export default function App() {
         )}
         {currentScreen === 'trip-completed' && (
           <TripCompletedScreen 
+            key="trip-completed"
             onBack={() => navigate('booking')} 
           />
         )}
         {currentScreen === 'profile' && (
           <ProfileScreen 
-            key="profile-screen" 
+            key="profile" 
             userProfile={userProfile}
             onBack={handleBack} 
             onEditProfile={() => navigate('edit-profile', returnToMenu)}
@@ -429,6 +480,7 @@ export default function App() {
         )}
         {currentScreen === 'edit-profile' && (
           <EditProfileScreen 
+            key="edit-profile"
             userProfile={userProfile}
             onBack={() => navigate('profile', true)}
             onSave={(updated) => handleUpdateProfile(updated)}
@@ -436,76 +488,90 @@ export default function App() {
         )}
         {currentScreen === 'address-edit' && (
           <AddressEditScreen 
+            key="address-edit"
             type={editingAddressType || 'other'}
             onBack={() => navigate('profile', true)}
             onSave={(addr) => handleUpdateAddress(addr)}
           />
         )}
         {currentScreen === 'legal' && (
-          legalType === 'code-of-ethics' ? (
-            <CodeOfEthicsScreen onBack={() => navigate('profile', true)} />
-          ) : legalType === 'terms-of-service' ? (
-            <TermsOfServiceScreen onBack={() => navigate('profile', true)} />
-          ) : (
-            <PrivacyPolicyScreen onBack={() => navigate('profile', true)} />
-          )
+          <div key="legal" className="absolute inset-0">
+            {legalType === 'code-of-ethics' ? (
+              <CodeOfEthicsScreen onBack={() => navigate('profile', true)} />
+            ) : legalType === 'terms-of-service' ? (
+              <TermsOfServiceScreen onBack={() => navigate('profile', true)} />
+            ) : (
+              <PrivacyPolicyScreen onBack={() => navigate('profile', true)} />
+            )}
+          </div>
         )}
         {currentScreen === 'preferences' && (
           <MyPreferencesScreen 
+            key="preferences"
             onBack={handleBack} 
           />
         )}
         {currentScreen === 'customer-service' && (
           <CustomerServiceScreen 
+            key="customer-service"
             onBack={handleBack} 
           />
         )}
         {currentScreen === 'services' && (
           <ServicesScreen 
+            key="services"
             onBack={handleBack} 
           />
         )}
         {currentScreen === 'membership' && (
           <MembershipScreen 
+            key="membership"
             userProfile={userProfile}
             onBack={handleBack} 
           />
         )}
         {currentScreen === 'ride-history' && (
           <RideHistoryScreen 
+            key="ride-history"
             onBack={handleBack} 
             onSchedule={() => navigate('schedule-ride', true)}
           />
         )}
         {currentScreen === 'payment-methods' && (
           <PaymentMethodsScreen 
+            key="payment-methods"
             onBack={handleBack} 
           />
         )}
         {currentScreen === 'gift-ride' && (
           <GiftRideScreen 
+            key="gift-ride"
             onBack={handleBack} 
             isLoaded={isLoaded}
           />
         )}
         {currentScreen === 'schedule-ride' && (
           <ScheduleRideScreen 
+            key="schedule-ride"
             onBack={handleBack} 
             isLoaded={isLoaded}
           />
         )}
         {currentScreen === 'suggestions' && (
           <SuggestionsScreen 
+            key="suggestions"
             onBack={handleBack} 
           />
         )}
         {currentScreen === 'settings' && (
           <SettingsScreen 
+            key="settings"
             onBack={handleBack} 
           />
         )}
         {currentScreen === 'ride-preferences' && (
           <RidePreferencesScreen 
+            key="ride-preferences"
             preferences={userProfile.ridePreferences!}
             onBack={handleBack}
             onSave={(prefs) => setUserProfile(prev => ({ ...prev, ridePreferences: prefs }))}
@@ -517,14 +583,14 @@ export default function App() {
   );
 }
 
-function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onChauffeurStart: () => void }) {
+function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onChauffeurStart: () => void, key?: string }) {
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 1 }}
-      className="relative h-full w-full flex flex-col p-8 overflow-hidden bg-black"
+      className="absolute inset-0 flex flex-col p-8 overflow-hidden bg-black"
     >
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
@@ -590,7 +656,7 @@ function WelcomeScreen({ onStart, onChauffeurStart }: { onStart: () => void, onC
   );
 }
 
-function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => void, onLogin: () => void, onRegister: () => void }) {
+function ChauffeurLoginScreen({ onBack, onLogin, onRegister, key }: { onBack: () => void, onLogin: () => void, onRegister: () => void, key?: string }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -667,7 +733,7 @@ function ChauffeurLoginScreen({ onBack, onLogin, onRegister }: { onBack: () => v
   );
 }
 
-function ChauffeurRegistrationScreen({ onBack, onComplete }: { onBack: () => void, onComplete: () => void }) {
+function ChauffeurRegistrationScreen({ onBack, onComplete, key }: { onBack: () => void, onComplete: () => void, key?: string }) {
   const [step, setStep] = useState(1);
   const [documents, setDocuments] = useState<Record<string, string | null>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -1006,7 +1072,7 @@ function ChauffeurDashboardScreen({ onLogout }: { onLogout: () => void }) {
   );
 }
 
-function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode, onChauffeurStart }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string, onChauffeurStart: () => void }) {
+function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode, onChauffeurStart, key }: { onBack: () => void, onContinue: (num: string) => void, onSelectCountry: () => void, countryCode: string, onChauffeurStart: () => void, key?: string }) {
   const [value, setValue] = useState('');
   
   const selectedCountry = COUNTRIES.find(c => c.code === countryCode) || { placeholder: '000 000 0000', maxLength: 10 };
@@ -1070,7 +1136,7 @@ function PhoneAuthScreen({ onBack, onContinue, onSelectCountry, countryCode, onC
   );
 }
 
-function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onBack: () => void, onVerify: () => void }) {
+function OtpScreen({ phoneNumber, onBack, onVerify, key }: { phoneNumber: string, onBack: () => void, onVerify: () => void, key?: string }) {
   const [otp, setOtp] = useState('');
   const [timer, setTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
@@ -1160,7 +1226,7 @@ function OtpScreen({ phoneNumber, onBack, onVerify }: { phoneNumber: string, onB
   );
 }
 
-function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, activeTrip, onReturnToTrip, isLoaded, loadError }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, activeTrip: boolean, onReturnToTrip: () => void, isLoaded: boolean, loadError: Error | undefined }) {
+function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, activeTrip, onReturnToTrip, isLoaded, loadError }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, activeTrip: boolean, onReturnToTrip: () => void, isLoaded: boolean, loadError: Error | undefined, key?: string }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showHourlyModal, setShowHourlyModal] = useState(false);
@@ -1203,7 +1269,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
 
   if (loadError) {
     return (
-      <div className="h-full w-full flex flex-col items-center justify-center bg-white text-[#001F3F] p-8 text-center space-y-4">
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white text-[#001F3F] p-8 text-center space-y-4">
         <div className="p-4 bg-red-50 rounded-full text-red-500">
           <MapPin size={32} />
         </div>
@@ -1336,7 +1402,7 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-white overflow-hidden"
+      className="absolute inset-0 flex flex-col bg-white overflow-hidden"
     >
       {/* Custom Styles for Map & Autocomplete */}
       <style>{`
@@ -1352,18 +1418,6 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
           <div className="w-6 h-[1.5px] bg-black" />
         </button>
         
-        {activeTrip && (
-          <motion.button
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            onClick={onReturnToTrip}
-            className="absolute left-1/2 -translate-x-1/2 bg-[#001F3F] text-white px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg flex items-center gap-2"
-          >
-            <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-            Active Trip
-          </motion.button>
-        )}
-
         <img 
           src="https://lh3.googleusercontent.com/d/1eQeW4NAEtlRUwxyDpObf5acpd1ZNCB1_" 
           alt="URBONT" 
@@ -1521,10 +1575,11 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
       </AnimatePresence>
 
       {/* Map Area */}
-      <div className="absolute inset-0 bg-[#FFFFFF] overflow-hidden">
+      <div className="absolute inset-0 bg-[#FFFFFF] overflow-hidden z-0">
         <div className="absolute inset-0">
           {isLoaded ? (
             <GoogleMap
+              id="booking-map"
               mapContainerStyle={{ width: '100%', height: '100%' }}
               center={center}
               zoom={15}
@@ -1862,11 +1917,38 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Active Trip Docked Card for Passenger */}
+      <AnimatePresence>
+        {activeTrip && (
+          <motion.button
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            onClick={onReturnToTrip}
+            className="absolute bottom-24 left-4 right-4 bg-[#001F3F] text-white p-4 rounded-2xl shadow-xl flex items-center justify-between z-[60] overflow-hidden"
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse z-10 relative" />
+                <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-50" />
+              </div>
+              <div className="text-left">
+                <p className="text-xs font-bold uppercase tracking-widest text-white/90">Active Trip</p>
+                <p className="text-[10px] text-white/60">Tap to view status</p>
+              </div>
+            </div>
+            <div className="bg-white/10 p-2 rounded-full">
+              <Map size={16} className="text-white" />
+            </div>
+          </motion.button>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
-function NotificationsScreen({ onBack }: { onBack: () => void }) {
+function NotificationsScreen({ onBack, key }: { onBack: () => void; key?: string }) {
   const [activeTab, setActiveTab] = useState('All');
 
   const notifications = [
@@ -2040,7 +2122,7 @@ function NotificationsScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function VehicleSelectionScreen({ onBack, onConfirm }: { onBack: () => void, onConfirm: (v: Vehicle) => void }) {
+function VehicleSelectionScreen({ onBack, onConfirm, key }: { onBack: () => void, onConfirm: (v: Vehicle) => void, key?: string }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [preferences, setPreferences] = useState({
     climate: '72°F',
@@ -2392,7 +2474,7 @@ function PaymentConfirmationScreen({ vehicle, onBack, onConfirm, onPaymentMethod
   );
 }
 
-function SearchingScreen({ onFound }: { onFound: () => void }) {
+function SearchingScreen({ onFound, key }: { onFound: () => void; key?: string }) {
   const [status, setStatus] = useState('Connecting to elite fleet...');
 
   useEffect(() => {
@@ -2649,7 +2731,7 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, loadError }: { vehicle: Vehicle, onBack: () => void, onEndTrip: () => void, onCompleteTrip: () => void, isLoaded: boolean, loadError: Error | undefined }) {
+function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, loadError }: { vehicle: Vehicle, onBack: () => void, onEndTrip: () => void, onCompleteTrip: () => void, isLoaded: boolean, loadError: Error | undefined, key?: string }) {
   const [isPanelExpanded, setIsPanelExpanded] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
@@ -2796,7 +2878,7 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
+      className="absolute inset-0 flex flex-col bg-white text-[#001F3F] overflow-hidden"
     >
       <AnimatePresence>
         {showCancelConfirm && (
@@ -2828,6 +2910,7 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
         <div className="absolute inset-0">
           {isLoaded ? (
             <GoogleMap
+              id="tracking-map"
               mapContainerStyle={{ width: '100%', height: '100%' }}
               center={userPos}
               zoom={14}
@@ -3492,7 +3575,7 @@ function ProfileScreen({
   );
 }
 
-function RideHistoryScreen({ onBack, onSchedule }: { onBack: () => void, onSchedule: () => void }) {
+function RideHistoryScreen({ onBack, onSchedule, key }: { onBack: () => void, onSchedule: () => void, key?: string }) {
   const [selectedRide, setSelectedRide] = useState<any>(null);
   const history = [
     { id: 1, date: 'Oct 24, 2024', destination: 'JFK Airport, Terminal 4', vehicle: 'First Class', price: '$145.00', status: 'Completed' },
@@ -3630,7 +3713,7 @@ function RideHistoryScreen({ onBack, onSchedule }: { onBack: () => void, onSched
   );
 }
 
-function PaymentMethodsScreen({ onBack }: { onBack: () => void }) {
+function PaymentMethodsScreen({ onBack, key }: { onBack: () => void; key?: string }) {
   const [methods, setMethods] = useState([
     { id: '1', type: 'card', brand: 'VISA', last4: '4242', active: true },
     { id: '2', type: 'card', brand: 'AMEX', last4: '1005', active: false },
@@ -3880,7 +3963,7 @@ function PaymentMethodsScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function ScheduleRideScreen({ onBack, isLoaded }: { onBack: () => void, isLoaded: boolean }) {
+function ScheduleRideScreen({ onBack, isLoaded, key }: { onBack: () => void, isLoaded: boolean, key?: string }) {
   const [pickup, setPickup] = useState('');
   const [dropoff, setDropoff] = useState('');
   const [date, setDate] = useState('');
@@ -4027,7 +4110,7 @@ function ScheduleRideScreen({ onBack, isLoaded }: { onBack: () => void, isLoaded
   );
 }
 
-function GiftRideScreen({ onBack, isLoaded }: { onBack: () => void, isLoaded: boolean }) {
+function GiftRideScreen({ onBack, isLoaded, key }: { onBack: () => void, isLoaded: boolean, key?: string }) {
   const [view, setView] = useState<'menu' | 'gift_card' | 'guest_booking'>('menu');
   
   // Gift Card State
@@ -4650,7 +4733,7 @@ function SettingsScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function MyPreferencesScreen({ onBack }: { onBack: () => void }) {
+function MyPreferencesScreen({ onBack, key }: { onBack: () => void, key?: string }) {
   const [selectedValues, setSelectedValues] = useState({
     door: 'Pickup Only',
     temp: 'Comfortable',
@@ -4821,7 +4904,7 @@ function MyPreferencesScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function CustomerServiceScreen({ onBack }: { onBack: () => void }) {
+function CustomerServiceScreen({ onBack, key }: { onBack: () => void, key?: string }) {
   const [view, setView] = useState<'main' | 'chat' | 'faq'>('main');
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<{sender: 'user' | 'agent', text: string}[]>([{sender: 'agent', text: 'Hello! How can I assist you today?'}]);
@@ -5016,7 +5099,7 @@ function CustomerServiceScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSelect: (code: string) => void }) {
+function CountrySelectorScreen({ onBack, onSelect, key }: { onBack: () => void, onSelect: (code: string) => void, key?: string }) {
   const [search, setSearch] = useState('');
   
   const filteredCommon = COMMON_COUNTRIES.filter(c => 
@@ -5091,7 +5174,7 @@ function CountrySelectorScreen({ onBack, onSelect }: { onBack: () => void, onSel
   );
 }
 
-function ServicesScreen({ onBack }: { onBack: () => void }) {
+function ServicesScreen({ onBack, key }: { onBack: () => void, key?: string }) {
   const services = [
     { title: 'Private Aviation & Airport Concierge', description: 'Seamless tarmac transfers and luxury airport coordination.', icon: <Plane size={24} /> },
     { title: 'Executive Hourly Charter', description: 'On-demand chauffeur service for flexible business schedules.', icon: <Clock size={24} /> },
@@ -5147,7 +5230,7 @@ function ServicesScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserProfile, onBack: () => void, onSave: (updated: Partial<UserProfile>) => void }) {
+function EditProfileScreen({ userProfile, onBack, onSave, key }: { userProfile: UserProfile, onBack: () => void, onSave: (updated: Partial<UserProfile>) => void, key?: string }) {
   const [title, setTitle] = useState<any>(userProfile.title || '');
   const [firstName, setFirstName] = useState(userProfile.firstName);
   const [lastName, setLastName] = useState(userProfile.lastName);
@@ -5290,7 +5373,7 @@ function EditProfileScreen({ userProfile, onBack, onSave }: { userProfile: UserP
   );
 }
 
-function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | 'other', onBack: () => void, onSave: (addr: string) => void }) {
+function AddressEditScreen({ type, onBack, onSave, key }: { type: 'home' | 'work' | 'other', onBack: () => void, onSave: (addr: string) => void, key?: string }) {
   const [address, setAddress] = useState('');
 
   return (
@@ -5333,7 +5416,7 @@ function AddressEditScreen({ type, onBack, onSave }: { type: 'home' | 'work' | '
   );
 }
 
-function LegalScreen({ onBack }: { onBack: () => void }) {
+function LegalScreen({ onBack, key }: { onBack: () => void; key?: string }) {
   return (
     <motion.div 
       initial={{ x: '100%' }}
@@ -5398,7 +5481,7 @@ function LegalScreen({ onBack }: { onBack: () => void }) {
   );
 }
 
-function MembershipScreen({ userProfile, onBack }: { userProfile: UserProfile, onBack: () => void }) {
+function MembershipScreen({ userProfile, onBack, key }: { userProfile: UserProfile, onBack: () => void, key?: string }) {
   const loyalty = userProfile.loyalty || { level: 'Silver', points: 0, nextLevelPoints: 1000, ridesThisMonth: 0 };
   const progress = (loyalty.points / loyalty.nextLevelPoints) * 100;
 
@@ -5506,5 +5589,13 @@ function MembershipScreen({ userProfile, onBack }: { userProfile: UserProfile, o
     
    </div>
     </motion.div>
+  );
+}
+
+export default function AppWrapper() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   );
 }

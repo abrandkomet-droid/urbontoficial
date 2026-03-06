@@ -34,7 +34,12 @@ import {
   Upload,
   Plus,
   ArrowLeft,
-  MapPin
+  MapPin,
+  Headphones,
+  Image,
+  BookOpen,
+  Crown,
+  Award
 } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api';
 import { NAVY_SILVER_STYLE } from '../constants';
@@ -149,8 +154,11 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
     setIsOnline(true);
   };
 
+  const [isTripViewVisible, setIsTripViewVisible] = useState(true);
+
   const handleAcceptRide = () => {
     setRideStatus('ACTIVE');
+    setIsTripViewVisible(true);
     setShowIncomingModal(false);
   };
 
@@ -161,6 +169,7 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
 
   const handleTripComplete = (fare: number) => {
     setRideStatus('NONE');
+    setIsTripViewVisible(true);
     setSessionEarnings(prev => prev + fare);
     setCompletedTrips(prev => prev + 1);
     // Ideally show a summary modal here, for now just return to dashboard
@@ -168,12 +177,13 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
   };
 
   // If Ride is Active, show the full Driver Mode (Map/Navigation)
-  if (rideStatus === 'ACTIVE') {
+  if (rideStatus === 'ACTIVE' && isTripViewVisible) {
     return (
       <DriverModeReimagined 
         tripDetails={MOCK_REQUEST}
         onComplete={handleTripComplete}
-        onLogout={() => setRideStatus('NONE')} 
+        onLogout={() => setRideStatus('NONE')}
+        onMinimize={() => setIsTripViewVisible(false)}
       />
     );
   }
@@ -265,6 +275,33 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
         <NavButton icon={<Wallet />} label="Earnings" active={activeTab === 'EARNINGS'} onClick={() => handleTabChange('EARNINGS')} />
         <NavButton icon={<User />} label="Profile" active={activeTab === 'PROFILE'} onClick={() => handleTabChange('PROFILE')} />
       </nav>
+
+      {/* --- Active Trip Docked Card --- */}
+      <AnimatePresence>
+        {rideStatus === 'ACTIVE' && !isTripViewVisible && (
+          <motion.button
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            onClick={() => setIsTripViewVisible(true)}
+            className="absolute bottom-[100px] left-4 right-4 bg-[#001F3F] text-white p-4 rounded-2xl shadow-xl flex items-center justify-between z-50 overflow-hidden"
+          >
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse z-10 relative" />
+                <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-50" />
+              </div>
+              <div className="text-left">
+                <p className="text-xs font-bold uppercase tracking-widest text-white/90">Active Trip</p>
+                <p className="text-[10px] text-white/60">Tap to return to navigation</p>
+              </div>
+            </div>
+            <div className="bg-white/10 p-2 rounded-full">
+              <Navigation size={16} className="text-white" />
+            </div>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* --- Ride Detail Modal --- */}
       <AnimatePresence>
@@ -1083,7 +1120,7 @@ function EarningsTab({}: { key?: string } = {}) {
   );
 }
 
-type ProfileView = 'MAIN' | 'DOCUMENTS' | 'PAYMENTS' | 'PREFERENCES' | 'SUPPORT' | 'EDIT_PROFILE' | 'VEHICLE' | 'CHAT';
+type ProfileView = 'MAIN' | 'DOCUMENTS' | 'PAYMENTS' | 'PREFERENCES' | 'SUPPORT' | 'EDIT_PROFILE' | 'VEHICLE' | 'CHAT' | 'PENALTIES' | 'LEGAL' | 'MEMBERSHIPS';
 
 function ProfileTab({ onLogout, profile, onUpdateProfile }: { 
   onLogout?: () => void, 
@@ -1118,52 +1155,109 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
     screenOn: true
   });
   const [showHelp, setShowHelp] = useState(false);
+  const [selectedLegalDoc, setSelectedLegalDoc] = useState<string | null>(null);
 
   const renderContent = () => {
     switch (view) {
       case 'CHAT':
         return (
-          <div className="flex flex-col h-[500px] bg-white rounded-2xl border border-[#001F3F]/10 overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex flex-col h-[600px] bg-white rounded-2xl border border-[#001F3F]/10 overflow-hidden shadow-sm">
+            {/* Chat Header */}
+            <div className="p-4 border-b border-[#001F3F]/5 flex justify-between items-center bg-[#001F3F]/[0.02]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#001F3F]/10 flex items-center justify-center text-[#001F3F]">
+                  <Headphones size={20} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-[#001F3F]">Live Support</h3>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <p className="text-[10px] text-[#001F3F]/60 uppercase tracking-wider">Online</p>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setView('SUPPORT')} className="p-2 hover:bg-[#001F3F]/5 rounded-full text-[#001F3F]/60">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#F8F9FA]">
               {chatHistory.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-[#001F3F] text-white rounded-tr-none' : 'bg-[#001F3F]/5 text-[#001F3F] rounded-tl-none'}`}>
+                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${
+                    msg.role === 'user' 
+                      ? 'bg-[#001F3F] text-white rounded-tr-none' 
+                      : 'bg-white text-[#001F3F] border border-[#001F3F]/5 rounded-tl-none'
+                  }`}>
                     {msg.text}
                   </div>
                 </div>
               ))}
+              {chatHistory.length === 1 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {["Report an Issue", "Payment Question", "Vehicle Update", "Talk to Agent"].map((opt, i) => (
+                    <button 
+                      key={i}
+                      onClick={() => {
+                        setChatHistory(prev => [...prev, { role: 'user', text: opt }]);
+                        setTimeout(() => {
+                          if (opt === "Talk to Agent") {
+                            setChatHistory(prev => [...prev, { role: 'support', text: "Connecting you to a live agent... Estimated wait time: 2 mins." }]);
+                          } else {
+                            setChatHistory(prev => [...prev, { role: 'support', text: `Here is some information about ${opt}...` }]);
+                          }
+                        }, 1000);
+                      }}
+                      className="px-3 py-2 bg-white border border-[#001F3F]/10 rounded-full text-xs text-[#001F3F] hover:bg-[#001F3F]/5 transition-colors shadow-sm"
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="p-4 border-t border-[#001F3F]/5 flex gap-2">
-              <input 
-                type="text" 
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                placeholder="Type a message..."
-                className="flex-1 bg-[#001F3F]/5 rounded-xl px-4 py-2 text-sm outline-none"
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && chatMessage.trim()) {
-                    setChatHistory([...chatHistory, { role: 'user', text: chatMessage }]);
-                    setChatMessage('');
-                    setTimeout(() => {
-                      setChatHistory(prev => [...prev, { role: 'support', text: 'Thank you for your message. An agent will be with you shortly.' }]);
-                    }, 1000);
-                  }
-                }}
-              />
-              <button 
-                onClick={() => {
-                  if (chatMessage.trim()) {
-                    setChatHistory([...chatHistory, { role: 'user', text: chatMessage }]);
-                    setChatMessage('');
-                    setTimeout(() => {
-                      setChatHistory(prev => [...prev, { role: 'support', text: 'Thank you for your message. An agent will be with you shortly.' }]);
-                    }, 1000);
-                  }
-                }}
-                className="p-2 bg-[#001F3F] text-white rounded-xl"
-              >
-                <ArrowRight size={18} />
-              </button>
+
+            {/* Chat Input */}
+            <div className="p-4 bg-white border-t border-[#001F3F]/5">
+              <div className="flex items-center gap-2 bg-[#001F3F]/[0.03] rounded-xl p-2 border border-[#001F3F]/5">
+                <button className="p-2 text-[#001F3F]/40 hover:text-[#001F3F] hover:bg-[#001F3F]/5 rounded-lg transition-colors">
+                  <Plus size={20} />
+                </button>
+                <button className="p-2 text-[#001F3F]/40 hover:text-[#001F3F] hover:bg-[#001F3F]/5 rounded-lg transition-colors">
+                  <Image size={20} />
+                </button>
+                <input 
+                  type="text" 
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  placeholder="Type a message..."
+                  className="flex-1 bg-transparent text-sm outline-none text-[#001F3F] placeholder:text-[#001F3F]/30"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && chatMessage.trim()) {
+                      setChatHistory([...chatHistory, { role: 'user', text: chatMessage }]);
+                      setChatMessage('');
+                      setTimeout(() => {
+                        setChatHistory(prev => [...prev, { role: 'support', text: 'Thank you. An agent will be with you shortly.' }]);
+                      }, 1000);
+                    }
+                  }}
+                />
+                <button 
+                  onClick={() => {
+                    if (chatMessage.trim()) {
+                      setChatHistory([...chatHistory, { role: 'user', text: chatMessage }]);
+                      setChatMessage('');
+                      setTimeout(() => {
+                        setChatHistory(prev => [...prev, { role: 'support', text: 'Thank you. An agent will be with you shortly.' }]);
+                      }, 1000);
+                    }
+                  }}
+                  className="p-2 bg-[#001F3F] text-white rounded-lg shadow-md hover:bg-[#001F3F]/90 transition-colors"
+                >
+                  <ArrowRight size={18} />
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -1476,7 +1570,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
                   icon={<MessageSquare size={20} strokeWidth={1.5} />} 
                   label="Chat with Support" 
                   subLabel="Average wait: 2 min" 
-                  onClick={() => setShowHelp(true)}
+                  onClick={() => setView('CHAT')}
                 />
                 <MenuItem 
                   icon={<Phone size={20} strokeWidth={1.5} />} 
@@ -1516,6 +1610,214 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
                 </div>
               </div>
             )}
+          </div>
+        );
+      case 'PENALTIES':
+        return (
+          <div className="space-y-6">
+            <div className="bg-[#001F3F]/5 p-4 rounded-xl flex items-center gap-3">
+              <AlertTriangle size={20} className="text-[#001F3F]" />
+              <p className="text-xs text-[#001F3F] font-medium">Penalties affect your driver rating and access to premium rides.</p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                { id: 1, date: 'Oct 12, 2025', reason: 'Late Arrival (>15 mins)', amount: '-$15.00', points: '-5 pts' },
+                { id: 2, date: 'Sep 28, 2025', reason: 'Ride Cancellation', amount: '-$25.00', points: '-10 pts' }
+              ].map(penalty => (
+                <div key={penalty.id} className="bg-white p-4 rounded-xl border border-[#001F3F]/10 shadow-sm flex justify-between items-start">
+                  <div>
+                    <h4 className="text-sm font-medium text-[#001F3F]">{penalty.reason}</h4>
+                    <p className="text-xs text-[#001F3F]/60 mt-1">{penalty.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-red-600">{penalty.amount}</p>
+                    <p className="text-xs text-red-500 font-medium">{penalty.points}</p>
+                  </div>
+                </div>
+              ))}
+              
+              <div className="bg-white p-4 rounded-xl border border-[#001F3F]/5 shadow-sm text-center py-8">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 text-green-600">
+                  <CheckCircle2 size={24} />
+                </div>
+                <h4 className="text-sm font-medium text-[#001F3F]">Good Standing</h4>
+                <p className="text-xs text-[#001F3F]/60 mt-1 max-w-[200px] mx-auto">You have no recent penalties in the last 30 days.</p>
+              </div>
+            </div>
+          </div>
+        );
+      case 'LEGAL':
+        if (selectedLegalDoc) {
+          const getLegalContent = (doc: string) => {
+            switch (doc) {
+              case "Code of Ethics":
+                return (
+                  <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed">
+                    <p>At Urbont, we hold our chauffeurs to the highest standards of integrity and professionalism.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">1. Professional Conduct</h4>
+                    <p>Chauffeurs must always act with courtesy, respect, and discretion. Interactions with passengers should be polite and professional at all times.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">2. Safety First</h4>
+                    <p>The safety of passengers and the public is paramount. Chauffeurs must adhere to all traffic laws and drive defensively.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">3. Confidentiality</h4>
+                    <p>Chauffeurs must maintain strict confidentiality regarding passenger conversations, destinations, and personal information.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">4. Non-Discrimination</h4>
+                    <p>We have a zero-tolerance policy for discrimination of any kind based on race, religion, gender, or orientation.</p>
+                  </div>
+                );
+              case "Terms & Conditions":
+                return (
+                  <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed">
+                    <p>These terms govern your use of the Urbont Driver Platform.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">1. Service Usage</h4>
+                    <p>You agree to use the platform solely for the purpose of receiving ride requests and managing your chauffeur services.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">2. Payments</h4>
+                    <p>Payments are processed weekly. Urbont reserves the right to withhold payments in cases of suspected fraud or policy violations.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">3. Liability</h4>
+                    <p>Urbont is not liable for indirect or consequential damages arising from your use of the platform.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">4. Termination</h4>
+                    <p>Urbont may terminate your access to the platform at any time for violations of these terms.</p>
+                  </div>
+                );
+              case "Urbont Policy":
+                return (
+                  <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed">
+                    <p>Our policies ensure a consistent and premium experience for all Urbont clients.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">1. Vehicle Standards</h4>
+                    <p>Vehicles must be kept in pristine condition, both inside and out. No personal items should be visible.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">2. Dress Code</h4>
+                    <p>Chauffeurs are required to wear a dark suit, white shirt, and tie. Appearance must be neat and professional.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">3. Zero Tolerance</h4>
+                    <p>We have a zero-tolerance policy for drug and alcohol use while on duty.</p>
+                  </div>
+                );
+              case "Privacy Policy":
+                return (
+                  <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed">
+                    <p>Your privacy is important to us. This policy outlines how we collect and use your data.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">1. Data Collection</h4>
+                    <p>We collect information necessary to provide our services, including location data, contact details, and vehicle information.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">2. Data Usage</h4>
+                    <p>Your data is used to match you with rides, process payments, and improve our platform.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">3. Data Sharing</h4>
+                    <p>We do not sell your personal data. We may share data with third-party service providers as necessary for our operations.</p>
+                  </div>
+                );
+              case "Driver Agreement":
+                return (
+                  <div className="space-y-4 text-sm text-[#001F3F]/80 leading-relaxed">
+                    <p>This agreement establishes the relationship between you and Urbont.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">1. Independent Contractor</h4>
+                    <p>You acknowledge that you are an independent contractor and not an employee of Urbont.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">2. Responsibilities</h4>
+                    <p>You are responsible for maintaining your vehicle, insurance, and licenses required to operate as a chauffeur.</p>
+                    <h4 className="font-medium text-[#001F3F] mt-4">3. Insurance</h4>
+                    <p>You must maintain valid commercial auto insurance with coverage limits as required by local law and Urbont policy.</p>
+                  </div>
+                );
+              default:
+                return <p>Content not available.</p>;
+            }
+          };
+
+          return (
+            <div className="space-y-6">
+              <button 
+                onClick={() => setSelectedLegalDoc(null)} 
+                className="flex items-center gap-2 text-[#001F3F]/60 hover:text-[#001F3F] transition-colors group"
+              >
+                <div className="p-1 rounded-full group-hover:bg-[#001F3F]/5">
+                  <ArrowLeft size={18} />
+                </div>
+                <span className="text-xs font-medium uppercase tracking-wide">Back to Legal</span>
+              </button>
+              
+              <div className="bg-white border border-[#001F3F]/10 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-xl font-medium text-[#001F3F] mb-6 border-b border-[#001F3F]/5 pb-4">{selectedLegalDoc}</h3>
+                {getLegalContent(selectedLegalDoc)}
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-4">
+            <div className="bg-[#001F3F]/5 p-4 rounded-xl flex items-center gap-3 mb-4">
+              <BookOpen size={20} className="text-[#001F3F]" />
+              <p className="text-xs text-[#001F3F] font-medium">Review our policies and code of conduct.</p>
+            </div>
+            {[
+              "Code of Ethics",
+              "Terms & Conditions",
+              "Urbont Policy",
+              "Privacy Policy",
+              "Driver Agreement"
+            ].map((doc, i) => (
+              <button 
+                key={i}
+                onClick={() => setSelectedLegalDoc(doc)}
+                className="w-full p-4 bg-white border border-[#001F3F]/5 rounded-xl text-left text-sm text-[#001F3F] hover:bg-[#001F3F]/5 transition-colors flex justify-between items-center group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-[#001F3F]/5 rounded-lg text-[#001F3F] group-hover:bg-[#001F3F] group-hover:text-white transition-colors">
+                    <FileText size={16} />
+                  </div>
+                  {doc}
+                </div>
+                <ChevronRight size={16} className="text-[#001F3F]/40" />
+              </button>
+            ))}
+          </div>
+        );
+      case 'MEMBERSHIPS':
+        return (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-[#001F3F] to-[#003366] p-6 rounded-2xl text-white shadow-lg relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl" />
+              <div className="relative z-10">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-xl font-light uppercase tracking-widest">Elite</h3>
+                    <p className="text-xs text-white/60 mt-1">Premium Membership</p>
+                  </div>
+                  <Crown size={24} className="text-yellow-400" />
+                </div>
+                <div className="text-3xl font-bold mb-6">$299<span className="text-sm font-normal text-white/60">/mo</span></div>
+                <ul className="space-y-3 mb-6">
+                  {["Priority Access to High-Value Rides", "Lower Commission Rate (15%)", "24/7 Dedicated Concierge Support", "Exclusive Networking Events"].map((benefit, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-white/80">
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+                <button className="w-full py-3 bg-white text-[#001F3F] rounded-xl font-medium uppercase tracking-widest text-xs hover:bg-white/90 transition-colors">
+                  Upgrade to Elite
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#001F3F]/10 p-6 rounded-2xl shadow-sm">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-medium text-[#001F3F]">Standard</h3>
+                  <p className="text-xs text-[#001F3F]/60 mt-1">Current Plan</p>
+                </div>
+                <div className="px-2 py-1 bg-[#001F3F]/5 rounded text-[10px] font-bold uppercase tracking-wider text-[#001F3F]">Active</div>
+              </div>
+              <div className="text-2xl font-bold text-[#001F3F] mb-6">Free</div>
+              <ul className="space-y-3 mb-6">
+                {["Standard Access to Rides", "Standard Commission Rate (25%)", "Email Support", "Weekly Payouts"].map((benefit, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-[#001F3F]/70">
+                    <CheckCircle2 size={14} className="text-[#001F3F]/40 shrink-0" />
+                    {benefit}
+                  </li>
+                ))}
+              </ul>
+              <button disabled className="w-full py-3 bg-[#001F3F]/5 text-[#001F3F]/40 rounded-xl font-medium uppercase tracking-widest text-xs cursor-not-allowed">
+                Current Plan
+              </button>
+            </div>
           </div>
         );
       default:
@@ -1564,6 +1866,22 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
                 icon={<Settings size={20} strokeWidth={1.5} />} 
                 label="Preferences" 
                 onClick={() => setView('PREFERENCES')}
+              />
+              <MenuItem 
+                icon={<AlertTriangle size={20} strokeWidth={1.5} />} 
+                label="Penalties" 
+                onClick={() => setView('PENALTIES')}
+              />
+              <MenuItem 
+                icon={<Award size={20} strokeWidth={1.5} />} 
+                label="Memberships" 
+                subLabel="Standard"
+                onClick={() => setView('MEMBERSHIPS')}
+              />
+              <MenuItem 
+                icon={<BookOpen size={20} strokeWidth={1.5} />} 
+                label="Legal & Compliance" 
+                onClick={() => setView('LEGAL')}
               />
               <MenuItem 
                 icon={<HelpCircle size={20} strokeWidth={1.5} />} 

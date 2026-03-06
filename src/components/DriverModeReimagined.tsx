@@ -52,6 +52,7 @@ interface DriverModeProps {
   tripDetails: TripDetails;
   onComplete: (fare: number) => void;
   onLogout: () => void;
+  onMinimize?: () => void;
 }
 
 // --- Constants ---
@@ -66,7 +67,7 @@ const CENTER = {
 };
 
 
-export default function DriverModeReimagined({ tripDetails, onComplete, onLogout }: DriverModeProps) {
+export default function DriverModeReimagined({ tripDetails, onComplete, onLogout, onMinimize }: DriverModeProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
@@ -254,13 +255,15 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             />
           )}
           
-          {/* Animated Chauffeur Marker */}
-          <AnimatedChauffeurMarker 
-            position={carPosition}
-            heading={carHeading}
-            autoCenter={isAutoCenter}
-            map={map}
-          />
+          {/* AnimatedChauffeurMarker requires map instance */}
+          {map && (
+            <AnimatedChauffeurMarker 
+              position={carPosition}
+              heading={carHeading}
+              autoCenter={isAutoCenter}
+              map={map}
+            />
+          )}
 
           {/* Destination Marker */}
           <Marker 
@@ -297,22 +300,32 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-lg font-bold">{turnInstruction.distance}</span>
-              <span className="text-xs text-[#001F3F]/70 font-medium truncate max-w-[140px]">{turnInstruction.text}</span>
+              <span className="text-xs font-medium opacity-80 truncate max-w-[120px]">{turnInstruction.text}</span>
             </div>
           </div>
 
-          {/* Speed & Status */}
-          <div className="flex flex-col items-end gap-2 pointer-events-auto">
+          {/* Minimize Button */}
+          {onMinimize && (
             <button 
-              onClick={() => setShowMenu(true)}
-              className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 p-2.5 rounded-full shadow-sm hover:bg-white transition-colors text-[#001F3F]"
+              onClick={onMinimize}
+              className="bg-white/90 backdrop-blur-md p-3 rounded-full shadow-lg text-[#001F3F] pointer-events-auto border border-[#001F3F]/10 hover:bg-gray-50 transition-all active:scale-95"
             >
-              <Menu size={20} strokeWidth={1.5} />
+              <ArrowLeft size={20} />
             </button>
-            <div className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 px-3 py-1.5 rounded-full shadow-sm flex items-baseline gap-1">
-              <span className="text-xl font-bold text-[#001F3F]">{Math.round(speed)}</span>
-              <span className="text-[10px] text-[#001F3F]/60 font-bold uppercase">MPH</span>
-            </div>
+          )}
+        </div>
+
+        {/* Speed & Status */}
+        <div className="flex flex-col items-end gap-2 pointer-events-auto">
+          <button 
+            onClick={() => setShowMenu(true)}
+            className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 p-2.5 rounded-full shadow-sm hover:bg-white transition-colors text-[#001F3F]"
+          >
+            <Menu size={20} strokeWidth={1.5} />
+          </button>
+          <div className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 px-3 py-1.5 rounded-full shadow-sm flex items-baseline gap-1">
+            <span className="text-xl font-bold text-[#001F3F]">{Math.round(speed)}</span>
+            <span className="text-[10px] text-[#001F3F]/60 font-bold uppercase">MPH</span>
           </div>
         </div>
       </div>

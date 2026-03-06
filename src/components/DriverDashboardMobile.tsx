@@ -14,6 +14,7 @@ import {
   LogOut,
   Navigation,
   CheckCircle2,
+  Check,
   XCircle,
   AlertTriangle,
   Calendar,
@@ -47,7 +48,7 @@ import DriverModeReimagined from './DriverModeReimagined';
 import SkeletonScreen from './SkeletonScreen';
 
 // --- Types ---
-type Tab = 'HOME' | 'RIDES' | 'EARNINGS' | 'PROFILE';
+type Tab = 'HOME' | 'RIDES' | 'EARNINGS' | 'PROFILE' | 'INCIDENTS';
 type RideStatus = 'NONE' | 'INCOMING' | 'ACCEPTED' | 'ACTIVE';
 
 interface DriverProfileData {
@@ -265,6 +266,9 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
               onUpdateProfile={setDriverProfile}
             />
           )}
+          {activeTab === 'INCIDENTS' && (
+            <IncidentsTab key="incidents" />
+          )}
         </AnimatePresence>
       </main>
 
@@ -272,6 +276,7 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
       <nav className="absolute bottom-0 left-0 right-0 bg-white border-t border-[#001F3F]/5 pb-12 pt-4 px-6 flex justify-between items-center z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
         <NavButton icon={<Home />} label="Home" active={activeTab === 'HOME'} onClick={() => handleTabChange('HOME')} />
         <NavButton icon={<Map />} label="Rides" active={activeTab === 'RIDES'} onClick={() => handleTabChange('RIDES')} />
+        <NavButton icon={<AlertTriangle />} label="Incidents" active={activeTab === 'INCIDENTS'} onClick={() => handleTabChange('INCIDENTS')} />
         <NavButton icon={<Wallet />} label="Earnings" active={activeTab === 'EARNINGS'} onClick={() => handleTabChange('EARNINGS')} />
         <NavButton icon={<User />} label="Profile" active={activeTab === 'PROFILE'} onClick={() => handleTabChange('PROFILE')} />
       </nav>
@@ -1121,6 +1126,112 @@ function EarningsTab({}: { key?: string } = {}) {
 }
 
 type ProfileView = 'MAIN' | 'DOCUMENTS' | 'PAYMENTS' | 'PREFERENCES' | 'SUPPORT' | 'EDIT_PROFILE' | 'VEHICLE' | 'CHAT' | 'PENALTIES' | 'LEGAL' | 'MEMBERSHIPS';
+
+function IncidentsTab() {
+  const [reportType, setReportType] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const incidentTypes = [
+    { id: 'vehicle_issue', label: 'Vehicle Breakdown', icon: <AlertTriangle size={20} /> },
+    { id: 'accident', label: 'Accident', icon: <AlertTriangle size={20} /> },
+    { id: 'cannot_pickup', label: 'Cannot Pick Up Client', icon: <User size={20} /> },
+    { id: 'other', label: 'Other Incident', icon: <MessageSquare size={20} /> }
+  ];
+
+  const handleSubmit = () => {
+    if (!reportType) return;
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setReportType(null);
+        setDescription('');
+      }, 3000);
+    }, 1500);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="space-y-6"
+    >
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-light tracking-tight text-[#001F3F]">Report Incident</h2>
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 border border-[#001F3F]/10 space-y-6">
+        <p className="text-sm text-[#001F3F]/80">Please select the type of incident you are experiencing. This will alert our support team immediately.</p>
+        
+        <div className="grid grid-cols-1 gap-3">
+          {incidentTypes.map((type) => (
+            <button
+              key={type.id}
+              onClick={() => setReportType(type.id)}
+              className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
+                reportType === type.id 
+                  ? 'border-[#001F3F] bg-[#001F3F]/5 text-[#001F3F]' 
+                  : 'border-[#001F3F]/10 text-[#001F3F]/60 hover:bg-[#001F3F]/5'
+              }`}
+            >
+              <div className={`p-2 rounded-full ${reportType === type.id ? 'bg-[#001F3F]/10' : 'bg-gray-100'}`}>
+                {type.icon}
+              </div>
+              <span className="font-medium">{type.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {reportType && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="space-y-4 pt-4 border-t border-[#001F3F]/10"
+          >
+            <div>
+              <label className="block text-xs font-medium uppercase tracking-widest text-[#001F3F]/60 mb-2">
+                Additional Details (Optional)
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Please provide any relevant details..."
+                className="w-full p-4 bg-[#001F3F]/5 rounded-xl text-[#001F3F] outline-none min-h-[120px] resize-none border border-transparent focus:border-[#001F3F]/20 transition-colors"
+              />
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || submitted}
+              className={`w-full py-4 rounded-xl font-medium uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
+                submitted 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-[#001F3F] text-white hover:bg-[#001F3F]/90 active:scale-[0.98]'
+              }`}
+            >
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : submitted ? (
+                <>
+                  <Check size={20} />
+                  Report Submitted
+                </>
+              ) : (
+                'Submit Report'
+              )}
+            </button>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
 
 function ProfileTab({ onLogout, profile, onUpdateProfile }: { 
   onLogout?: () => void, 

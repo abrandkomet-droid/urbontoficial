@@ -142,7 +142,7 @@ function App() {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
-    libraries: ['places']
+    libraries: ['places', 'geometry']
   });
 
   const navigate = (screen: Screen, fromMenu = false, legalType?: 'code-of-ethics' | 'terms-of-service' | 'privacy-policy') => {
@@ -1226,13 +1226,24 @@ function OtpScreen({ phoneNumber, onBack, onVerify, key }: { phoneNumber: string
   );
 }
 
-const SmoothMarker = ({ position, icon }: { position: { lat: number, lng: number }, icon: any }) => {
+const SmoothMarker = ({ position, icon, imageUrl, rotation }: { position: { lat: number, lng: number }, icon?: any, imageUrl?: string, rotation?: number }) => {
   const [currentPos, setCurrentPos] = useState(position);
+  const [currentRot, setCurrentRot] = useState(rotation || 0);
   const targetPosRef = useRef(position);
+  const targetRotRef = useRef(rotation || 0);
 
   useEffect(() => {
     targetPosRef.current = position;
   }, [position]);
+
+  useEffect(() => {
+    if (rotation !== undefined) {
+      let diff = rotation - targetRotRef.current;
+      while (diff > 180) diff -= 360;
+      while (diff < -180) diff += 360;
+      targetRotRef.current += diff;
+    }
+  }, [rotation]);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -1245,7 +1256,7 @@ const SmoothMarker = ({ position, icon }: { position: { lat: number, lng: number
       setCurrentPos(prev => {
         const latDiff = targetPosRef.current.lat - prev.lat;
         const lngDiff = targetPosRef.current.lng - prev.lng;
-
+        
         if (Math.abs(latDiff) < 0.000001 && Math.abs(lngDiff) < 0.000001) {
           return targetPosRef.current;
         }
@@ -1258,6 +1269,13 @@ const SmoothMarker = ({ position, icon }: { position: { lat: number, lng: number
         };
       });
 
+      setCurrentRot(prev => {
+        const rotDiff = targetRotRef.current - prev;
+        if (Math.abs(rotDiff) < 0.1) return targetRotRef.current;
+        const factor = 1 - Math.pow(0.05, deltaTime / 1000);
+        return prev + rotDiff * factor;
+      });
+
       animationFrameId = requestAnimationFrame(animate);
     };
 
@@ -1266,7 +1284,28 @@ const SmoothMarker = ({ position, icon }: { position: { lat: number, lng: number
     return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
-  return <Marker position={currentPos} icon={icon} />;
+  let finalIcon = icon;
+  if (imageUrl && rotation !== undefined) {
+    finalIcon = {
+      url: `data:image/svg+xml;charset=utf-8,` + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+          <g transform="rotate(${currentRot} 20 20)">
+            <image href="${imageUrl}" width="40" height="40" />
+          </g>
+        </svg>
+      `),
+      scaledSize: new google.maps.Size(40, 40),
+      anchor: new google.maps.Point(20, 20)
+    };
+  } else if (imageUrl) {
+    finalIcon = {
+      url: imageUrl,
+      scaledSize: new google.maps.Size(40, 40),
+      anchor: new google.maps.Point(20, 20)
+    };
+  }
+
+  return <Marker position={currentPos} icon={finalIcon} />;
 };
 
 function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPaymentMethods, activeTrip, onReturnToTrip, isLoaded, loadError }: { onOpenMenu: () => void, onSelectVehicle: () => void, onNotifications: () => void, onPaymentMethods: () => void, activeTrip: boolean, onReturnToTrip: () => void, isLoaded: boolean, loadError: Error | undefined, key?: string }) {
@@ -1286,31 +1325,82 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
   const [flightNumber, setFlightNumber] = useState('');
   const [isAirportPickup, setIsAirportPickup] = useState(false);
   const places = ['Times Square', 'Beverly Hills', 'Miami Beach', 'Las Vegas', 'Grand Canyon', 'Central Park'];
-  const [availableCars, setAvailableCars] = useState<{id: number, lat: number, lng: number}[]>([]);
+  const [availableCars, setAvailableCars] = useState<{id: number, lat: number, lng: number, rotation: number}[]>([]);
+  const carsDataRef = useRef<{ id: number, path: google.maps.LatLng[], progress: number, speed: number }[]>([]);
 
   useEffect(() => {
-    // Generate initial cars around center
-    const generateCars = () => {
-      return Array.from({ length: 5 }).map((_, i) => ({
-        id: i,
-        lat: center.lat + (Math.random() - 0.5) * 0.015,
-        lng: center.lng + (Math.random() - 0.5) * 0.015,
-      }));
+    if (!isLoaded || !center) return;
+
+    const directionsService = new google.maps.DirectionsService();
+    carsDataRef.current = [];
+
+    const generateRoutes = async () => {
+      const newCars = [];
+      for (let i = 0; i < 4; i++) {
+        const angle1 = Math.random() * Math.PI * 2;
+        const r1 = 0.005 + Math.random() * 0.01;
+        const origin = { lat: center.lat + Math.cos(angle1)*r1, lng: center.lng + Math.sin(angle1)*r1 };
+
+        const angle2 = Math.random() * Math.PI * 2;
+        const r2 = 0.005 + Math.random() * 0.01;
+        const destination = { lat: center.lat + Math.cos(angle2)*r2, lng: center.lng + Math.sin(angle2)*r2 };
+
+        try {
+          const result = await directionsService.route({
+            origin,
+            destination,
+            travelMode: google.maps.TravelMode.DRIVING
+          });
+          if (result.routes && result.routes.length > 0) {
+            newCars.push({
+              id: i,
+              path: result.routes[0].overview_path,
+              progress: Math.random(), // Start at random point
+              speed: 0.0005 + Math.random() * 0.0005
+            });
+          }
+        } catch (e) {
+          console.error("Route generation failed", e);
+        }
+      }
+      carsDataRef.current = newCars;
     };
 
-    setAvailableCars(generateCars());
+    generateRoutes();
 
     const interval = setInterval(() => {
-      setAvailableCars(prev => prev.map(car => ({
-        ...car,
-        // Move cars randomly but slowly
-        lat: car.lat + (Math.random() - 0.5) * 0.0005,
-        lng: car.lng + (Math.random() - 0.5) * 0.0005,
-      })));
-    }, 3000);
+      if (carsDataRef.current.length === 0) return;
+
+      setAvailableCars(carsDataRef.current.map(car => {
+        car.progress += car.speed;
+        if (car.progress >= 1) {
+          car.progress = 0;
+          car.path.reverse();
+        }
+
+        const totalPoints = car.path.length;
+        const floatIndex = car.progress * (totalPoints - 1);
+        const index = Math.floor(floatIndex);
+        const nextIndex = Math.min(index + 1, totalPoints - 1);
+        const segmentProgress = floatIndex - index;
+
+        const p1 = car.path[index];
+        const p2 = car.path[nextIndex];
+
+        const lat = p1.lat() + (p2.lat() - p1.lat()) * segmentProgress;
+        const lng = p1.lng() + (p2.lng() - p1.lng()) * segmentProgress;
+
+        let rotation = 0;
+        if (google.maps.geometry && google.maps.geometry.spherical) {
+          rotation = google.maps.geometry.spherical.computeHeading(p1, p2);
+        }
+
+        return { id: car.id, lat, lng, rotation };
+      }));
+    }, 100);
 
     return () => clearInterval(interval);
-  }, [center.lat, center.lng]);
+  }, [isLoaded, center.lat, center.lng]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1666,11 +1756,8 @@ function BookingScreen({ onOpenMenu, onSelectVehicle, onNotifications, onPayment
                 <SmoothMarker 
                   key={car.id} 
                   position={{ lat: car.lat, lng: car.lng }} 
-                  icon={{
-                    url: 'https://i.imgur.com/bR5fpzi.png',
-                    scaledSize: new google.maps.Size(40, 40),
-                    anchor: new google.maps.Point(20, 20)
-                  }}
+                  imageUrl="https://lh3.googleusercontent.com/d/1xQuwy6vsq19PFtOzmu7K1zC3fFJSyLR6"
+                  rotation={car.rotation}
                 />
               ))}
             </GoogleMap>
@@ -2824,24 +2911,67 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [carPos, setCarPos] = useState({ lat: 40.7128, lng: -74.0060 });
   const [userPos, setUserPos] = useState({ lat: 40.7150, lng: -74.0080 });
+  const [carRotation, setCarRotation] = useState(0);
+  const routeRef = useRef<{ path: google.maps.LatLng[], progress: number, speed: number } | null>(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const { latitude, longitude } = position.coords;
         setUserPos({ lat: latitude, lng: longitude });
-        setCarPos({ lat: latitude + 0.005, lng: longitude + 0.005 });
+        
+        const startLat = latitude + 0.01;
+        const startLng = longitude + 0.01;
+        setCarPos({ lat: startLat, lng: startLng });
+
+        if (isLoaded) {
+          const directionsService = new google.maps.DirectionsService();
+          directionsService.route({
+            origin: { lat: startLat, lng: startLng },
+            destination: { lat: latitude, lng: longitude },
+            travelMode: google.maps.TravelMode.DRIVING
+          }).then(result => {
+            if (result.routes && result.routes.length > 0) {
+              routeRef.current = {
+                path: result.routes[0].overview_path,
+                progress: 0,
+                speed: 0.0005
+              };
+            }
+          }).catch(e => console.error("Route generation failed", e));
+        }
       });
     }
-  }, []);
+  }, [isLoaded]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCarPos(prev => ({
-        lat: prev.lat - 0.0001,
-        lng: prev.lng - 0.0001
-      }));
-    }, 3000);
+      if (!routeRef.current) return;
+      
+      const route = routeRef.current;
+      route.progress += route.speed;
+      if (route.progress >= 1) {
+        route.progress = 1;
+      }
+
+      const totalPoints = route.path.length;
+      const floatIndex = route.progress * (totalPoints - 1);
+      const index = Math.floor(floatIndex);
+      const nextIndex = Math.min(index + 1, totalPoints - 1);
+      const segmentProgress = floatIndex - index;
+
+      const p1 = route.path[index];
+      const p2 = route.path[nextIndex];
+
+      const lat = p1.lat() + (p2.lat() - p1.lat()) * segmentProgress;
+      const lng = p1.lng() + (p2.lng() - p1.lng()) * segmentProgress;
+
+      setCarPos({ lat, lng });
+
+      if (google.maps.geometry && google.maps.geometry.spherical && index !== nextIndex) {
+        setCarRotation(google.maps.geometry.spherical.computeHeading(p1, p2));
+      }
+    }, 100);
     return () => clearInterval(interval);
   }, []);
 
@@ -3017,11 +3147,8 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
               />
               <SmoothMarker 
                 position={carPos}
-                icon={{
-                  url: 'https://i.imgur.com/bR5fpzi.png',
-                  scaledSize: new google.maps.Size(40, 40),
-                  anchor: new google.maps.Point(20, 20)
-                }}
+                imageUrl="https://lh3.googleusercontent.com/d/1xQuwy6vsq19PFtOzmu7K1zC3fFJSyLR6"
+                rotation={carRotation}
               />
             </GoogleMap>
           ) : (

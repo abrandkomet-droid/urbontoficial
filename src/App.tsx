@@ -194,10 +194,10 @@ export default function App() {
                     <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">SIGNATURE</span>
                   </button>
                   <button onClick={() => navigate('membership', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">THE CLUB</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">CLUB</span>
                   </button>
                   <button onClick={() => navigate('customer-service', true)} className="group flex flex-col items-start">
-                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">HELP CENTER</span>
+                    <span className="font-sans text-4xl leading-none font-light uppercase tracking-tight text-left text-[#001F3F] group-hover:text-[#001F3F]/80 transition-colors">ASSISTANCE</span>
                   </button>
                 </div>
 
@@ -206,7 +206,7 @@ export default function App() {
                   <button onClick={() => navigate('profile', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <User size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY INFO</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">Account</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-sans text-sm font-normal text-[#001F3F]/80">Angel Boyer</span>
@@ -216,35 +216,35 @@ export default function App() {
                   <button onClick={() => navigate('preferences', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Settings size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY PREFERENCES</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">Preferences</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('ride-history', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Clock size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">MY JOURNEY HISTORY</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">Journeys</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('payment-methods', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <CreditCard size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">PAYMENT</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">Wallet</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('gift-ride', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <Gift size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">GIFT A RIDE</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">Send Ride</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
                   <button onClick={() => navigate('suggestions', true)} className="flex justify-between items-center w-full py-4 border-b border-[#001F3F]/10 group hover:bg-[#001F3F]/5 transition-colors px-2">
                     <div className="flex items-center gap-3">
                       <MessageSquare size={18} className="text-[#001F3F]/60 group-hover:text-[#001F3F] transition-colors" />
-                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">SUGGESTIONS</span>
+                      <span className="font-sans text-sm font-medium uppercase tracking-wider text-[#001F3F]">Feedback</span>
                     </div>
                     <ChevronRight size={16} strokeWidth={1.5} className="text-[#001F3F]/60" />
                   </button>
@@ -5064,7 +5064,7 @@ function MembershipScreen({ onBack }: { onBack: () => void }) {
 
       <div className="flex-1 overflow-y-auto px-6 pb-12 no-scrollbar">
         <div className="text-center space-y-4 mt-8 mb-16 px-6">
-          <h3 className="text-3xl font-light text-[#001F3F]">The Club</h3>
+          <h3 className="text-3xl font-light text-[#001F3F]">CLUB URBONT</h3>
           <p className="text-base font-light text-[#001F3F] leading-relaxed">
             Unlock elite status after taking 15 journeys within 6 months, or by invitation from another member.
           </p>

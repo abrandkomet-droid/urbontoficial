@@ -76,6 +76,7 @@ export default function DriverProfile() {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    libraries: ['places'],
   });
 
   // Helper to calculate bar height percentage

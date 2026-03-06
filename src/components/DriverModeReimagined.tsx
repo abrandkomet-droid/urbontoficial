@@ -20,15 +20,17 @@ import {
   CheckCircle2,
   User,
   Sparkles,
+  Star,
+  AlertTriangle,
   Loader2,
   XCircle,
   ArrowUpRight,
-  AlertTriangle,
   ArrowUp,
   ArrowLeft
 } from 'lucide-react';
 import AnimatedChauffeurMarker from './AnimatedChauffeurMarker';
 import SmartChat from './SmartChat';
+import { NAVY_SILVER_STYLE } from '../constants';
 
 // --- Types ---
 interface TripDetails {
@@ -40,6 +42,10 @@ interface TripDetails {
   distance: string;
   time: string;
   rating: number;
+  clientType?: 'Personal' | 'Business';
+  amenities?: string[];
+  preferences?: string[];
+  serviceType?: string;
 }
 
 interface DriverModeProps {
@@ -59,39 +65,26 @@ const CENTER = {
   lng: -73.9855
 };
 
-// Navy & Silver Premium Map Style
-const NAVY_SILVER_STYLE = [
-  { "elementType": "geometry", "stylers": [{ "color": "#1a1c2c" }] },
-  { "elementType": "labels.text.fill", "stylers": [{ "color": "#8e9297" }] },
-  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#1a1c2c" }] },
-  { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#4b4e6d" }] },
-  { "featureType": "administrative.land_parcel", "elementType": "labels.text.fill", "stylers": [{ "color": "#6477b9" }] },
-  { "featureType": "landscape.man_made", "elementType": "geometry.stroke", "stylers": [{ "color": "#334e7c" }] },
-  { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#283d5a" }] },
-  { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#6f9ba5" }] },
-  { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#304a7d" }] },
-  { "featureType": "road", "elementType": "labels.text.fill", "stylers": [{ "color": "#98a5be" }] },
-  { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#2c4591" }] },
-  { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#1f2835" }] },
-  { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#b0d5ff" }] },
-  { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#2f3948" }] },
-  { "featureType": "transit.station", "elementType": "labels.text.fill", "stylers": [{ "color": "#d3d3d3" }] },
-  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0e1626" }] },
-  { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#4e6d70" }] }
-];
 
 export default function DriverModeReimagined({ tripDetails, onComplete, onLogout }: DriverModeProps) {
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY || '',
+    libraries: ['places'],
   });
+
+  useEffect(() => {
+    console.log('DriverModeReimagined: isLoaded =', isLoaded);
+    console.log('DriverModeReimagined: loadError =', loadError);
+  }, [isLoaded, loadError]);
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null);
   
   // Trip State
-  const [tripStage, setTripStage] = useState<'PICKUP' | 'DROPOFF'>('PICKUP');
+  const [tripStage, setTripStage] = useState<'PICKUP' | 'IN_PROGRESS' | 'DROPOFF'>('PICKUP');
   const [isArrived, setIsArrived] = useState(false);
+  const [tripCompleted, setTripCompleted] = useState(false);
   
   // Telemetry
   const [speed, setSpeed] = useState(0);
@@ -105,10 +98,11 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [showRouteModal, setShowRouteModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
   const [turnInstruction, setTurnInstruction] = useState({
     distance: '200 ft',
     text: 'Turn right on 5th Ave',
-    icon: <ArrowRight size={32} strokeWidth={1.5} />
+    icon: <ArrowRight size={24} strokeWidth={1.5} />
   });
   const [chatHistory, setChatHistory] = useState([
     { role: 'passenger', text: 'I am waiting near the main entrance.' }
@@ -116,6 +110,7 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
   
   // Simulate movement along the route
   useEffect(() => {
+    if (tripCompleted) return;
     const interval = setInterval(() => {
       setSpeed(prev => {
         const change = Math.random() * 4 - 2;
@@ -125,10 +120,10 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
       // Simulate turn instructions changing
       if (Math.random() > 0.9) {
         const instructions = [
-          { distance: '0.5 mi', text: 'Continue straight', icon: <ArrowUp size={32} strokeWidth={1.5} /> },
-          { distance: '300 ft', text: 'Turn left on Broadway', icon: <ArrowLeft size={32} strokeWidth={1.5} /> },
-          { distance: '1.2 mi', text: 'Merge onto I-95 N', icon: <ArrowUpRight size={32} strokeWidth={1.5} /> },
-          { distance: '50 ft', text: 'Arriving at destination', icon: <MapPin size={32} strokeWidth={1.5} /> }
+          { distance: '0.5 mi', text: 'Continue straight', icon: <ArrowUp size={24} strokeWidth={1.5} /> },
+          { distance: '300 ft', text: 'Turn left on Broadway', icon: <ArrowLeft size={24} strokeWidth={1.5} /> },
+          { distance: '1.2 mi', text: 'Merge onto I-95 N', icon: <ArrowUpRight size={24} strokeWidth={1.5} /> },
+          { distance: '50 ft', text: 'Arriving at destination', icon: <MapPin size={24} strokeWidth={1.5} /> }
         ];
         setTurnInstruction(instructions[Math.floor(Math.random() * instructions.length)]);
       }
@@ -143,11 +138,11 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
       setCarHeading(prev => (prev + (Math.random() - 0.5) * 10) % 360);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [tripCompleted]);
 
   // Calculate Route (Mock)
   useEffect(() => {
-    if (isLoaded && !directionsResponse) {
+    if (isLoaded && !directionsResponse && !tripCompleted) {
       const directionsService = new google.maps.DirectionsService();
       directionsService.route(
         {
@@ -162,29 +157,71 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
         }
       );
     }
-  }, [isLoaded, directionsResponse]);
+  }, [isLoaded, directionsResponse, tripCompleted]);
 
   const handleMainAction = () => {
     if (tripStage === 'PICKUP') {
       if (!isArrived) {
         setIsArrived(true);
       } else {
-        setTripStage('DROPOFF');
+        setTripStage('IN_PROGRESS');
         setIsArrived(false);
       }
+    } else if (tripStage === 'IN_PROGRESS') {
+      setTripStage('DROPOFF');
     } else {
-      onComplete(tripDetails.fare);
+      setTripCompleted(true);
     }
   };
 
   const getButtonText = () => {
     if (tripStage === 'PICKUP') {
-      return isArrived ? 'Start Trip' : 'Arrived at Pickup';
+      return isArrived ? 'Start VIP Trip' : 'Arrived at Pickup';
+    } else if (tripStage === 'IN_PROGRESS') {
+      return 'Complete Trip';
     }
     return 'Complete Trip';
   };
 
+  if (loadError) return <div className="h-[100dvh] w-full bg-white flex items-center justify-center text-red-500 p-6 text-center">Error loading maps: {loadError.message}</div>;
   if (!isLoaded) return <div className="h-[100dvh] w-full bg-white flex items-center justify-center text-[#001F3F]">Loading Navigation...</div>;
+
+  if (tripCompleted) {
+    return (
+      <div className="h-[100dvh] w-full bg-[#001F3F] flex flex-col items-center justify-center p-8 text-white">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center space-y-6"
+        >
+          <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 size={48} className="text-emerald-400" />
+          </div>
+          <h2 className="text-4xl font-light uppercase tracking-widest">Trip Completed</h2>
+          <div className="bg-white/5 p-6 rounded-2xl w-full max-w-sm space-y-4">
+            <div className="flex justify-between">
+              <span className="opacity-60">Fare</span>
+              <span className="font-medium">${tripDetails.fare.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="opacity-60">Distance</span>
+              <span className="font-medium">{tripDetails.distance}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="opacity-60">Time</span>
+              <span className="font-medium">{tripDetails.time}</span>
+            </div>
+          </div>
+          <button 
+            onClick={() => onComplete(tripDetails.fare)}
+            className="w-full py-5 bg-white text-[#001F3F] rounded-xl font-medium uppercase tracking-widest text-sm hover:bg-gray-100 transition-all"
+          >
+            Return to Dashboard
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-[100dvh] w-full bg-white relative overflow-hidden font-sans text-[#001F3F]">
@@ -251,14 +288,16 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
       </div>
 
       {/* --- Top Telemetry Bar --- */}
-      <div className="absolute top-0 left-0 right-0 p-6 z-20 pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 p-4 z-20 pointer-events-none flex flex-col gap-4">
         <div className="flex justify-between items-start">
-          {/* Turn Indicator */}
-          <div className="bg-[#001F3F] text-white p-4 rounded-xl shadow-lg flex items-center gap-4 pointer-events-auto min-w-[200px] transition-all duration-500">
-            {turnInstruction.icon}
-            <div>
-              <p className="text-2xl font-medium">{turnInstruction.distance}</p>
-              <p className="text-sm opacity-80 font-light">{turnInstruction.text}</p>
+          {/* Turn Indicator - Compact Pill Design */}
+          <div className="bg-white/90 backdrop-blur-md text-[#001F3F] px-4 py-3 rounded-full shadow-lg flex items-center gap-3 pointer-events-auto transition-all duration-500 max-w-[240px] border border-[#001F3F]/10">
+            <div className="text-[#001F3F] shrink-0">
+              {turnInstruction.icon}
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-lg font-bold">{turnInstruction.distance}</span>
+              <span className="text-xs text-[#001F3F]/70 font-medium truncate max-w-[140px]">{turnInstruction.text}</span>
             </div>
           </div>
 
@@ -266,85 +305,161 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
           <div className="flex flex-col items-end gap-2 pointer-events-auto">
             <button 
               onClick={() => setShowMenu(true)}
-              className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 p-3 rounded-full shadow-sm hover:bg-white transition-colors"
+              className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 p-2.5 rounded-full shadow-sm hover:bg-white transition-colors text-[#001F3F]"
             >
               <Menu size={20} strokeWidth={1.5} />
             </button>
-            <div className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 px-4 py-2 rounded-full shadow-sm">
-              <span className="text-2xl font-medium text-[#001F3F]">{Math.round(speed)}</span>
-              <span className="text-xs text-[#001F3F]/60 ml-1 font-medium">MPH</span>
+            <div className="bg-white/90 backdrop-blur-md border border-[#001F3F]/10 px-3 py-1.5 rounded-full shadow-sm flex items-baseline gap-1">
+              <span className="text-xl font-bold text-[#001F3F]">{Math.round(speed)}</span>
+              <span className="text-[10px] text-[#001F3F]/60 font-bold uppercase">MPH</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* --- Bottom Action Panel --- */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.05)] z-30 p-6 pb-12">
-        <div className="w-12 h-1 bg-[#001F3F]/10 rounded-full mx-auto mb-6" />
-        
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-2xl font-medium text-[#001F3F] mb-1">
-              {tripStage === 'PICKUP' ? 'Picking up Sarah' : 'Dropping off Sarah'}
-            </h2>
-            <div className="flex items-center gap-2 text-[#001F3F]/60 text-sm">
-              <Clock size={14} strokeWidth={1.5} />
-              <span>{tripDetails.time} remaining</span>
-              <span>•</span>
-              <span>{tripDetails.distance}</span>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => alert('Calling Sarah...')}
-              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
-            >
-              <Phone size={20} strokeWidth={1.5} />
-            </button>
-            <button 
-              onClick={() => setShowChat(true)}
-              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
-            >
-              <MessageSquare size={20} strokeWidth={1.5} />
-            </button>
-            <button 
-              onClick={() => alert('SOS Alert triggered. Safety team notified.')}
-              className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
-            >
-              <ShieldAlert size={20} strokeWidth={1.5} />
-            </button>
-          </div>
-        </div>
-
-        {/* Trip Progress / Address */}
-        <div className="flex items-start gap-4 mb-8">
-          <div className="flex flex-col items-center gap-1 pt-1.5">
-            <div className={`w-3 h-3 rounded-full ${tripStage === 'PICKUP' ? 'bg-[#001F3F]' : 'bg-[#001F3F]/20'}`} />
-            <div className="w-px h-8 bg-[#001F3F]/10" />
-            <div className={`w-3 h-3 rounded-full ${tripStage === 'DROPOFF' ? 'bg-[#001F3F]' : 'border-2 border-[#001F3F]/20'}`} />
-          </div>
-          <div className="flex-1 space-y-6">
-            <div className={tripStage === 'PICKUP' ? 'opacity-100' : 'opacity-70'}>
-              <p className="text-xs uppercase tracking-widest text-[#001F3F]/90 font-medium mb-1">Pickup</p>
-              <p className="text-lg font-medium text-[#001F3F]">{tripDetails.pickup}</p>
-            </div>
-            <div className={tripStage === 'DROPOFF' ? 'opacity-100' : 'opacity-70'}>
-              <p className="text-xs uppercase tracking-widest text-[#001F3F]/90 font-medium mb-1">Dropoff</p>
-              <p className="text-lg font-medium text-[#001F3F]">{tripDetails.dropoff}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Action Button */}
-        <button 
-          onClick={handleMainAction}
-          className="w-full py-4 bg-[#001F3F] text-white rounded-xl font-medium uppercase tracking-widest text-sm shadow-xl shadow-[#001F3F]/20 hover:bg-[#001F3F]/90 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+      {/* --- Bottom Action Panel (Collapsible) --- */}
+      <motion.div 
+        layout
+        initial={{ height: 'auto' }}
+        animate={{ 
+          height: 'auto',
+          borderTopLeftRadius: '2rem',
+          borderTopRightRadius: '2rem'
+        }}
+        className="absolute bottom-0 left-0 right-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-30 overflow-hidden"
+      >
+        {/* Handle / Toggle Area */}
+        <div 
+          className="w-full flex justify-center pt-4 pb-2 cursor-pointer active:opacity-50"
+          onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
         >
-          <span>{getButtonText()}</span>
-          <ArrowRight size={18} strokeWidth={1.5} />
-        </button>
+          <div className="w-12 h-1.5 bg-[#001F3F]/10 rounded-full" />
+        </div>
+        
+        <div className="px-6 pb-8">
+          {/* Header - Always Visible */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#001F3F]/5 overflow-hidden border border-[#001F3F]/10 shadow-sm shrink-0">
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${tripDetails.passengerName}`} alt={tripDetails.passengerName} className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-[#001F3F] leading-tight">{tripDetails.passengerName}</h2>
+                <div className="flex items-center gap-1 text-amber-500 text-xs mt-0.5">
+                  <Star size={10} fill="currentColor" />
+                  <span className="font-bold text-[#001F3F]">{tripDetails.rating.toFixed(1)}</span>
+                  <span className="text-[#001F3F]/60 font-medium ml-1">• {tripDetails.clientType || 'Personal'}</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick Actions */}
+            <div className="flex gap-2">
+              <button 
+                onClick={(e) => { e.stopPropagation(); alert('Calling Sarah...'); }}
+                className="w-10 h-10 rounded-full bg-[#001F3F]/5 border border-[#001F3F]/10 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
+              >
+                <Phone size={18} strokeWidth={1.5} />
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setShowChat(true); }}
+                className="w-10 h-10 rounded-full bg-[#001F3F]/5 border border-[#001F3F]/10 flex items-center justify-center text-[#001F3F] hover:bg-[#001F3F]/10 transition-colors"
+              >
+                <MessageSquare size={18} strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
 
-      </div>
+          {/* Expanded Content */}
+          <AnimatePresence initial={false}>
+            {isDetailsExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden"
+              >
+                {/* Trip Progress / Address */}
+                {isArrived && (
+                  <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl mb-6 flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-emerald-900 font-bold text-xs uppercase tracking-wide">Passenger Arrived</p>
+                  </div>
+                )}
+                
+                <div className="flex items-start gap-4 mb-6 pl-1">
+                  <div className="flex flex-col items-center gap-1 pt-1.5">
+                    <div className={`w-2 h-2 rounded-full ${tripStage === 'PICKUP' ? 'bg-[#001F3F] ring-4 ring-[#001F3F]/5' : 'bg-[#001F3F]/20'}`} />
+                    <div className="w-0.5 h-12 bg-[#001F3F]/10" />
+                    <div className={`w-2 h-2 rounded-full ${tripStage === 'DROPOFF' ? 'bg-[#001F3F] ring-4 ring-[#001F3F]/5' : 'border-2 border-[#001F3F]/20'}`} />
+                  </div>
+                  <div className="flex-1 space-y-6">
+                    <div className={tripStage === 'PICKUP' ? 'opacity-100' : 'opacity-50'}>
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold mb-1">Pickup</p>
+                      <p className="text-base font-medium text-[#001F3F] leading-tight">{tripDetails.pickup}</p>
+                    </div>
+                    <div className={tripStage === 'DROPOFF' ? 'opacity-100' : 'opacity-50'}>
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-[#001F3F]/40 font-bold mb-1">Dropoff</p>
+                      <p className="text-base font-medium text-[#001F3F] leading-tight">{tripDetails.dropoff}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Details Grid */}
+                <div className="grid grid-cols-2 gap-4 mb-6 pt-6 border-t border-[#001F3F]/5">
+                   <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Service</p>
+                      <p className="text-sm font-bold text-[#001F3F]">{tripDetails.serviceType || 'Standard'}</p>
+                   </div>
+                   <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Est. Fare</p>
+                      <p className="text-sm font-bold text-[#001F3F]">${tripDetails.fare.toFixed(2)}</p>
+                   </div>
+                </div>
+
+                {/* Amenities & Preferences */}
+                <div className="space-y-4 mb-6">
+                  {tripDetails.amenities && tripDetails.amenities.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-2">Amenities</p>
+                      <div className="flex flex-wrap gap-2">
+                        {tripDetails.amenities.map(item => (
+                          <span key={item} className="px-2 py-1 rounded-md border border-[#001F3F]/10 text-[#001F3F] text-xs font-medium">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {tripDetails.preferences && tripDetails.preferences.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-2">Preferences</p>
+                      <div className="flex flex-wrap gap-2">
+                        {tripDetails.preferences.map(item => (
+                          <span key={item} className="px-2 py-1 rounded-md bg-[#001F3F]/5 text-[#001F3F] text-xs font-medium">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Main Action Button - Always Visible */}
+          <button 
+            onClick={handleMainAction}
+            className="w-full py-4 bg-[#001F3F] text-white rounded-xl font-bold uppercase tracking-[0.15em] text-sm shadow-xl shadow-[#001F3F]/20 hover:bg-[#003366] transition-all active:scale-[0.98] flex items-center justify-center gap-3 mt-2"
+          >
+            <span>{getButtonText()}</span>
+            <ArrowRight size={18} strokeWidth={2} />
+          </button>
+        </div>
+      </motion.div>
 
       {/* --- Overlays --- */}
       <AnimatePresence>
@@ -353,68 +468,143 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-[#001F3F]/95 backdrop-blur-xl flex flex-col p-8 text-white"
+            className="absolute inset-0 z-50 bg-white/95 backdrop-blur-2xl flex flex-col p-8 text-[#001F3F]"
           >
             <div className="flex justify-between items-center mb-12 pt-8">
-              <h2 className="text-3xl font-light uppercase tracking-widest">Trip Menu</h2>
-              <button onClick={() => setShowMenu(false)} className="p-2 bg-white/10 rounded-full"><X size={24} /></button>
+              <h2 className="text-2xl font-light uppercase tracking-[0.2em] text-[#001F3F]">Trip Menu</h2>
+              <button 
+                onClick={() => setShowMenu(false)} 
+                className="w-12 h-12 rounded-full bg-[#001F3F]/5 flex items-center justify-center hover:bg-[#001F3F]/10 transition-colors"
+              >
+                <X size={20} className="text-[#001F3F]" />
+              </button>
             </div>
-                       <div className="flex-1 space-y-4">
+                        <div className="flex-1 space-y-4">
               <button 
                 onClick={() => {
                   setShowMenu(false);
                   setShowRouteModal(true);
                 }}
-                className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group"
+                className="w-full p-6 bg-[#001F3F]/5 rounded-2xl flex items-center justify-between group hover:bg-[#001F3F]/10 transition-all duration-300"
               >
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
-                  <Maximize2 size={24} strokeWidth={1.5} />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#001F3F] shadow-sm group-hover:scale-110 transition-transform">
+                    <Maximize2 size={20} strokeWidth={1.5} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-lg font-medium text-[#001F3F]">Full Route Overview</p>
+                    <p className="text-sm text-[#001F3F]/60">See the entire path to destination</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-lg font-medium">Full Route Overview</p>
-                  <p className="text-sm opacity-60">See the entire path to destination</p>
-                </div>
+                <ChevronUp size={20} className="text-[#001F3F]/20 rotate-90 group-hover:text-[#001F3F]/60 transition-colors" />
               </button>
-              
+
               <button 
                 onClick={() => {
                   setShowMenu(false);
                   setShowEmergencyModal(true);
                 }}
-                className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group"
+                className="w-full p-6 bg-[#001F3F]/5 rounded-2xl flex items-center justify-between group hover:bg-[#001F3F]/10 transition-all duration-300"
               >
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
-                  <ShieldAlert size={24} strokeWidth={1.5} />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#001F3F] shadow-sm group-hover:scale-110 transition-transform">
+                    <ShieldAlert size={20} strokeWidth={1.5} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-lg font-medium text-[#001F3F]">Emergency Assistance</p>
+                    <p className="text-sm text-[#001F3F]/60">Immediate help from URBONT safety</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-lg font-medium">Emergency Assistance</p>
-                  <p className="text-sm opacity-60">Immediate help from URBONT safety</p>
-                </div>
+                <ChevronUp size={20} className="text-[#001F3F]/20 rotate-90 group-hover:text-[#001F3F]/60 transition-colors" />
               </button>
- 
+
               <button 
                 onClick={() => {
                   setShowMenu(false);
                   setShowCancelConfirm(true);
                 }}
-                className="w-full p-6 bg-white/5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-all text-left group"
+                className="w-full p-6 bg-red-50 rounded-2xl flex items-center justify-between group hover:bg-red-100 transition-all duration-300 border border-red-100"
               >
-                <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white group-hover:text-[#001F3F] transition-all">
-                  <X size={24} strokeWidth={1.5} />
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-red-500 shadow-sm group-hover:scale-110 transition-transform">
+                    <XCircle size={20} strokeWidth={1.5} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-lg font-medium text-red-600">Cancel Trip</p>
+                    <p className="text-sm text-red-400">Only for valid emergencies</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-lg font-medium text-red-400">Cancel Trip</p>
-                  <p className="text-sm opacity-60">Only for valid emergencies</p>
-                </div>
+                <ChevronUp size={20} className="text-red-300 rotate-90 group-hover:text-red-500 transition-colors" />
               </button>
             </div>
 
             <button 
               onClick={onLogout}
-              className="w-full py-5 border border-white/20 rounded-2xl font-medium uppercase tracking-widest text-xs hover:bg-white/5 transition-all"
+              className="w-full py-5 border border-[#001F3F]/10 rounded-xl text-xs font-bold uppercase tracking-[0.2em] text-[#001F3F]/40 hover:bg-[#001F3F]/5 hover:text-[#001F3F] transition-all duration-300"
             >
               Log Out Chauffeur Mode
             </button>
+          </motion.div>
+        )}
+
+        {/* Cancel Confirmation Modal with Penalties */}
+        {showCancelConfirm && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[60] bg-[#001F3F]/80 backdrop-blur-sm flex items-center justify-center p-6"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white w-full max-w-sm rounded-3xl p-6 border border-[#001F3F]/10 shadow-2xl"
+            >
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-6">
+                <AlertTriangle size={32} className="text-red-500" />
+              </div>
+              
+              <h3 className="text-xl font-medium text-[#001F3F] text-center mb-2">Cancel this trip?</h3>
+              <p className="text-[#001F3F]/60 text-center text-sm mb-8 leading-relaxed">
+                Cancelling trips affects your acceptance rate and eligibility for future premium rides.
+              </p>
+
+              <div className="space-y-3 mb-8">
+                <div className="p-4 bg-[#001F3F]/5 rounded-xl border border-[#001F3F]/5">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs uppercase tracking-widest text-[#001F3F]/40 font-bold">Penalty</span>
+                    <span className="text-red-500 font-medium text-sm">High Impact</span>
+                  </div>
+                  <p className="text-[#001F3F]/80 text-sm">Your rating may decrease by 0.1</p>
+                </div>
+                
+                <div className="p-4 bg-[#001F3F]/5 rounded-xl border border-[#001F3F]/5">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs uppercase tracking-widest text-[#001F3F]/40 font-bold">Fee</span>
+                    <span className="text-[#001F3F] font-medium text-sm">$0.00</span>
+                  </div>
+                  <p className="text-[#001F3F]/80 text-sm">No fee if cancelled within 2 mins</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="py-4 rounded-xl bg-[#001F3F] text-white font-bold text-xs uppercase tracking-widest hover:bg-[#003366] transition-colors"
+                >
+                  Keep Ride
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowCancelConfirm(false);
+                    onComplete(0); // Cancelled
+                  }}
+                  className="py-4 rounded-xl bg-red-500/10 text-red-500 font-bold text-xs uppercase tracking-widest hover:bg-red-500/20 transition-colors"
+                >
+                  Confirm Cancel
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
 
@@ -435,29 +625,29 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[60] bg-red-900/90 backdrop-blur-md flex items-center justify-center p-6"
+            className="absolute inset-0 z-[60] bg-[#001F3F]/90 backdrop-blur-md flex items-center justify-center p-6"
           >
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-sm bg-white rounded-3xl p-8 text-center space-y-8"
+              className="w-full max-w-sm bg-white rounded-3xl p-8 text-center space-y-8 shadow-2xl"
             >
-              <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
+              <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto animate-pulse border border-red-100">
                 <ShieldAlert size={40} strokeWidth={1.5} />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-red-600 mb-2">Emergency Assistance</h3>
-                <p className="text-gray-600">Who do you need to contact?</p>
+                <h3 className="text-2xl font-bold text-[#001F3F] mb-2">Emergency Assistance</h3>
+                <p className="text-[#001F3F]/60">Who do you need to contact?</p>
               </div>
               <div className="space-y-3">
-                <button onClick={() => alert('Calling 911...')} className="w-full py-4 bg-red-600 text-white rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-red-600/30">
+                <button onClick={() => alert('Calling 911...')} className="w-full py-4 bg-red-600 text-white rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-red-600/30 hover:bg-red-700 transition-colors">
                   Call 911
                 </button>
-                <button onClick={() => alert('Calling Safety Team...')} className="w-full py-4 bg-[#001F3F] text-white rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-[#001F3F]/30">
+                <button onClick={() => alert('Calling Safety Team...')} className="w-full py-4 bg-[#001F3F] text-white rounded-xl font-bold uppercase tracking-widest shadow-lg shadow-[#001F3F]/30 hover:bg-[#003366] transition-colors">
                   URBONT Safety Team
                 </button>
-                <button onClick={() => setShowEmergencyModal(false)} className="w-full py-4 text-gray-500 font-medium">
+                <button onClick={() => setShowEmergencyModal(false)} className="w-full py-4 text-[#001F3F]/60 font-medium hover:text-[#001F3F] transition-colors">
                   Cancel
                 </button>
               </div>
@@ -519,49 +709,6 @@ export default function DriverModeReimagined({ tripDetails, onComplete, onLogout
                 ))}
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {/* Cancel Confirm Modal */}
-      <AnimatePresence>
-        {showCancelConfirm && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
-          >
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#001F3F] border border-white/10 rounded-3xl p-8 w-full max-w-sm text-center space-y-6"
-            >
-              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
-                <AlertTriangle size={32} className="text-red-500" />
-              </div>
-              <div>
-                <h3 className="text-xl font-light text-white mb-2">Cancel Trip?</h3>
-                <p className="text-white/60 text-sm">Are you sure you want to cancel this trip? This action cannot be undone.</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <button 
-                  onClick={() => setShowCancelConfirm(false)}
-                  className="py-4 rounded-xl border border-white/10 text-white font-medium uppercase tracking-widest text-xs hover:bg-white/5"
-                >
-                  Keep Trip
-                </button>
-                <button 
-                  onClick={() => {
-                    setShowCancelConfirm(false);
-                    onLogout();
-                  }}
-                  className="py-4 rounded-xl bg-red-500 text-white font-medium uppercase tracking-widest text-xs hover:bg-red-600 shadow-lg shadow-red-500/20"
-                >
-                  Cancel Trip
-                </button>
-              </div>
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

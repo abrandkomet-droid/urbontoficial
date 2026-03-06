@@ -26,3 +26,23 @@ export const COUNTRIES: Country[] = [
 export const COMMON_COUNTRIES = COUNTRIES.filter(c => 
   ['Estados Unidos', 'Reino Unido', 'España', 'Emiratos Árabes Unidos', 'Francia'].includes(c.name)
 );
+
+export const NAVY_SILVER_STYLE = [
+  { "elementType": "geometry", "stylers": [{ "color": "#1a1c2c" }] },
+  { "elementType": "labels.text.fill", "stylers": [{ "color": "#8e9297" }] },
+  { "elementType": "labels.text.stroke", "stylers": [{ "color": "#1a1c2c" }] },
+  { "featureType": "administrative", "elementType": "geometry.stroke", "stylers": [{ "color": "#4b4e6d" }] },
+  { "featureType": "administrative.land_parcel", "elementType": "labels.text.fill", "stylers": [{ "color": "#6477b9" }] },
+  { "featureType": "landscape.man_made", "elementType": "geometry.stroke", "stylers": [{ "color": "#334e7c" }] },
+  { "featureType": "poi", "elementType": "geometry", "stylers": [{ "color": "#283d5a" }] },
+  { "featureType": "poi", "elementType": "labels.text.fill", "stylers": [{ "color": "#6f9ba5" }] },
+  { "featureType": "road", "elementType": "geometry", "stylers": [{ "color": "#304a7d" }] },
+  { "featureType": "road", "elementType": "labels.text.fill", "stylers": [{ "color": "#98a5be" }] },
+  { "featureType": "road.highway", "elementType": "geometry", "stylers": [{ "color": "#2c4591" }] },
+  { "featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{ "color": "#1f2835" }] },
+  { "featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{ "color": "#b0d5ff" }] },
+  { "featureType": "transit", "elementType": "geometry", "stylers": [{ "color": "#2f3948" }] },
+  { "featureType": "transit.station", "elementType": "labels.text.fill", "stylers": [{ "color": "#d3d3d3" }] },
+  { "featureType": "water", "elementType": "geometry", "stylers": [{ "color": "#0e1626" }] },
+  { "featureType": "water", "elementType": "labels.text.fill", "stylers": [{ "color": "#4e6d70" }] }
+];

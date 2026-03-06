@@ -64,6 +64,7 @@ import {
 } from 'lucide-react';
 import { Screen, VEHICLES, CHAUFFEUR, Vehicle, UserProfile } from './types';
 import { COUNTRIES, COMMON_COUNTRIES } from './constants';
+import { CodeOfEthicsScreen, TermsOfServiceScreen, PrivacyPolicyScreen } from './components/LegalScreens';
 import DriverDashboardMobile from './components/DriverDashboardMobile';
 import SuggestionsScreen from './components/SuggestionsScreen';
 import SmartChat from './components/SmartChat';
@@ -98,6 +99,7 @@ export default function App() {
   });
   
   const [editingAddressType, setEditingAddressType] = useState<'home' | 'work' | 'other' | null>(null);
+  const [legalType, setLegalType] = useState<'code-of-ethics' | 'terms-of-service' | 'privacy-policy'>('code-of-ethics');
   const [returnToMenu, setReturnToMenu] = useState(false);
   const [activeTrip, setActiveTrip] = useState(false);
 
@@ -107,9 +109,12 @@ export default function App() {
     libraries: ['places']
   });
 
-  const navigate = (screen: Screen, fromMenu = false) => {
+  const navigate = (screen: Screen, fromMenu = false, legalType?: 'code-of-ethics' | 'terms-of-service' | 'privacy-policy') => {
     setCurrentScreen(screen);
     setIsMenuOpen(false);
+    if (legalType) {
+      setLegalType(legalType);
+    }
     if (fromMenu) {
       setReturnToMenu(true);
     } else {
@@ -417,7 +422,7 @@ export default function App() {
               navigate('address-edit', returnToMenu);
             }}
             onSignOut={() => navigate('welcome')}
-            onLegal={() => navigate('legal', returnToMenu)}
+            onLegal={(type) => navigate('legal', returnToMenu, type)}
             onRidePreferences={() => navigate('ride-preferences', returnToMenu)}
             onUpdateProfile={(updated) => setUserProfile(prev => ({ ...prev, ...updated }))}
           />
@@ -437,9 +442,13 @@ export default function App() {
           />
         )}
         {currentScreen === 'legal' && (
-          <LegalScreen 
-            onBack={() => navigate('profile', true)}
-          />
+          legalType === 'code-of-ethics' ? (
+            <CodeOfEthicsScreen onBack={() => navigate('profile', true)} />
+          ) : legalType === 'terms-of-service' ? (
+            <TermsOfServiceScreen onBack={() => navigate('profile', true)} />
+          ) : (
+            <PrivacyPolicyScreen onBack={() => navigate('profile', true)} />
+          )
         )}
         {currentScreen === 'preferences' && (
           <MyPreferencesScreen 
@@ -2539,14 +2548,38 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showFavoriteToast, setShowFavoriteToast] = useState(false);
+
+  const toggleFavorite = () => {
+    const newFavorite = !isFavorite;
+    setIsFavorite(newFavorite);
+    if (newFavorite) {
+      setShowFavoriteToast(true);
+      setTimeout(() => setShowFavoriteToast(false), 3000);
+    }
+  };
 
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
+      className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden relative"
     >
+      <AnimatePresence>
+        {showFavoriteToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-24 left-6 right-6 bg-[#001F3F] text-white p-4 rounded-2xl shadow-xl z-50 flex items-center gap-3"
+          >
+            <Crown className="text-amber-400" />
+            <span>Driver added to favorites!</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
         <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 size={40} className="text-emerald-600" />
@@ -2565,7 +2598,7 @@ function TripCompletedScreen({ onBack }: { onBack: () => void }) {
               <p className="text-xs text-gray-500">URB-2026 • Black</p>
             </div>
             <button 
-              onClick={() => setIsFavorite(!isFavorite)}
+              onClick={toggleFavorite}
               className={`p-2 rounded-full transition-colors ${isFavorite ? 'bg-amber-100 text-amber-600' : 'bg-white text-gray-300 hover:text-amber-500'}`}
             >
               <Crown size={20} className={isFavorite ? 'fill-amber-500' : ''} />
@@ -2621,6 +2654,7 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
   const [showChat, setShowChat] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
   const [showCall, setShowCall] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
   const [chatMessage, setChatMessage] = useState('');
   const [messages, setMessages] = useState([
@@ -2764,6 +2798,31 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
       exit={{ opacity: 0 }}
       className="h-full w-full flex flex-col bg-white text-[#001F3F] overflow-hidden"
     >
+      <AnimatePresence>
+        {showCancelConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-white p-8 rounded-3xl shadow-2xl text-center space-y-6"
+            >
+              <AlertTriangle size={48} className="text-red-500 mx-auto" />
+              <h3 className="text-xl font-medium text-[#001F3F]">Cancel Trip?</h3>
+              <p className="text-sm text-gray-600">Are you sure you want to cancel this trip? This action cannot be undone.</p>
+              <div className="flex gap-4">
+                <button onClick={() => setShowCancelConfirm(false)} className="flex-1 py-3 bg-gray-100 rounded-xl text-[#001F3F] font-medium">No, Keep</button>
+                <button onClick={() => { setShowCancelConfirm(false); onEndTrip(); }} className="flex-1 py-3 bg-red-600 rounded-xl text-white font-medium">Yes, Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Map Area */}
       <div className="flex-1 relative bg-gray-100">
         <div className="absolute inset-0">
@@ -2935,7 +2994,7 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
           {!isPanelExpanded && (
             <div className="flex gap-2 mb-4">
               <button 
-                onClick={onEndTrip}
+                onClick={() => setShowCancelConfirm(true)}
                 className="flex-1 py-3 text-red-600 text-[10px] font-bold uppercase tracking-[0.2em] border border-red-100 rounded-xl hover:bg-red-50 transition-all"
               >
                 Cancel
@@ -3037,7 +3096,7 @@ function TrackingScreen({ vehicle, onBack, onEndTrip, onCompleteTrip, isLoaded, 
             <div className="flex flex-col items-center gap-2 pt-4">
               <p className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.3em]">Trip ID: URB-99283-XM</p>
               <button 
-                onClick={onEndTrip}
+                onClick={() => setShowCancelConfirm(true)}
                 className="w-full h-16 bg-red-600 text-white text-xs font-bold uppercase tracking-[0.2em] rounded-2xl shadow-lg shadow-red-200 hover:bg-red-700 active:scale-[0.98] transition-all flex items-center justify-center mt-4"
               >
                 Cancel Journey
@@ -3175,8 +3234,8 @@ function ProfileScreen({
   onBack: () => void, 
   onEditProfile: () => void, 
   onEditAddress: (type: 'home' | 'work' | 'other') => void, 
-  onSignOut: () => void, 
-  onLegal: () => void, 
+  onSignOut: () => void,
+  onLegal: (type: 'code-of-ethics' | 'terms-of-service' | 'privacy-policy') => void,
   onRidePreferences: () => void,
   onUpdateProfile: (updated: Partial<UserProfile>) => void,
   key?: string 
@@ -3214,15 +3273,6 @@ function ProfileScreen({
             </div>
           </div>
         </div>
-
-        {/* Account Type Indicator (Visual Only as per current props, or I need to add update logic) */}
-        {/* Since I cannot easily pipe the update function down without changing multiple signatures, 
-            I will add the UI. To make it functional, I would need `onUpdateProfile`.
-            Wait, `EditProfileScreen` has `onSave`. `ProfileScreen` does not.
-            I will add `onUpdateProfile` to `ProfileScreen` props in the next step if needed.
-            For now, I'll assume the user wants to see it here. 
-            Actually, I can just add the prop to the component definition right here since I am replacing the whole component or part of it.
-        */}
         
         <div className="flex justify-center mb-8">
            <div className="flex bg-[#001F3F]/5 p-1 rounded-full w-fit border border-[#001F3F]/10">
@@ -3358,10 +3408,21 @@ function ProfileScreen({
           </div>
 
           <div className="pt-4 space-y-4">
-            <button onClick={onLegal} className="flex justify-between items-center w-full p-5 bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-black/[0.02] hover:bg-black/[0.02] transition-colors">
-              <span className="text-base font-medium text-[#001F3F]">Terms & Privacy</span>
-              <ChevronRight size={16} className="text-[#001F3F]/30" />
-            </button>
+            <div className="text-[11px] text-[#001F3F]/80 uppercase tracking-widest px-2">Legal</div>
+            <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden border border-black/[0.02]">
+              <button onClick={() => onLegal('code-of-ethics')} className="flex justify-between items-center w-full p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
+                <span className="text-base font-medium text-[#001F3F]">Code of Ethics</span>
+                <ChevronRight size={16} className="text-[#001F3F]/30" />
+              </button>
+              <button onClick={() => onLegal('terms-of-service')} className="flex justify-between items-center w-full p-5 border-b border-black/[0.04] hover:bg-black/[0.02] transition-colors">
+                <span className="text-base font-medium text-[#001F3F]">Terms of Service</span>
+                <ChevronRight size={16} className="text-[#001F3F]/30" />
+              </button>
+              <button onClick={() => onLegal('privacy-policy')} className="flex justify-between items-center w-full p-5 hover:bg-black/[0.02] transition-colors">
+                <span className="text-base font-medium text-[#001F3F]">Privacy Policy</span>
+                <ChevronRight size={16} className="text-[#001F3F]/30" />
+              </button>
+            </div>
             
             <button onClick={onSignOut} className="w-full h-14 bg-transparent border border-[#001F3F]/20 text-[#001F3F] text-sm font-bold uppercase tracking-widest rounded-xl hover:bg-[#001F3F]/5 active:scale-[0.98] transition-all flex items-center justify-center">
               Sign Out
@@ -4352,8 +4413,10 @@ function RidePreferencesScreen({ preferences, onBack, onSave }: {
           </div>
           <div className="grid grid-cols-3 gap-3">
             {['Cool', 'Neutral', 'Warm'].map((t) => (
-              <button
+              <motion.button
                 key={t}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setTemp(t as any)}
                 className={`py-4 rounded-xl text-sm font-medium transition-all ${
                   temp === t 
@@ -4362,7 +4425,7 @@ function RidePreferencesScreen({ preferences, onBack, onSave }: {
                 }`}
               >
                 {t}
-              </button>
+              </motion.button>
             ))}
           </div>
         </section>
@@ -4375,8 +4438,10 @@ function RidePreferencesScreen({ preferences, onBack, onSave }: {
           </div>
           <div className="grid grid-cols-2 gap-3">
             {['Jazz', 'Classical', 'Pop', 'Silence'].map((m) => (
-              <button
+              <motion.button
                 key={m}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setMusic(m as any)}
                 className={`py-4 rounded-xl text-sm font-medium transition-all ${
                   music === m 
@@ -4385,7 +4450,7 @@ function RidePreferencesScreen({ preferences, onBack, onSave }: {
                 }`}
               >
                 {m}
-              </button>
+              </motion.button>
             ))}
           </div>
         </section>
@@ -4398,8 +4463,10 @@ function RidePreferencesScreen({ preferences, onBack, onSave }: {
           </div>
           <div className="grid grid-cols-3 gap-3">
             {['Active', 'Minimal', 'Silence'].map((c) => (
-              <button
+              <motion.button
                 key={c}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setConv(c as any)}
                 className={`py-4 rounded-xl text-sm font-medium transition-all ${
                   conv === c 
@@ -4408,11 +4475,11 @@ function RidePreferencesScreen({ preferences, onBack, onSave }: {
                 }`}
               >
                 {c}
-              </button>
+              </motion.button>
             ))}
           </div>
         </section>
-
+        
         <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
           <p className="text-xs text-[#001F3F]/60 leading-relaxed italic">
             Your preferences will be shared with your chauffeur to ensure your journey is tailored to your exact requirements.
@@ -4421,15 +4488,14 @@ function RidePreferencesScreen({ preferences, onBack, onSave }: {
       </div>
 
       <div className="p-6 pb-10">
-        <button 
-          onClick={() => {
-            onSave({ temperature: temp as any, music: music as any, conversation: conv as any });
-            onBack();
-          }}
-          className="w-full py-5 bg-[#001F3F] text-white text-sm font-medium uppercase tracking-[0.2em] rounded-xl active:scale-[0.98] transition-all shadow-xl"
+        <motion.button 
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
+          onClick={() => onSave({ temperature: temp as any, music: music as any, conversation: conv as any })}
+          className="w-full py-5 bg-[#001F3F] text-white rounded-xl font-medium uppercase tracking-widest text-sm shadow-xl shadow-[#001F3F]/20 hover:bg-[#001F3F]/90 transition-all"
         >
-          Save Preferences
-        </button>
+          Save All
+        </motion.button>
       </div>
     </motion.div>
   );

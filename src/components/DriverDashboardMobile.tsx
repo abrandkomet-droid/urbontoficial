@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Calendar,
   Settings,
+  Briefcase,
   CreditCard,
   FileText,
   HelpCircle,
@@ -35,6 +36,8 @@ import {
   ArrowLeft,
   MapPin
 } from 'lucide-react';
+import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api';
+import { NAVY_SILVER_STYLE } from '../constants';
 import DriverModeReimagined from './DriverModeReimagined';
 import SkeletonScreen from './SkeletonScreen';
 
@@ -63,6 +66,10 @@ interface RideRequest {
   distance: string;
   time: string;
   rating: number;
+  clientType: 'Personal' | 'Business';
+  amenities: string[];
+  preferences: string[];
+  serviceType: string;
 }
 
 // --- Mock Data ---
@@ -74,7 +81,11 @@ const MOCK_REQUEST: RideRequest = {
   fare: 85.50,
   distance: '14.2 mi',
   time: '45 min',
-  rating: 4.9
+  rating: 4.9,
+  clientType: 'Business',
+  amenities: ['Wifi', 'Water', 'Charger'],
+  preferences: ['Quiet Ride', 'Cool Temp'],
+  serviceType: 'Premium Sedan'
 };
 
 const WEEKLY_EARNINGS = [120, 180, 150, 220, 190, 250, 310];
@@ -120,7 +131,13 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
   // Toggle Online Flow
   const handleToggleOnline = () => {
     if (!isOnline) {
-      setShowComplianceModal(true);
+      // Direct online mode, skipping compliance check for better UX
+      setIsOnline(true);
+      // Simulate incoming ride
+      setTimeout(() => {
+        setRideStatus('INCOMING');
+        setShowIncomingModal(true);
+      }, 3000);
     } else {
       setIsOnline(false);
       setRideStatus('NONE');
@@ -128,13 +145,8 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
   };
 
   const confirmGoOnline = () => {
-    setShowComplianceModal(false);
+    // Deprecated: Compliance check skipped
     setIsOnline(true);
-    // Simulate incoming ride
-    setTimeout(() => {
-      setRideStatus('INCOMING');
-      setShowIncomingModal(true);
-    }, 3000);
   };
 
   const handleAcceptRide = () => {
@@ -278,68 +290,126 @@ export default function DriverDashboardMobile({ onLogout }: { onLogout?: () => v
       <AnimatePresence>
         {showIncomingModal && (
           <motion.div 
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            className="absolute inset-0 z-50 bg-white flex flex-col p-6 pt-24"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-white flex flex-col"
           >
-            <div className="flex-1 flex flex-col items-center text-center space-y-8">
-              <div className="w-24 h-24 rounded-full bg-[#001F3F]/5 flex items-center justify-center border border-[#001F3F]/10">
-                <CarFront size={40} strokeWidth={1} className="text-[#001F3F]" />
-              </div>
-              
-              <div>
-                <h2 className="text-3xl font-light text-[#001F3F] mb-2 tracking-wide uppercase">New Request</h2>
-                <p className="text-[#001F3F] text-sm font-medium uppercase tracking-widest">Premium Sedan • 4 min away</p>
-              </div>
-
-              <div className="w-full bg-[#001F3F]/[0.02] rounded-2xl p-8 border border-[#001F3F]/5 space-y-8">
-                <div className="flex justify-between items-center pb-6 border-b border-[#001F3F]/10">
-                  <div className="text-left">
-                    <p className="text-xs uppercase text-[#001F3F]/90 font-medium tracking-widest mb-1">Fare</p>
-                    <p className="text-3xl font-medium text-[#001F3F]">${MOCK_REQUEST.fare}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs uppercase text-[#001F3F]/90 font-medium tracking-widest mb-1">Distance</p>
-                    <p className="text-3xl font-medium text-[#001F3F]">{MOCK_REQUEST.distance}</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-6 text-left">
-                  <div className="flex gap-4">
-                    <div className="flex flex-col items-center gap-1 pt-1">
-                      <div className="w-2 h-2 rounded-full bg-[#001F3F]" />
-                      <div className="w-px h-10 bg-[#001F3F]/10" />
-                      <div className="w-2 h-2 rounded-full border border-[#001F3F]" />
-                    </div>
-                    <div className="flex-1 space-y-6">
-                      <div>
-                        <p className="text-xs text-[#001F3F]/90 font-medium uppercase tracking-wider mb-1">Pickup</p>
-                        <p className="text-lg font-medium text-[#001F3F]">{MOCK_REQUEST.pickup}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-[#001F3F]/90 font-medium uppercase tracking-wider mb-1">Dropoff</p>
-                        <p className="text-lg font-medium text-[#001F3F]">{MOCK_REQUEST.dropoff}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Map Background */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <GoogleMap
+                mapContainerStyle={{ width: '100%', height: '100%' }}
+                center={{ lat: 40.7580, lng: -73.9855 }}
+                zoom={14}
+                options={{
+                  styles: NAVY_SILVER_STYLE,
+                  disableDefaultUI: true,
+                }}
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-8 mb-8">
-              <button 
-                onClick={handleDeclineRide}
-                className="py-5 rounded-xl border border-[#001F3F]/20 text-[#001F3F] font-medium uppercase tracking-widest text-sm hover:bg-[#001F3F]/5 transition-colors"
-              >
-                Decline
-              </button>
-              <button 
-                onClick={handleAcceptRide}
-                className="py-5 rounded-xl bg-[#001F3F] text-white font-medium uppercase tracking-widest text-sm shadow-xl shadow-[#001F3F]/20 hover:bg-[#001F3F]/90 transition-colors"
-              >
-                Accept
-              </button>
+            {/* Content */}
+            <div className="relative z-10 flex-1 flex flex-col p-6 pt-12 overflow-y-auto">
+              <div className="flex-1 flex flex-col items-center text-center space-y-6">
+                
+                {/* Header Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#001F3F]/5 border border-[#001F3F]/10">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <p className="text-[#001F3F] text-xs font-bold uppercase tracking-widest">New Request • 4 min away</p>
+                </div>
+
+                {/* Main Card */}
+                <div className="w-full bg-white rounded-3xl p-6 border border-[#001F3F]/10 shadow-xl shadow-[#001F3F]/5 space-y-6">
+                  
+                  {/* Fare & Distance */}
+                  <div className="flex justify-between items-center pb-6 border-b border-[#001F3F]/5">
+                    <div className="text-left">
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Estimated Fare</p>
+                      <p className="text-4xl font-light tracking-tight text-[#001F3F]">${MOCK_REQUEST.fare.toFixed(2)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Distance</p>
+                      <p className="text-4xl font-light tracking-tight text-[#001F3F]">{MOCK_REQUEST.distance}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Route */}
+                  <div className="space-y-6 text-left relative pl-2">
+                    {/* Connecting Line */}
+                    <div className="absolute left-[7px] top-[10px] bottom-[10px] w-[2px] bg-[#001F3F]/10" />
+
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className="w-4 h-4 rounded-full bg-[#001F3F] border-4 border-white shadow-sm mt-1" />
+                      <div>
+                        <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Pickup</p>
+                        <p className="text-lg font-medium text-[#001F3F] leading-tight">{MOCK_REQUEST.pickup}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4 relative z-10">
+                      <div className="w-4 h-4 rounded-full bg-white border-4 border-[#001F3F] shadow-sm mt-1" />
+                      <div>
+                        <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Dropoff</p>
+                        <p className="text-lg font-medium text-[#001F3F] leading-tight">{MOCK_REQUEST.dropoff}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Client & Service Details */}
+                  <div className="pt-6 border-t border-[#001F3F]/5 grid grid-cols-2 gap-4 text-left">
+                    <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Client Type</p>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#001F3F]/5 text-[#001F3F] text-xs font-bold uppercase tracking-wider">
+                        {MOCK_REQUEST.clientType === 'Business' ? <Briefcase size={12} /> : <User size={12} />}
+                        {MOCK_REQUEST.clientType}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-1">Service</p>
+                      <p className="text-sm font-bold text-[#001F3F]">{MOCK_REQUEST.serviceType}</p>
+                    </div>
+                  </div>
+
+                  {/* Amenities & Preferences */}
+                  <div className="pt-6 border-t border-[#001F3F]/5 text-left space-y-4">
+                    <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-2">Amenities Requested</p>
+                      <div className="flex flex-wrap gap-2">
+                        {MOCK_REQUEST.amenities.map(item => (
+                          <span key={item} className="px-2 py-1 rounded-md border border-[#001F3F]/10 text-[#001F3F] text-xs font-medium">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase text-[#001F3F]/40 font-bold tracking-[0.2em] mb-2">Preferences</p>
+                      <div className="flex flex-wrap gap-2">
+                        {MOCK_REQUEST.preferences.map(item => (
+                          <span key={item} className="px-2 py-1 rounded-md bg-[#001F3F]/5 text-[#001F3F] text-xs font-medium">
+                            {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-6 pb-6">
+                <button 
+                  onClick={handleDeclineRide}
+                  className="py-4 rounded-xl border border-[#001F3F]/10 text-[#001F3F]/60 font-bold uppercase tracking-widest text-xs hover:bg-[#001F3F]/5 transition-all"
+                >
+                  Decline
+                </button>
+                <button 
+                  onClick={handleAcceptRide}
+                  className="py-4 rounded-xl bg-[#001F3F] text-white font-bold uppercase tracking-widest text-xs shadow-lg shadow-[#001F3F]/20 hover:bg-[#003366] transition-all"
+                >
+                  Accept Request
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -414,7 +484,7 @@ function HomeTab({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-[#001F3F] text-white rounded-2xl p-6 space-y-4 overflow-hidden"
+            className="bg-slate-900 text-white rounded-2xl p-6 space-y-4 overflow-hidden"
           >
             <div className="flex justify-between items-center">
               <h4 className="text-xs uppercase tracking-widest font-bold">Rating Breakdown</h4>
@@ -439,38 +509,54 @@ function HomeTab({
       </AnimatePresence>
 
       {/* Status Card */}
-      <div className="bg-[#001F3F]/[0.02] border border-[#001F3F]/5 rounded-2xl p-8 text-center space-y-4">
-        {rideStatus === 'INCOMING' ? (
-           <div className="space-y-4">
-             <div className="w-16 h-16 bg-[#001F3F]/10 rounded-full flex items-center justify-center mx-auto animate-pulse">
-               <Bell size={32} strokeWidth={1.5} className="text-[#001F3F]" />
+      <div className="relative overflow-hidden rounded-2xl border border-[#001F3F]/10 text-center">
+        {/* Map Background */}
+        <div className="absolute inset-0 z-0 opacity-20">
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={{ lat: 40.7580, lng: -73.9855 }}
+            zoom={14}
+            options={{
+              styles: NAVY_SILVER_STYLE,
+              disableDefaultUI: true,
+            }}
+          />
+        </div>
+        
+        {/* Content Overlay */}
+        <div className="relative z-10 bg-white/80 backdrop-blur-sm p-8 space-y-4">
+          {rideStatus === 'INCOMING' ? (
+             <div className="space-y-4">
+               <div className="w-16 h-16 bg-[#001F3F]/10 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                 <Bell size={32} strokeWidth={1.5} className="text-[#001F3F]" />
+               </div>
+               <div>
+                 <h3 className="text-xl font-medium text-[#001F3F]">Incoming Request</h3>
+                 <button onClick={onRequestOpen} className="text-sm text-[#001F3F] mt-2 font-medium border-b border-[#001F3F] pb-0.5">View Details</button>
+               </div>
              </div>
-             <div>
-               <h3 className="text-xl font-medium text-[#001F3F]">Incoming Request</h3>
-               <button onClick={onRequestOpen} className="text-sm text-[#001F3F] mt-2 font-medium border-b border-[#001F3F] pb-0.5">View Details</button>
-             </div>
-           </div>
-        ) : isOnline ? (
-          <div className="space-y-4">
-            <div className="w-16 h-16 bg-[#001F3F]/5 rounded-full flex items-center justify-center mx-auto border border-[#001F3F]/10">
-              <Navigation size={32} strokeWidth={1.5} className="text-[#001F3F]" />
+          ) : isOnline ? (
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-[#001F3F]/5 rounded-full flex items-center justify-center mx-auto border border-[#001F3F]/10">
+                <Navigation size={32} strokeWidth={1.5} className="text-[#001F3F]" />
+              </div>
+              <div>
+                <h3 className="text-xl font-medium text-[#001F3F]">You are Online</h3>
+                <p className="text-sm text-[#001F3F]/90 font-medium mt-1">Finding rides near you...</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-medium text-[#001F3F]">You are Online</h3>
-              <p className="text-sm text-[#001F3F]/90 font-medium mt-1">Finding rides near you...</p>
+          ) : (
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-[#001F3F]/5 rounded-full flex items-center justify-center mx-auto border border-[#001F3F]/10">
+                <LogOut size={32} strokeWidth={1.5} className="text-[#001F3F]/90" />
+              </div>
+              <div>
+                <h3 className="text-xl font-medium text-[#001F3F]">You are Offline</h3>
+                <p className="text-sm text-[#001F3F]/90 font-medium mt-1">Go online to start earning.</p>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="w-16 h-16 bg-[#001F3F]/5 rounded-full flex items-center justify-center mx-auto border border-[#001F3F]/10">
-              <LogOut size={32} strokeWidth={1.5} className="text-[#001F3F]/90" />
-            </div>
-            <div>
-              <h3 className="text-xl font-medium text-[#001F3F]">You are Offline</h3>
-              <p className="text-sm text-[#001F3F]/90 font-medium mt-1">Go online to start earning.</p>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Recent Activity List */}
@@ -1242,7 +1328,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
               { id: 'license', label: 'Chauffeur License' },
               { id: 'photo', label: 'Professional Photo (Black suit, black tie, white shirt)' }
             ].map(doc => (
-              <div key={doc.id} className="bg-white p-4 rounded-xl shadow-sm border border-black/5 flex items-center justify-between gap-4">
+              <div key={doc.id} className="bg-white p-4 rounded-xl shadow-sm border border-[#001F3F]/5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${uploadedDocs[doc.id] === 'verified' ? 'bg-green-100 text-green-600' : uploadedDocs[doc.id] === 'uploaded' ? 'bg-blue-100 text-blue-600' : 'bg-[#001F3F]/5 text-[#001F3F]/90'}`}>
                     {uploadedDocs[doc.id] === 'verified' ? <CheckCircle2 size={20} /> : uploadedDocs[doc.id] === 'uploaded' ? <Clock size={20} /> : <FileText size={20} />}
@@ -1270,7 +1356,7 @@ function ProfileTab({ onLogout, profile, onUpdateProfile }: {
                     }}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
-                  <div className={`px-4 py-2 rounded-lg text-[10px] font-medium uppercase tracking-widest transition-colors ${uploadedDocs[doc.id] ? 'bg-black/5 text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
+                  <div className={`px-4 py-2 rounded-lg text-[10px] font-medium uppercase tracking-widest transition-colors ${uploadedDocs[doc.id] ? 'bg-[#001F3F]/5 text-[#001F3F]' : 'bg-[#001F3F] text-white'}`}>
                     {uploadedDocs[doc.id] ? 'Update' : 'Upload'}
                   </div>
                 </div>

@@ -5144,14 +5144,28 @@ function ApiHealthScreen({ onBack }: { onBack: () => void }) {
     const checkApis = async () => {
       const newStatus = { ...status };
       
+      // Check client-side env vars
       newStatus.googleMaps = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY ? 'success' : 'missing';
       newStatus.stripe = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ? 'success' : 'missing';
-      newStatus.groq = 'missing'; 
-      newStatus.cloudinary = 'missing';
       newStatus.translation = import.meta.env.VITE_GOOGLE_TRANSLATION_API_KEY ? 'success' : 'missing';
       newStatus.speech = import.meta.env.VITE_GOOGLE_SPEECH_API_KEY ? 'success' : 'missing';
       newStatus.aviation = import.meta.env.VITE_AVIATION_STACK_API_KEY ? 'success' : 'missing';
       newStatus.freepik = import.meta.env.VITE_FREEPIK_API_KEY ? 'success' : 'missing';
+      newStatus.cloudinary = 'missing';
+      
+      // Check server-side APIs via health-check endpoint
+      try {
+        const res = await fetch('/api/integrations/health-check');
+        if (res.ok) {
+          const serverStatus = await res.json();
+          newStatus.groq = serverStatus.groq ? 'success' : 'missing';
+          // Can also update other server-side checks here
+          if (serverStatus.stripe) newStatus.stripe = 'success';
+          if (serverStatus.cloudinary) newStatus.cloudinary = 'success';
+        }
+      } catch (error) {
+        console.warn('Failed to check server API status');
+      }
 
       setStatus(newStatus);
     };

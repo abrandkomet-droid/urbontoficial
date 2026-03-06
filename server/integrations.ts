@@ -1,32 +1,38 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
-import Stripe from 'stripe';
-import Groq from 'groq-sdk';
 
-// Lazy initialization for Stripe
-let stripeClient: Stripe | null = null;
-function getStripe() {
+// Lazy initialization for Stripe (dynamic import)
+let stripeModule: typeof import('stripe') | null = null;
+let stripeClient: InstanceType<typeof import('stripe').default> | null = null;
+async function getStripe() {
   if (!stripeClient) {
     const key = process.env.STRIPE_SECRET_KEY || process.env.EXPO_PUBLIC_STRIPE_SECRET_KEY;
     if (!key) {
       console.warn('STRIPE_SECRET_KEY is missing');
       return null;
     }
-    stripeClient = new Stripe(key);
+    if (!stripeModule) {
+      stripeModule = await import('stripe');
+    }
+    stripeClient = new stripeModule.default(key);
   }
   return stripeClient;
 }
 
-// Lazy initialization for Groq
-let groqClient: Groq | null = null;
-function getGroq() {
+// Lazy initialization for Groq (dynamic import)
+let groqModule: typeof import('groq-sdk') | null = null;
+let groqClient: InstanceType<typeof import('groq-sdk').default> | null = null;
+async function getGroq() {
   if (!groqClient) {
     const key = process.env.GROQ_API_KEY || process.env.EXPO_PUBLIC_GROQ_API_KEY;
     if (!key) {
       console.warn('GROQ_API_KEY is missing');
       return null;
     }
-    groqClient = new Groq({ apiKey: key });
+    if (!groqModule) {
+      groqModule = await import('groq-sdk');
+    }
+    groqClient = new groqModule.default({ apiKey: key });
   }
   return groqClient;
 }
@@ -52,7 +58,7 @@ integrationsRouter.get("/health-check", async (req: Request, res: Response) => {
 
 integrationsRouter.post("/stripe/create-payment-intent", async (req: Request, res: Response) => {
   try {
-    const stripe = getStripe();
+    const stripe = await getStripe();
     if (!stripe) return res.status(500).json({ error: 'Stripe not configured' });
 
     const { amount, currency = 'usd' } = req.body;
@@ -70,7 +76,7 @@ integrationsRouter.post("/stripe/create-payment-intent", async (req: Request, re
 
 integrationsRouter.post("/ai/refine-message", async (req: Request, res: Response) => {
   try {
-    const groq = getGroq();
+    const groq = await getGroq();
     if (!groq) return res.status(500).json({ error: 'Groq not configured' });
 
     const { text, context = 'chauffeur' } = req.body;
@@ -88,6 +94,92 @@ integrationsRouter.post("/ai/refine-message", async (req: Request, res: Response
 
     res.json({ refinedText: completion.choices[0]?.message?.content || text });
   } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// --- Smart Chat (Full Conversational AI) ---
+interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+const URBONT_SYSTEM_PROMPT = `You are URBONT AI, a sophisticated AI assistant for URBONT, a premium luxury chauffeur service. 
+
+Your role:
+- Help passengers with ride bookings, modifications, and inquiries
+- Provide information about services, amenities, and pricing
+- Assist with account management and preferences
+- Handle complaints with empathy and escalate when needed
+- Provide ETA updates and trip information
+
+Tone: Professional, warm, concise. Like a high-end concierge.
+Always address the user respectfully. Keep responses brief but helpful.
+If you cannot help with something, offer to connect them with a human agent.`;
+
+integrationsRouter.post("/ai/chat", async (req: Request, res: Response) => {
+  try {
+    const groq = await getGroq();
+    if (!groq) return res.status(500).json({ error: 'Groq not configured' });
+
+    const { messages, context } = req.body as { messages: ChatMessage[], context?: string };
+    
+    // Build conversation with system prompt
+    const conversationMessages: ChatMessage[] = [
+      { role: 'system', content: context ? `${URBONT_SYSTEM_PROMPT}\n\nAdditional context: ${context}` : URBONT_SYSTEM_PROMPT },
+      ...messages
+    ];
+
+    const completion = await groq.chat.completions.create({
+      messages: conversationMessages,
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.7,
+      max_tokens: 500,
+    });
+
+    const response = completion.choices[0]?.message?.content || "I apologize, but I couldn't process your request. Please try again.";
+    
+    res.json({ 
+      response,
+      usage: completion.usage
+    });
+  } catch (error: any) {
+    console.error('[GROQ_CHAT_ERROR]', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// --- Voice-to-Text Transcription ---
+integrationsRouter.post("/ai/transcribe", async (req: Request, res: Response) => {
+  try {
+    const groq = await getGroq();
+    if (!groq) return res.status(500).json({ error: 'Groq not configured' });
+
+    const { audioBase64, language = 'en' } = req.body;
+    
+    if (!audioBase64) {
+      return res.status(400).json({ error: 'Audio data required' });
+    }
+
+    // Convert base64 to buffer for Groq's Whisper model
+    const audioBuffer = Buffer.from(audioBase64, 'base64');
+    
+    // Create a File-like object for the API
+    const audioFile = new File([audioBuffer], 'audio.wav', { type: 'audio/wav' });
+
+    const transcription = await groq.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-large-v3-turbo",
+      language: language,
+      response_format: "json",
+    });
+
+    res.json({ 
+      text: transcription.text,
+      language: language
+    });
+  } catch (error: any) {
+    console.error('[GROQ_TRANSCRIBE_ERROR]', error);
     res.status(500).json({ error: error.message });
   }
 });
